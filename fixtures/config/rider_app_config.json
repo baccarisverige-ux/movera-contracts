@@ -120,6 +120,39 @@
     }
   ],
   "promoCap": null,
+  "pickupFee": {
+    "byCategory": {
+      "economy": {
+        "live": {
+          "amountMinor": 1500,
+          "currency": "SEK"
+        },
+        "reservation": null
+      },
+      "comfort": {
+        "live": null,
+        "reservation": {
+          "amountMinor": 2000,
+          "currency": "SEK"
+        }
+      },
+      "premium": {
+        "live": null,
+        "reservation": null
+      },
+      "xl": {
+        "live": null,
+        "reservation": null
+      },
+      "electric": {
+        "live": {
+          "amountMinor": 1500,
+          "currency": "SEK"
+        },
+        "reservation": null
+      }
+    }
+  },
   "booking": {
     "maxStops": 3,
     "bookingHorizonDays": 14,
