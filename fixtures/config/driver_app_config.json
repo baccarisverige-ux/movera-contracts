@@ -161,19 +161,13 @@
           }
         ],
         "riderFee": {
-          "live": {
-            "amountMinor": 1500,
-            "currency": "SEK"
-          },
+          "live": null,
           "reservation": null
         }
       },
       "comfort": {
         "enabled": true,
-        "maxPerRide": {
-          "amountMinor": 6000,
-          "currency": "SEK"
-        },
+        "maxPerRide": null,
         "ranges": [
           {
             "fromKm": 0,
@@ -202,10 +196,7 @@
         ],
         "riderFee": {
           "live": null,
-          "reservation": {
-            "amountMinor": 2000,
-            "currency": "SEK"
-          }
+          "reservation": null
         }
       }
     }
