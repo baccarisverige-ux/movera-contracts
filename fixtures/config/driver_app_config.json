@@ -93,23 +93,11 @@
       "amountMinor": 80,
       "currency": "SEK"
     },
-    "freeKm": 1,
+    "freeKm": 0,
     "freeMin": 0,
     "ranges": [
       {
         "fromKm": 0,
-        "toKm": 1,
-        "perKm": {
-          "amountMinor": 0,
-          "currency": "SEK"
-        },
-        "perMin": {
-          "amountMinor": 0,
-          "currency": "SEK"
-        }
-      },
-      {
-        "fromKm": 1,
         "toKm": null,
         "perKm": {
           "amountMinor": 250,
@@ -137,18 +125,6 @@
         "ranges": [
           {
             "fromKm": 0,
-            "toKm": 1,
-            "perKm": {
-              "amountMinor": 0,
-              "currency": "SEK"
-            },
-            "perMin": {
-              "amountMinor": 0,
-              "currency": "SEK"
-            }
-          },
-          {
-            "fromKm": 1,
             "toKm": null,
             "perKm": {
               "amountMinor": 250,
@@ -171,18 +147,6 @@
         "ranges": [
           {
             "fromKm": 0,
-            "toKm": 1,
-            "perKm": {
-              "amountMinor": 0,
-              "currency": "SEK"
-            },
-            "perMin": {
-              "amountMinor": 0,
-              "currency": "SEK"
-            }
-          },
-          {
-            "fromKm": 1,
             "toKm": null,
             "perKm": {
               "amountMinor": 300,
