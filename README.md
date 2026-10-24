@@ -6,7 +6,7 @@ serve all three. This repository is the only place the contract changes.
 Each app carries a byte-for-byte copy under `contracts/` and checks it against
 `CHECKSUMS`; the server builds against a tag.
 
-Current version: **0.5.0** (`contract.json#version`, tag `v0.5.0`). Consumers still on v0.4.4 move to it in one PR set.
+Current version: **0.5.1** (`contract.json#version`, tag `v0.5.1`). Consumers still on v0.4.4 or v0.5.0 move to it in one PR set.
 
 ## What is here
 
@@ -15,7 +15,7 @@ Current version: **0.5.0** (`contract.json#version`, tag `v0.5.0`). Consumers st
 | `contract.json` | Machine-readable source of truth: enums, terminal set, transition table, cancel codes, realtime rules, error codes, currencies, categories, languages, admin dispatch rules, config defaults |
 | `CONTRACT.md` | The written contract: entities, lifecycle per app, events, admin control matrix, config documents, API surface, and the notes of every version |
 | `openapi.yaml` | REST and realtime surface for the three apps and the server |
-| `fixtures/` | Lifecycle scenarios, realtime gate cases, money cases, cancel fees, pickup pay cases, surge schedule cases, sample config documents; the apps replay them in their contract tests |
+| `fixtures/` | Lifecycle scenarios, realtime gate cases, money cases, cancel fees, pickup pay cases, surge schedule cases, fare cases, dispatch timelines, sample config documents (also the server-only pricing and dispatch documents); the apps and the server replay them in their contract tests |
 | `reference_check.py` | Reference engine: proves the fixtures agree with `contract.json` |
 | `tools/gen_openapi.py` | Generates `openapi.yaml` from `contract.json` plus the hand-written surface |
 | `CHECKSUMS` | sha256 of every file above, the list the apps' copy tests read |
@@ -61,6 +61,12 @@ real test week, the contract does not change. Changes collected during the
 test become the next version, landed in all consumers together.
 
 ## History
+
+v0.5.1 (24 October 2026): the server-only pricing and dispatch documents with the fare
+formula and the automatic dispatch rules as the owner decided them, unpaid cash fees on
+the next ride, admin sign-in with e-mail and password and the panel's 34 permissions,
+address search and road routes through the server, telemetry, and the admin live map's
+driver positions and trip traces. Additive; notes at the top of `CONTRACT.md`.
 
 v0.5.0 (23 October 2026): pickup pay (rider fixed fee, driver tiered ranges with a
 maximum per ride), the driver's stopped / driving signal and the Radar limits per
