@@ -6,7 +6,7 @@ serve all three. This repository is the only place the contract changes.
 Each app carries a byte-for-byte copy under `contracts/` and checks it against
 `CHECKSUMS`; the server builds against a tag.
 
-Current version: **0.5.2** (`contract.json#version`, tag `v0.5.2`). Consumers still on v0.4.4, v0.5.0 or v0.5.1 move to it in one PR set.
+Current version: **0.5.3** (`contract.json#version`, tag `v0.5.3`). Consumers still on v0.4.4, v0.5.0, v0.5.1 or v0.5.2 move to it in one PR set.
 
 ## What is here
 
@@ -61,6 +61,10 @@ real test week, the contract does not change. Changes collected during the
 test become the next version, landed in all consumers together.
 
 ## History
+
+v0.5.3 (25 October 2026): driver sign-up details, fleets with a join code, the documents each
+country and account type needs, uploaded to the server (`§14`). Additive; notes at the top of
+`CONTRACT.md`.
 
 v0.5.2 (25 October 2026): the free cars near the rider, for the rider's map while it
 chooses a ride (`GET /rider/nearby-vehicles`), with nothing that tells who drives.
