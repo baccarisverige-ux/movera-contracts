@@ -12,9 +12,10 @@ So: after each phase, write its report into this folder (`phase-N-report.md`), p
 
 | Phase | State | Where the results are |
 |---|---|---|
-| 0 Finish in-flight work | Pending owner "merge" | Driver draft PR #380 (branch `driver-live-fixes-1`); rider branch `rider-live-fixes-1` (N4 is WIP, gates not run; N10 done) |
-| 1 Baseline audit | **In progress (started 2026-10-26)** | `docs/audit/baseline-2026-10.md` on branch `audit/phase-1` in each repo |
-| 2–8 | Not started | |
+| 0 Finish in-flight work | **done**: driver #380 and rider #413 merged by the owner | Driver draft PR #380 (branch `driver-live-fixes-1`); rider branch `rider-live-fixes-1` (N4 is WIP, gates not run; N10 done) |
+| 1 Baseline audit | **done** — `phase-1-report.md` | `docs/audit/baseline-2026-10.md` on branch `audit/phase-1` in each repo |
+| 2 CI hardening | **In progress** | branch `audit/phase-2` in each repo |
+| 3–8 | Not started | |
 
 ## Phase 1 per repo
 
@@ -22,7 +23,7 @@ So: after each phase, write its report into this folder (`phase-N-report.md`), p
 |---|---|---|
 | movera-contracts | audit/phase-1 | **done** (docs/audit/baseline-2026-10.md) |
 | movera-server | audit/phase-1 | **done** (0cdf397; 568 tests, 94 % line coverage; top: admin setup link in logs, no e2e harness, zod advisory, flaky hooks) |
-| movera-rider-app | audit/phase-1 | started |
+| movera-rider-app | audit/phase-1 | **done** (253db3ec; 2958 tests, 91 % coverage). Rider PR #413 merged 2026-10-26 |
 | Movera-driver-app | audit/phase-1 | **done** (5150eb2f; 2178 tests, 89 % coverage; S2: demo scheduled rides in live build, ride-check alerts go to demo repo, earnings local-only and always SEK, Maps key in git history). PR #380 was merged 2026-10-26 11:47 UTC |
 | Admin-panel-movera-dispatch | audit/phase-1 | **done** (f40cc68; 257 unit + 239/245 e2e; S1: live panel has no trips or refunds pages; only people area is live) |
 
