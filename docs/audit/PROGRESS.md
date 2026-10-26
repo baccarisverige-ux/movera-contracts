@@ -21,7 +21,7 @@ So: after each phase, write its report into this folder (`phase-N-report.md`), p
 | Repo | Branch | State |
 |---|---|---|
 | movera-contracts | audit/phase-1 | **done** (docs/audit/baseline-2026-10.md) |
-| movera-server | audit/phase-1 | started |
+| movera-server | audit/phase-1 | **done** (0cdf397; 568 tests, 94 % line coverage; top: admin setup link in logs, no e2e harness, zod advisory, flaky hooks) |
 | movera-rider-app | audit/phase-1 | started |
 | Movera-driver-app | audit/phase-1 | started |
 | Admin-panel-movera-dispatch | audit/phase-1 | started |
