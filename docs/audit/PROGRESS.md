@@ -2,6 +2,12 @@
 
 Read `HANDOFF.md` (project, rules, open work) and `AUDIT_PLAN.md` (phases) first. This file says where the audit stands, so a new session can continue after a pause. Update it at the end of every step.
 
+## Owner's standing instruction (2026-10-26)
+
+"When you finish a phase, start the next one. Do not wait for my permission. Write the report, always save the work, never stop until all phases are done."
+
+So: after each phase, write its report into this folder (`phase-N-report.md`), push, update this file, and start the next phase at once. The merge rule still holds: PRs are merged only when CI is green and the owner writes "merge"; while waiting, the next phase builds on the open branches.
+
 ## Status
 
 | Phase | State | Where the results are |
