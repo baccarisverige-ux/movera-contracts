@@ -14,7 +14,7 @@ Read `HANDOFF.md` (project, rules, open work) and `AUDIT_PLAN.md` (phases) first
 
 | Repo | Branch | State |
 |---|---|---|
-| movera-contracts | audit/phase-1 | started |
+| movera-contracts | audit/phase-1 | **done** (docs/audit/baseline-2026-10.md) |
 | movera-server | audit/phase-1 | started |
 | movera-rider-app | audit/phase-1 | started |
 | Movera-driver-app | audit/phase-1 | started |
