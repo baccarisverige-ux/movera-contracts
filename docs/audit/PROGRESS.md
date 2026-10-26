@@ -24,7 +24,7 @@ So: after each phase, write its report into this folder (`phase-N-report.md`), p
 | movera-server | audit/phase-1 | **done** (0cdf397; 568 tests, 94 % line coverage; top: admin setup link in logs, no e2e harness, zod advisory, flaky hooks) |
 | movera-rider-app | audit/phase-1 | started |
 | Movera-driver-app | audit/phase-1 | started |
-| Admin-panel-movera-dispatch | audit/phase-1 | started |
+| Admin-panel-movera-dispatch | audit/phase-1 | **done** (f40cc68; 257 unit + 239/245 e2e; S1: live panel has no trips or refunds pages; only people area is live) |
 
 ## How to continue after a pause
 
