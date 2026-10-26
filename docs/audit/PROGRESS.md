@@ -6,7 +6,7 @@ Read `HANDOFF.md` (project, rules, open work) and `AUDIT_PLAN.md` (phases) first
 
 "When you finish a phase, start the next one. Do not wait for my permission. Write the report, always save the work, never stop until all phases are done."
 
-So: after each phase, write its report into this folder (`phase-N-report.md`), push, update this file, and start the next phase at once. The merge rule still holds: PRs are merged only when CI is green and the owner writes "merge"; while waiting, the next phase builds on the open branches.
+So: after each phase, write its report into this folder (`phase-N-report.md`), push, update this file, and start the next phase at once. **Merge permission (owner, 2026-10-26, "U can merge safely"):** PRs are merged by the audit as soon as every CI check is green and the PR is reviewed against the plan's rules. A red or pending PR is never merged.
 
 ## Status
 
@@ -14,7 +14,7 @@ So: after each phase, write its report into this folder (`phase-N-report.md`), p
 |---|---|---|
 | 0 Finish in-flight work | **done**: driver #380 and rider #413 merged by the owner | Driver draft PR #380 (branch `driver-live-fixes-1`); rider branch `rider-live-fixes-1` (N4 is WIP, gates not run; N10 done) |
 | 1 Baseline audit | **done** — `phase-1-report.md` | `docs/audit/baseline-2026-10.md` on branch `audit/phase-1` in each repo |
-| 2 CI hardening | **In progress** | branch `audit/phase-2` in each repo. contracts: done (PR #9). Phase 1 docs PRs: contracts #8, server #16, rider #421, driver #384, admin #144 |
+| 2 CI hardening | **In progress** | branch `audit/phase-2` in each repo. contracts: merged (#9). Phase 1 docs merged: contracts #8, server #16, rider #421; driver #384 and admin #144 wait for CI |
 | 3–8 | Not started | |
 
 ## Phase 1 per repo
