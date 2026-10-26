@@ -23,7 +23,7 @@ So: after each phase, write its report into this folder (`phase-N-report.md`), p
 | movera-contracts | audit/phase-1 | **done** (docs/audit/baseline-2026-10.md) |
 | movera-server | audit/phase-1 | **done** (0cdf397; 568 tests, 94 % line coverage; top: admin setup link in logs, no e2e harness, zod advisory, flaky hooks) |
 | movera-rider-app | audit/phase-1 | started |
-| Movera-driver-app | audit/phase-1 | started |
+| Movera-driver-app | audit/phase-1 | **done** (5150eb2f; 2178 tests, 89 % coverage; S2: demo scheduled rides in live build, ride-check alerts go to demo repo, earnings local-only and always SEK, Maps key in git history). PR #380 was merged 2026-10-26 11:47 UTC |
 | Admin-panel-movera-dispatch | audit/phase-1 | **done** (f40cc68; 257 unit + 239/245 e2e; S1: live panel has no trips or refunds pages; only people area is live) |
 
 ## How to continue after a pause
