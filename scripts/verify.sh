@@ -16,6 +16,14 @@ spec = yaml.safe_load(open('openapi.yaml'))
 assert spec['openapi'].startswith('3.'), 'openapi.yaml is not OpenAPI 3'
 print(f"contract.json version {c['version']}, openapi {spec['info'].get('version')}, {len(spec['paths'])} paths")
 PY
+# openapi.yaml must be exactly what the generator makes (no hand edits).
+tmp=$(mktemp)
+python3 tools/gen_openapi.py . "$tmp" >/dev/null
+cmp -s "$tmp" openapi.yaml || { rm -f "$tmp"; echo "openapi.yaml is not what tools/gen_openapi.py generates; run it and commit the result"; exit 1; }
+rm -f "$tmp"
+# CONTRACT.md's title names the same version as contract.json.
+v=$(python3 -c "import json;print(json.load(open('contract.json'))['version'])")
+head -1 CONTRACT.md | grep -q "v$v\b" || { echo "CONTRACT.md title does not name v$v"; exit 1; }
 tag="${GITHUB_REF_NAME:-}"
 case "$tag" in
   v*) v=$(python3 -c "import json;print(json.load(open('contract.json'))['version'])")
