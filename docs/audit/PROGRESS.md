@@ -14,8 +14,9 @@ So: after each phase, write its report into this folder (`phase-N-report.md`), p
 |---|---|---|
 | 0 Finish in-flight work | **done**: driver #380 and rider #413 merged by the owner | Driver draft PR #380 (branch `driver-live-fixes-1`); rider branch `rider-live-fixes-1` (N4 is WIP, gates not run; N10 done) |
 | 1 Baseline audit | **done** — `phase-1-report.md` | `docs/audit/baseline-2026-10.md` on branch `audit/phase-1` in each repo |
-| 2 CI hardening | **In progress** | branch `audit/phase-2` in each repo. contracts: merged (#9). Phase 1 docs merged: contracts #8, server #16, rider #421; driver #384 and admin #144 wait for CI |
-| 3–8 | Not started | |
+| 2 CI hardening | **done** — `phase-2-report.md` | contracts #9, server #17, driver #386, rider #422, admin #146 |
+| 3 Ride lifecycle and sync | **In progress** | `movera-server/test/e2e/` on branch `audit/phase-3` |
+| 4–8 | Not started | |
 
 ## Phase 1 per repo
 
