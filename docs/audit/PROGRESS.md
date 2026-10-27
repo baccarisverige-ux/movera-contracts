@@ -48,3 +48,11 @@ So: after each phase, write its report into this folder (`phase-N-report.md`), p
 
 ## Owner rule (2026-10-27, always)
 Before building or changing anything: first check the owner's existing demo screens (e.g. the admin demo Pricing section), then all apps (rider, driver, admin), the contract and the server. Never build from our own ideas; reproduce what the owner built and list every mismatch for the owner before coding.
+
+## Owner pricing decisions (2026-10-27)
+Reference: the admin demo Pricing section (7 tabs: Prices, Fees, Surge, Commission, Pickup pay, Tips & limits, History; plus Test a ride, Manage categories, Fixed routes). Follow it exactly, as a clean live version; ask the owner only when something conflicts.
+- Child seat and baby seat fees exist only on the Child Seat category.
+- Category names everywhere: Movera, Comfort, Premium, Priority, Movera XL, Electric, Movera Pet, Child Seat (one id `child_seat`; driver "Booster Seat" and rider `kids` map to it). Admin can add, delete and deactivate categories; apps follow the admin catalog.
+- Surge as in the demo; the admin sets the maximum, also for smart surge.
+- Waiting money: 100 % to the driver (demo example maths to be corrected).
+Findings behind these: pricing comparison of 2026-10-27 (surge never applied by the server; seat, airport, fixed-route and stop-wait prices never charged; publish does not update app configs; live page lacked 6 tabs and validation).
