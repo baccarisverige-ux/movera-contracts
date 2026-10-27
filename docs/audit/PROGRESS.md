@@ -110,3 +110,17 @@ Earlier, still valid: Dispatch = one section built from the whole Dashboard plus
 - "Car lost": same as SOS (red, repeating alarm, same admins); closes by itself when the car's position comes back.
 - After SOS the app shows only "SOS sent" (no later update).
 - Ride check answers → safety part 2.
+
+## Owner settings-flow decisions (part 2, 2026-10-27)
+- A booked trip keeps ALL its rules (price, cancel fee, no-show fee and shares) from booking time.
+- Apps get new settings at once while open (live stream), and also check on start.
+- No server: apps use the last settings received, else their built-in settings.
+- "Standard" settings per country (SE in kr, FR in €), set in admin; a zone without its own settings uses its country's standard automatically, marked "Uses standard". A zone with its own settings never uses the standard.
+- Admin settings with no server field (scheduled publish/expiry, campaigns, rider texts, per-driver overrides): shown "Not connected yet"; added one by one later.
+- Publishing settings: no second admin (like refunds); anyone with the publish right publishes at once.
+- Country rules (tips, raise steps, driver bonus limits) are set once per country and apply to all its zones.
+- Auto-offline: 10 missed or declined in a row, ONLY Exclusive offers (never Radar, never scheduled); app and server both enforce it.
+- Cancel fee driver share: shown and set in Admin › Dispatch, per zone; default 100 %.
+- Publishing prices also updates waiting and no-show values in the rider and driver app settings.
+- Rider app takes its car types from the rider settings the admin publishes.
+- The server's version number counts.
