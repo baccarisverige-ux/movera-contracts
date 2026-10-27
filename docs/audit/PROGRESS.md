@@ -139,3 +139,8 @@ Earlier, still valid: Dispatch = one section built from the whole Dashboard plus
 - KPIs: today live; earlier days summed each night.
 - Payouts: admin sees the lines behind each payout; the driver app shows only the total.
 - "Blocked by drivers" / driver reports on riders: not now; remove from admin.
+- Review tags: one fixed list of tag codes, same in every country (sv/fr/en words in the apps); per-country editing later.
+- Payouts: automatic every week (one per driver, earnings minus cash already collected; negative = driver owes Movera; admin marks Paid) AND a button for the admin to create a payout by hand.
+- Support tickets: full path now — apps send tickets (ride problems, help), server stores them, admin answers in Support.
+- A hidden review stops counting in the person's average and the low-rating warning; restoring counts it again.
+- Surge is part of the Pricing work, not part 3.
