@@ -37,3 +37,11 @@ So: after each phase, write its report into this folder (`phase-N-report.md`), p
 1. Read this file, then open each repo's `audit/phase-1` branch and its `docs/audit/baseline-2026-10.md`. Each has a "Done / Not done yet" list at the top.
 2. Continue the first repo whose state is not "done". Commit and push after every finished section.
 3. When all five are done, open one docs-only PR per repo and ask the owner for "merge".
+
+## Owner decisions (2026-10-27)
+- No-show fee: **65 kr** (server value); app sample configs to be aligned. Admin can already change it per zone via the server's config API; live admin Pricing page and per-trip "waive fee" button to be added (owner: yes).
+- Zone-limited admins see/block **only riders who rode in their zones** (P4-6).
+- D2: owner will add a **restricted Google Maps test key** as a GitHub secret.
+- Driver app routes go **through the server** (`/routes/driving`) instead of the public OSRM demo; needs `OSRM_URL` on Render.
+- D1: **branch protection with required checks** on main in all 5 repos (owner sets it; steps to be sent).
+- D4: **no raise after expiry**; offer "Search again" instead.
