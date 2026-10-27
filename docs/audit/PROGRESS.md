@@ -16,8 +16,10 @@ So: after each phase, write its report into this folder (`phase-N-report.md`), p
 | 1 Baseline audit | **done** — `phase-1-report.md` | `docs/audit/baseline-2026-10.md` on branch `audit/phase-1` in each repo |
 | 2 CI hardening | **done** — `phase-2-report.md` | contracts #9, server #17, driver #386, rider #422, admin #146 |
 | 3 Ride lifecycle and sync | **In progress** | `movera-server/test/e2e/` on branch `audit/phase-3` |
-| 4 Security and data integrity | **PRs open, not merged** — `phase-4-report.md` | server #22, rider #424, admin #147; report `movera-server/docs/audit/phase-4.md` |
-| 5–8 | Not started | |
+| 4 Security and data integrity | **done** — `phase-4-report.md` | server #22, rider #424, admin #147 (merged); report `movera-server/docs/audit/phase-4.md` |
+| 5 Every screen | **done** — `phase-5-report.md` | driver #388, admin #151, rider #425 |
+| 6 Maps and GPS | **In progress** | |
+| 7–8 | Not started | |
 
 ## Phase 1 per repo
 
