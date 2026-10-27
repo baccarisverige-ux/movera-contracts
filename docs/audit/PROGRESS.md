@@ -101,3 +101,12 @@ Step 2: section by section with the owner: contract → server → driver and ri
 15. Onboarding: same document list as driver app and server (SE + FR); Approve/Reject connected.
 16. Status words: the server's words everywhere in the admin (sv/fr/en).
 Earlier, still valid: Dispatch = one section built from the whole Dashboard plus what only Dispatch has; no separate Dashboard. The owner will explain later how Super admin gives roles.
+
+## Owner safety part 1 decisions (2026-10-27)
+- Rider SOS and driver SOS: open the 112 call on the phone AND alert Movera.
+- SOS carries the phone's GPS once; admin also sees the car's live position.
+- Alarm goes first to safety/operations admins of that zone; every signed-in admin after 2 minutes untaken. No SMS when nobody is online.
+- Case steps: New, Taken, Solved, False alarm.
+- "Car lost": same as SOS (red, repeating alarm, same admins); closes by itself when the car's position comes back.
+- After SOS the app shows only "SOS sent" (no later update).
+- Ride check answers → safety part 2.
