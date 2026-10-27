@@ -129,3 +129,13 @@ Earlier, still valid: Dispatch = one section built from the whole Dashboard plus
 - Exclusive offers missed while the driver is on a trip never count.
 - Any admin of that country with the pricing right can edit the country Standard.
 - Add a "Go back to Standard" button for a zone with its own prices (confirm step; own prices kept in History).
+
+## Owner real-data decisions (part 3, 2026-10-27)
+- Group A (server has it): connect in the live admin; remove every invented value.
+- Group B (contract has it, server doesn't): build on the server (payouts, tickets, refunds list, dispatch stream, surge).
+- Missing data shows "Inte kopplad än", never fake numbers or zeros.
+- Reviews: stars + optional tags + optional comment, sent by BOTH apps; admin lists and moderates them.
+- Risk: first the 3 signals the server can count (cancels, failed payments, low rating); fake GPS, multi-account, shared card later.
+- KPIs: today live; earlier days summed each night.
+- Payouts: admin sees the lines behind each payout; the driver app shows only the total.
+- "Blocked by drivers" / driver reports on riders: not now; remove from admin.
