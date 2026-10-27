@@ -144,3 +144,4 @@ Earlier, still valid: Dispatch = one section built from the whole Dashboard plus
 - Support tickets: full path now — apps send tickets (ride problems, help), server stores them, admin answers in Support.
 - A hidden review stops counting in the person's average and the low-rating warning; restoring counts it again.
 - Surge is part of the Pricing work, not part 3.
+- Settings/Pricing/Dispatch/Tips publish apply only to the country and zone(s) the admin has selected at the top of the panel; the admin can choose "all zones" of a country.
