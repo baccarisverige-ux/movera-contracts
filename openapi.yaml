@@ -7318,9 +7318,9 @@ paths:
       operationId: driverArriveAtStop
       summary: Driver arrived at an extra stop (stop waiting starts)
       description: 'v0.7.1. POST /driver/trips/{tripId}/stops/{stopIndex}/arrive { expectedVersion }: the assigned driver,
-        trip in_progress, stopIndex 0-based into TripProjection.stops; sets stops[i].arrivedAt (server time); version + 1,
-        trip_projection. Again on the same stop: 409 invalid_transition (stop_already_arrived). Stops are taken in order:
-        arriving at i while an earlier stop has no arrivedAt is 409 (stop_out_of_order).'
+        trip in_trip or approaching_dropoff (else 409 invalid_transition, not_on_trip), stopIndex 0-based into TripProjection.stops;
+        sets stops[i].arrivedAt (server time); version + 1, trip_projection. Again on the same stop: 409 invalid_transition
+        (stop_already_arrived). Stops are taken in order: arriving at i while an earlier stop has no arrivedAt is 409 (stop_out_of_order).'
       tags:
       - Driver · Trip
       x-actor:
