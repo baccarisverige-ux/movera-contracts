@@ -15,12 +15,12 @@ So: after each phase, write its report into this folder (`phase-N-report.md`), p
 | 0 Finish in-flight work | **done**: driver #380 and rider #413 merged by the owner | Driver draft PR #380 (branch `driver-live-fixes-1`); rider branch `rider-live-fixes-1` (N4 is WIP, gates not run; N10 done) |
 | 1 Baseline audit | **done** — `phase-1-report.md` | `docs/audit/baseline-2026-10.md` on branch `audit/phase-1` in each repo |
 | 2 CI hardening | **done** — `phase-2-report.md` | contracts #9, server #17, driver #386, rider #422, admin #146 |
-| 3 Ride lifecycle and sync | **In progress** | `movera-server/test/e2e/` on branch `audit/phase-3` |
+| 3 Ride lifecycle and sync | **done** — `phase-3-report.md` | server #18, #19, driver #387, rider #423 |
 | 4 Security and data integrity | **done** — `phase-4-report.md` | server #22, rider #424, admin #147 (merged); report `movera-server/docs/audit/phase-4.md` |
 | 5 Every screen | **done** — `phase-5-report.md` | driver #388, admin #151, rider #425 |
 | 6 Maps and GPS | **done** — `phase-6-report.md` | rider #426, driver #389 |
-| 7 Performance | **In progress** | |
-| 8 Final report | Not started | |
+| 7 Performance | **done** | server #23, rider #427, driver #390, admin #152; each repo's `docs/audit/phase-7.md` |
+| 8 Final report | **done** — `FINAL_REPORT.md` | movera-contracts branch `audit/final-report` |
 
 ## Phase 1 per repo
 
