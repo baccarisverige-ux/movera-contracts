@@ -145,3 +145,20 @@ Earlier, still valid: Dispatch = one section built from the whole Dashboard plus
 - A hidden review stops counting in the person's average and the low-rating warning; restoring counts it again.
 - Surge is part of the Pricing work, not part 3.
 - Settings/Pricing/Dispatch/Tips publish apply only to the country and zone(s) the admin has selected at the top of the panel; the admin can choose "all zones" of a country.
+
+## Owner Pricing decisions (2026-10-27)
+- Surge maximum = the value the admin chooses on the slider (×3, ×4, ×6…); smart-surge profiles keep their own limit. No extra box.
+- "Tell drivers when a surge starts" / "Tell drivers now": build it (server sends, driver app shows a notice).
+- Pricing History: server serves the full history; Restore and "Undo last publish" work.
+- Delete a car type: archived for 30 days then gone, restorable (restored type keeps its old prices, switched off). Server refuses delete while trips are booked with it.
+- Car type sub-line ("Movera XL — up to 6 people"): admin writes it (sv/fr/en), rider app shows it.
+- Seat fee rows: shown grey "—" for every car type except Child Seat.
+- ONE seat fee only (remove the baby seat fee). A Child Seat trip always includes one seat; that one fee is added once. The rider never chooses a number of seats; seat options never appear on other car types; the server refuses a seat on any other car type.
+- Smart surge: build like the demo, OFF until the admin switches it on.
+- Manual surge Start/Stop: build on the server.
+- Overlapping planned surges: the higher one counts; admin warned when saving.
+- Reservations: the price shown at booking (no surge added later).
+- Waiting at a middle stop: NO free minutes; charged from the driver's "Arrived at stop" tap (every stop) until the trip continues. Driver app reports arrive/leave per stop.
+- Airport fees: the server decides from the airport areas on the map.
+- Strange prices: admin warns (big change or very high price) and publishes only after "Yes, I'm sure".
+- Audit: one line per price publish, with the details (including the app-settings update) inside.
