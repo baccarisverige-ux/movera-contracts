@@ -1,3 +1,10 @@
+## OWNER RULE — FOREVER (2026-10-27, applies to every task, every session)
+Before ANY decision or change:
+1. Check the server, the contract, and ALL apps (rider, driver, admin) — and the owner's demo screens.
+2. Look for any conflict, anything wrong, anything that does not match the server, the contract or any app.
+3. Ask the owner in simple questions, one at a time, naming the exact section and part.
+4. Only then do anything. Never decide alone. Never build from our own ideas.
+
 # Audit progress log
 
 Read `HANDOFF.md` (project, rules, open work) and `AUDIT_PLAN.md` (phases) first. This file says where the audit stands, so a new session can continue after a pause. Update it at the end of every step.
