@@ -124,3 +124,8 @@ Earlier, still valid: Dispatch = one section built from the whole Dashboard plus
 - Publishing prices also updates waiting and no-show values in the rider and driver app settings.
 - Rider app takes its car types from the rider settings the admin publishes.
 - The server's version number counts.
+- When a zone publishes its own prices, its rider and driver app settings also become its own (copied from the standard with the new waiting/no-show/pickup values).
+- Auto-offline count: ANY accepted trip (Exclusive or Radar) resets it to 0; going online also resets it.
+- Exclusive offers missed while the driver is on a trip never count.
+- Any admin of that country with the pricing right can edit the country Standard.
+- Add a "Go back to Standard" button for a zone with its own prices (confirm step; own prices kept in History).
