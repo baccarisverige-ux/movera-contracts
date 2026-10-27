@@ -82,3 +82,22 @@ Step 2: section by section with the owner: contract → server → driver and ri
 - Waiting time is a general rule from Pricing, never changed on a single trip: remove the per-trip "Waiting minutes" control.
 - Server adds real distance, ride time, the rider's rating and "PIN verified".
 - Car type names: Movera, Comfort, Premium, Priority, Movera XL, Electric, Movera Pet, Child Seat.
+
+## Owner decisions on the 33-section check (2026-10-27)
+1. Settings flow first: admin Publish saves to the server; rider and driver apps fetch their settings from the server.
+2. Real data only, nothing invented: connect online status, payment method, live positions, etc. to the server; where the server lacks data (risk, reviews), build it on the server; never show fake values.
+3. Refunds: no second admin; any admin with refund rights refunds at once.
+4. SOS: build the real path rider SOS → server → admin Incidents + alarm, before testers start.
+5. Chat: only support roles, only their zones; every opening logged.
+6. Drivers › Activate: the server refuses until all documents and a car are approved.
+7. Fleet drivers: the fleet company gets only the driver's earnings; remove the extra fleet-owner % from the admin.
+8. Admin sign-in: e-mail + password only; remove the 2-step code switch.
+9. Zones: the server's list is the truth; the admin reads it and creates zones on the server.
+10. Reports › Money: Movera's real earnings summed from each trip on the server.
+11. Alerts: "car lost" (rider on board, no driver position for 30 min) → red alert + alarm sound in Alerts and Dispatch.
+12. Audit page connected to the server.
+13. Payouts: list "Refunds to send by hand" (Swish/bank) with "Mark as paid".
+14. Riders › Call rider: keep as today (riders.read).
+15. Onboarding: same document list as driver app and server (SE + FR); Approve/Reject connected.
+16. Status words: the server's words everywhere in the admin (sv/fr/en).
+Earlier, still valid: Dispatch = one section built from the whole Dashboard plus what only Dispatch has; no separate Dashboard. The owner will explain later how Super admin gives roles.
