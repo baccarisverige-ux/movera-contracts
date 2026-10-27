@@ -56,3 +56,22 @@ Reference: the admin demo Pricing section (7 tabs: Prices, Fees, Surge, Commissi
 - Surge as in the demo; the admin sets the maximum, also for smart surge.
 - Waiting money: 100 % to the driver (demo example maths to be corrected).
 Findings behind these: pricing comparison of 2026-10-27 (surge never applied by the server; seat, airport, fixed-route and stop-wait prices never charged; publish does not update app configs; live page lacked 6 tabs and validation).
+
+## Owner plan for the admin (2026-10-27)
+Step 1: the live admin is an exact copy of the whole demo admin (all 33 sections, every page, control and text; nothing removed or renamed). Connected where the server already serves the data; everything else looks exactly like the demo, not yet connected.
+Step 2: section by section with the owner: contract → server → driver and rider apps → owner decides what to add, remove or adjust.
+
+## Owner Trips decisions so far (for step 2)
+- Server adds the rider's name to the admin trip; adds list counts and KPI totals.
+- Server adds Flag, Note, Do not match again, Open a ticket, Resend receipt, and the Flagged group.
+- "Problems" group includes failed payments. Saved views stored on the server, shareable. Payment filter adds "Partly refunded".
+- "How the price was made" exactly like the demo: server sends km, minutes and rates per line.
+- Admin shows app fee, pickup fee and reservation fee separately. The driver never sees admin details: only one total.
+- "Who gets what": server adds promotion, tip, fleet share, VAT. Admin can deactivate all payment methods and keep only cash / pay the driver; then VAT handling is off (the driver handles VAT).
+- Admin shows "Pickup pay" as its own line (admin only).
+- Note on cancel / reassign / no-show / complete: optional, like the demo.
+- Refunds: part or full; earlier refunds of the trip are shown; an expired trip that was charged is refunded automatically, and the admin can also refund.
+- Price change (±15 %) only while the trip is going on; after it ends, Refund.
+- Waiting time is a general rule from Pricing, never changed on a single trip: remove the per-trip "Waiting minutes" control.
+- Server adds real distance, ride time, the rider's rating and "PIN verified".
+- Car type names: Movera, Comfort, Premium, Priority, Movera XL, Electric, Movera Pet, Child Seat.
