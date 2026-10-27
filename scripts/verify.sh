@@ -14,6 +14,16 @@ import json, yaml
 c = json.load(open('contract.json'))
 spec = yaml.safe_load(open('openapi.yaml'))
 assert spec['openapi'].startswith('3.'), 'openapi.yaml is not OpenAPI 3'
+# v0.9.0: no operation lists the same parameter twice (name + in).
+params = spec['components']['parameters']
+for path, item in spec['paths'].items():
+    for method, op in item.items():
+        seen = set()
+        for p in op.get('parameters', []):
+            p = params[p['$ref'].split('/')[-1]] if '$ref' in p else p
+            key = (p['name'], p['in'])
+            assert key not in seen, f'{method} {path} lists {key} twice'
+            seen.add(key)
 print(f"contract.json version {c['version']}, openapi {spec['info'].get('version')}, {len(spec['paths'])} paths")
 PY
 # openapi.yaml must be exactly what the generator makes (no hand edits).

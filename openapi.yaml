@@ -5076,7 +5076,7 @@ paths:
       parameters:
       - $ref: '#/components/parameters/Cursor'
       - $ref: '#/components/parameters/Limit'
-      - name: from
+      - name: rater
         in: query
         required: false
         schema:
@@ -5084,6 +5084,7 @@ paths:
           enum:
           - rider
           - driver
+        description: Who gave the rating.
       - name: hidden
         in: query
         required: false

@@ -1443,7 +1443,7 @@ op("post", "/admin/tickets/{ticketId}/reply", "adminReplyTicket", "Answer a supp
    params=[pref("TicketId")], body="TicketReplyCommand", ok=(200, "SupportTicket"), mutation=True, permission="support.reply",
    desc="v0.9.0. The person sees the answer in the app (GET /support/tickets/{ticketId}).")
 op("get", "/admin/ratings", "adminListRatings", "Ratings riders and drivers gave each other", ["admin"], "Admin · Reviews",
-   params=AL + [q("from", {"type": "string", "enum": ["rider", "driver"]}), q("hidden", {"type": "boolean"}), q("maxStars", {"type": "integer", "minimum": 1, "maximum": 5}),
+   params=AL + [q("rater", {"type": "string", "enum": ["rider", "driver"]}, "Who gave the rating."), q("hidden", {"type": "boolean"}), q("maxStars", {"type": "integer", "minimum": 1, "maximum": 5}),
                 q("driverId", ref("Id")), q("riderId", ref("Id")), pref("ZoneIdQuery"), pref("From"), pref("To")],
    ok=(200, "AdminRatingPage"), permission="settings.read", desc="v0.9.0. Newest first; limited to the admin's zones.")
 for verb, summ in [("hide", "Hide a rating"), ("restore", "Show a hidden rating again")]:
