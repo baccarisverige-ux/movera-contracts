@@ -18,8 +18,9 @@ So: after each phase, write its report into this folder (`phase-N-report.md`), p
 | 3 Ride lifecycle and sync | **In progress** | `movera-server/test/e2e/` on branch `audit/phase-3` |
 | 4 Security and data integrity | **done** — `phase-4-report.md` | server #22, rider #424, admin #147 (merged); report `movera-server/docs/audit/phase-4.md` |
 | 5 Every screen | **done** — `phase-5-report.md` | driver #388, admin #151, rider #425 |
-| 6 Maps and GPS | **In progress** | |
-| 7–8 | Not started | |
+| 6 Maps and GPS | **done** — `phase-6-report.md` | rider #426, driver #389 |
+| 7 Performance | **In progress** | |
+| 8 Final report | Not started | |
 
 ## Phase 1 per repo
 
