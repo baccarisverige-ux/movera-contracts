@@ -45,3 +45,6 @@ So: after each phase, write its report into this folder (`phase-N-report.md`), p
 - Driver app routes go **through the server** (`/routes/driving`) instead of the public OSRM demo; needs `OSRM_URL` on Render.
 - D1: **branch protection with required checks** on main in all 5 repos (owner sets it; steps to be sent).
 - D4: **no raise after expiry**; offer "Search again" instead.
+
+## Owner rule (2026-10-27, always)
+Before building or changing anything: first check the owner's existing demo screens (e.g. the admin demo Pricing section), then all apps (rider, driver, admin), the contract and the server. Never build from our own ideas; reproduce what the owner built and list every mismatch for the owner before coding.
