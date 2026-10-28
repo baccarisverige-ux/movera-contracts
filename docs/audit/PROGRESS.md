@@ -170,3 +170,6 @@ Earlier, still valid: Dispatch = one section built from the whole Dashboard plus
 - "Are you sure?": price change above 50 % (demo) and a price above 3 times Movera's normal price for that car type. Confirmed. Demo slider question above ×3 stays.
 - Smart surge demand: ride requests in the last check time ÷ free drivers = online, not on a trip, GPS inside the zone now (same as Dispatch).
 - Surge notice to drivers: NO notice. Instead the driver map shows where the surge/boost is. Design first, shown to the owner.
+- Driver map surge design (owner chose 2026-10-28): the surge zone is COLOURED on the driver Home map; no text and no number on the map. 3 colours: light orange = ×1.1–1.5, orange (#FF8A3D) = ×1.5–2.5, red = above ×2.5; no colour = no surge. The driver never sees the multiplier.
+- Remove "Tell drivers when a surge starts" and "Tell drivers now" from admin, server and driver app (no surge notice).
+- Keep the top-bar tip "Hög bonus i närheten" / "Forte majoration à proximité" / "High boost nearby" WITHOUT money or number; remove "+kr i <zone>". Shown when the driver is inside a coloured zone or less than 3 km from one (any colour).
