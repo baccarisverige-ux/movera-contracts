@@ -3108,13 +3108,8 @@
     ],
     "adminPermission": "support.reply",
     "adminScope": "An admin reads (GET) and writes (POST) /trips/{tripId}/messages only with support.reply and only for a trip in one of the admin's zones (super admin: all). Without the permission: 403 forbidden; outside the zones: 403 forbidden, reason zone_out_of_scope.",
-    "openStatuses": [
-      "driver_assigned",
-      "driver_arriving",
-      "driver_arrived",
-      "in_progress"
-    ],
-    "window": "The chat is open from driver assignment until drop-off. When the trip is terminal (completed, cancelled, ...) a POST from the rider or the driver is 409 invalid_transition, reason chat_closed; there is no grace period after the trip (the earlier 1 hour is removed). Reading the history stays allowed while the messages are kept. Support (admin) may still write on a closed trip.",
+    "openStatuses": "tripStatus.driverAssigned",
+    "window": "The chat is open from driver assignment until drop-off. When the trip is terminal (tripStatus.terminal) a POST from the rider or the driver is 409 invalid_transition, reason chat_closed; there is no grace period after the trip (the earlier 1 hour is removed). Reading the history stays allowed while the messages are kept. Support (admin) may still write on a closed trip.",
     "retentionDays": 90,
     "retention": "A daily server job deletes trip chat messages older than 90 days. Messages of a trip that has a safety incident (SOS, driver_silent or any incident linked to the trip) are kept with the case and are deleted only with the case.",
     "fleetChat": "None: there is no fleet owner to driver chat.",
