@@ -173,3 +173,5 @@ Earlier, still valid: Dispatch = one section built from the whole Dashboard plus
 - Driver map surge design (owner chose 2026-10-28): the surge zone is COLOURED on the driver Home map; no text and no number on the map. 3 colours: light orange = ×1.1–1.5, orange (#FF8A3D) = ×1.5–2.5, red = above ×2.5; no colour = no surge. The driver never sees the multiplier.
 - Remove "Tell drivers when a surge starts" and "Tell drivers now" from admin, server and driver app (no surge notice).
 - Keep the top-bar tip "Hög bonus i närheten" / "Forte majoration à proximité" / "High boost nearby" WITHOUT money or number; remove "+kr i <zone>". Shown when the driver is inside a coloured zone or less than 3 km from one (any colour).
+- ONE ADMIN IS ENOUGH, EVERYWHERE (owner 2026-10-28): no second-admin approval for anything in the admin (surge start/stop, publish, restore, and every other action). Any admin with the right for that zone does it at once; every action is written in the Audit log.
+- Build order chosen: build all the changes above first, then show all Pricing screenshots once.
