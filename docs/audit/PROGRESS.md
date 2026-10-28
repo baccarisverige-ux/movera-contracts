@@ -162,3 +162,11 @@ Earlier, still valid: Dispatch = one section built from the whole Dashboard plus
 - Airport fees: the server decides from the airport areas on the map.
 - Strange prices: admin warns (big change or very high price) and publishes only after "Yes, I'm sure".
 - Audit: one line per price publish, with the details (including the app-settings update) inside.
+
+## Owner Pricing answers (2026-10-28)
+- Tips & limits: apply ONLY to the country and zone(s) chosen at the top; to cover the whole country the admin chooses "all zones". (Replaces "country rules set once per country" for tips, raise steps and driver bonus limits.)
+- Surge maximum = the slider value the admin selects (up to ×6), following the surge settings. Confirmed.
+- Surge tab real data: build on the server now, inside the Pricing work: surge level now per zone (map), demand chart, surge timeline, "Saw the surge price / Left without booking". No made-up numbers.
+- "Are you sure?": price change above 50 % (demo) and a price above 3 times Movera's normal price for that car type. Confirmed. Demo slider question above ×3 stays.
+- Smart surge demand: ride requests in the last check time ÷ free drivers = online, not on a trip, GPS inside the zone now (same as Dispatch).
+- Surge notice to drivers: NO notice. Instead the driver map shows where the surge/boost is. Design first, shown to the owner.
