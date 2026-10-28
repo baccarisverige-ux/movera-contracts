@@ -192,3 +192,11 @@ Earlier, still valid: Dispatch = one section built from the whole Dashboard plus
 - Admin owner/live-equals-demo: Tips & limits per zone, Dispatch Spara utkast / Ångra wired (fc237f6). Must later merge owner/live-pricing-exact.
 - Content (part 2): decided, not built yet.
 - Admin helper notes left open: live Dashboard/Dispatch maps still draw surge from the demo model; live dispatch Pause/force mode not wired; demo "XL" vs contract "Movera XL".
+
+## Status 2026-10-28 (later)
+- PART 2 MERGED: contracts #21, server #27, driver #393, rider #430, rider #432 (Child Seat).
+- PART 3 MERGED: contracts #22, server #28, driver #394. Rider #431 waits for CI (generated messages file fixed).
+- Admin PR #153 (owner/live-realdata): all admin work of parts 1-3; waiting for CI and owner OK.
+- Owner: rider help texts without a ride fixed ("Berätta vad du behöver hjälp med" / "Tack! Vi svarar så snart vi kan").
+- Owner: App versions are set separately for the rider app and the driver app (min + recommended each).
+- CONTENT build started: contract branch content/v0.10 (v0.10.0, §19); server/admin/rider/driver branches "content" / owner/live-content.
