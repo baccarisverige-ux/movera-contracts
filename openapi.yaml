@@ -8888,7 +8888,8 @@ paths:
       summary: Change a zone's names, kind or outline
       description: 'v0.11.0. The outline as the admin draws it: 3 to 500 points [lat, lng] (lat -90..90, lng -180..180), in
         order, not closed (the last point is not the first again), not self-crossing. The server computes bounds (the polygon''s
-        bounding rectangle) and center (the middle of bounds) and ignores them in a request. A point on the edge is inside.'
+        bounding rectangle) and, on create and on a new outline, center (the middle of bounds); both are ignored in a request.
+        A point on the edge is inside.'
       tags:
       - Admin · Zones
       x-actor:
@@ -17182,7 +17183,8 @@ components:
       maxItems: 500
       description: 'The outline as the admin draws it: 3 to 500 points [lat, lng] (lat -90..90, lng -180..180), in order,
         not closed (the last point is not the first again), not self-crossing. The server computes bounds (the polygon''s
-        bounding rectangle) and center (the middle of bounds) and ignores them in a request. A point on the edge is inside.'
+        bounding rectangle) and, on create and on a new outline, center (the middle of bounds); both are ignored in a request.
+        A point on the edge is inside.'
     Zone:
       type: object
       description: 'v0.11.0: Zone { zoneId, names: { sv, fr, en }, country (ISO 3166 alpha-2), currency (SEK | EUR | TND),
