@@ -175,3 +175,11 @@ Earlier, still valid: Dispatch = one section built from the whole Dashboard plus
 - Keep the top-bar tip "Hög bonus i närheten" / "Forte majoration à proximité" / "High boost nearby" WITHOUT money or number; remove "+kr i <zone>". Shown when the driver is inside a coloured zone or less than 3 km from one (any colour).
 - ONE ADMIN IS ENOUGH, EVERYWHERE (owner 2026-10-28): no second-admin approval for anything in the admin (surge start/stop, publish, restore, and every other action). Any admin with the right for that zone does it at once; every action is written in the Audit log.
 - Build order chosen: build all the changes above first, then show all Pricing screenshots once.
+
+## Owner Content answers (part 2, 2026-10-28)
+- Content (driver Home, driver event, 6 rider banners, Help, Legal, App versions) is BUILT now: server stores it, admin Publish sends it, rider and driver apps show it. Done after Pricing.
+- Content editor gets a French box: sv, fr, en; all three required before Publish.
+- No second admin for Content publish (one admin is enough everywhere).
+- Content publish goes only to the zones chosen at the top ("All zones" = whole country), like Pricing.
+- App versions: below the minimum version the app is blocked with "Uppdatera appen" and a store button; below the recommended version a closable message. During a trip only a small message; the block starts after the trip ends; SOS always works.
+- Legal with "users must accept again": next time the app opens (never during a trip) the new terms show with "Jag godkänner"; the server saves who accepted and when.
