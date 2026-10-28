@@ -185,3 +185,10 @@ Earlier, still valid: Dispatch = one section built from the whole Dashboard plus
 - Legal with "users must accept again": next time the app opens (never during a trip) the new terms show with "Jag godkänner"; the server saves who accepted and when.
 - Dispatch "Spara utkast" and "Ångra" in the live admin: connect both to the server (Save draft = kept on the server, not live, for the chosen zones; Undo = the version before goes live again, with "Are you sure?" and an Audit line).
 - Apps' copy of the shared rules: rider, driver and admin get the same copy as the server in each merge step; tests that then show a mismatch are fixed; the owner is asked if a fix changes a screen.
+
+## Status 2026-10-28 (after this session's work)
+- PRICING MERGED (owner OK on every screen): contracts #19 (v0.7.2), server #25, driver #395. Rider #432 waits for rider #430 (part 2). Admin pricing is on branch owner/live-pricing-exact (a9d4136), no PR yet.
+- Main merged into settings branches: contracts settings/flow 28d529d (v0.8.1), server settings/flow 530a23f (730 tests green). Still to do: merge main into driver settings/flow (#393) and rider settings/flow (#430), then part 2 screenshots.
+- Admin owner/live-equals-demo: Tips & limits per zone, Dispatch Spara utkast / Ångra wired (fc237f6). Must later merge owner/live-pricing-exact.
+- Content (part 2): decided, not built yet.
+- Admin helper notes left open: live Dashboard/Dispatch maps still draw surge from the demo model; live dispatch Pause/force mode not wired; demo "XL" vs contract "Movera XL".
