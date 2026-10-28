@@ -183,3 +183,5 @@ Earlier, still valid: Dispatch = one section built from the whole Dashboard plus
 - Content publish goes only to the zones chosen at the top ("All zones" = whole country), like Pricing.
 - App versions: below the minimum version the app is blocked with "Uppdatera appen" and a store button; below the recommended version a closable message. During a trip only a small message; the block starts after the trip ends; SOS always works.
 - Legal with "users must accept again": next time the app opens (never during a trip) the new terms show with "Jag godkänner"; the server saves who accepted and when.
+- Dispatch "Spara utkast" and "Ångra" in the live admin: connect both to the server (Save draft = kept on the server, not live, for the chosen zones; Undo = the version before goes live again, with "Are you sure?" and an Audit line).
+- Apps' copy of the shared rules: rider, driver and admin get the same copy as the server in each merge step; tests that then show a mismatch are fixed; the owner is asked if a fix changes a screen.
