@@ -890,9 +890,10 @@ S["TripPath"] = obj({"tripId": ref("Id"), "source": s(enum=TPATH["sources"], des
 CPV = C["completePreview"]
 S["CompletePreview"] = obj({"tripId": ref("Id"), "total": ref("Money"),
                             "cashDue": {"allOf": [ref("Money")], "description": "What the driver collects in cash: total less what the rider's wallet would pay. Send it as cashCollected on complete."},
+                            "driverEarnings": {"allOf": [ref("Money")], "description": "The driver's part of total (TripProjection.driverEarnings after complete)."},
                             "earlyEnd": {"type": "boolean", "description": "The driver is farther than " + str(C["pricing"]["completeNearDropoffMeters"]) + " m from the drop-off: priced as what was driven (owner decision 28)."},
                             "fareLines": arr(ref("FareLine"))},
-                           ["tripId", "total", "cashDue", "earlyEnd", "fareLines"],
+                           ["tripId", "total", "cashDue", "driverEarnings", "earlyEnd", "fareLines"],
                            "v0.17.3 (CONTRACT.md §26): the final price complete would set now. " + CPV["same"], addl=False)
 S["RouteRequest"] = obj({"mode": s(enum=MP["routeModes"]), "from": ref("LatLng"), "to": ref("LatLng")}, ["mode", "from", "to"])
 S["RoadRoute"] = obj({"points": arr(ref("LatLng"), minItems=2, description="The road geometry, in order."), "distanceMeters": i(minimum=0),

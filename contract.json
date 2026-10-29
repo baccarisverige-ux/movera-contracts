@@ -3276,9 +3276,9 @@
   },
   "completePreview": {
     "note": "v0.17.3 (owner 2026-10-29, live bug A, 'Server's final price (Recommended)'; CONTRACT.md §26): the driver app asks the server for the final price before it shows Collect cash, so the driver, the rider, the receipt and the history all show the same amount.",
-    "path": "GET /driver/trips/{tripId}/complete-preview → CompletePreview { tripId, total: Money, cashDue: Money, earlyEnd: boolean, fareLines: FareLine[] }",
+    "path": "GET /driver/trips/{tripId}/complete-preview → CompletePreview { tripId, total: Money, cashDue: Money, driverEarnings: Money, earlyEnd: boolean, fareLines: FareLine[] }",
     "actors": "the trip's own driver (anyone else 404 not_found); only while the trip is on board (rider_onboard, in_trip, approaching_dropoff), else 409 invalid_transition, reason trip_not_on_board. Read-only: no Idempotency-Key, nothing is stored, the wallet is not touched.",
-    "same": "total and fareLines are computed by the same code as POST /trips/{tripId}/complete would at that moment with the driver's latest fix (pricing.driverEndsEarly): earlyEnd is true when the driver is farther than pricing.completeNearDropoffMeters from the drop-off. cashDue = total − the part the rider's wallet would pay.",
+    "same": "total and fareLines are computed by the same code as POST /trips/{tripId}/complete would at that moment with the driver's latest fix (pricing.driverEndsEarly): earlyEnd is true when the driver is farther than pricing.completeNearDropoffMeters from the drop-off. cashDue = total − the part the rider's wallet would pay. driverEarnings = the driver's part of that total (as TripProjection.driverEarnings after complete), for the sheet's cash balance.",
     "cashCollected": "The app then sends POST /trips/{tripId}/complete { expectedVersion, cashCollected = the cashDue it showed } on a cash trip. More than the fare less the wallet is 400 invalid_request, reason cash_above_fare. After completing the app shows the fare of the returned TripProjection.",
     "apps": "Collect <cashDue>; when earlyEnd also 'Ending before the destination – price recalculated' (sv: 'Avslutas före destinationen – priset räknades om', fr: 'Fin avant la destination – prix recalculé'). If the preview fails the app does not show a booked price as the amount to collect."
   }

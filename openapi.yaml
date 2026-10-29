@@ -8093,9 +8093,10 @@ paths:
         no Idempotency-Key, nothing is stored, the wallet is not touched. total and fareLines are computed by the same code
         as POST /trips/{tripId}/complete would at that moment with the driver''s latest fix (pricing.driverEndsEarly): earlyEnd
         is true when the driver is farther than pricing.completeNearDropoffMeters from the drop-off. cashDue = total − the
-        part the rider''s wallet would pay. The app then sends POST /trips/{tripId}/complete { expectedVersion, cashCollected
-        = the cashDue it showed } on a cash trip. More than the fare less the wallet is 400 invalid_request, reason cash_above_fare.
-        After completing the app shows the fare of the returned TripProjection.'
+        part the rider''s wallet would pay. driverEarnings = the driver''s part of that total (as TripProjection.driverEarnings
+        after complete), for the sheet''s cash balance. The app then sends POST /trips/{tripId}/complete { expectedVersion,
+        cashCollected = the cashDue it showed } on a cash trip. More than the fare less the wallet is 400 invalid_request,
+        reason cash_above_fare. After completing the app shows the fare of the returned TripProjection.'
       tags:
       - Driver · Trip
       x-actor:
@@ -15488,11 +15489,13 @@ components:
       description: 'v0.17.3 (CONTRACT.md §26): the final price complete would set now. total and fareLines are computed by
         the same code as POST /trips/{tripId}/complete would at that moment with the driver''s latest fix (pricing.driverEndsEarly):
         earlyEnd is true when the driver is farther than pricing.completeNearDropoffMeters from the drop-off. cashDue = total
-        − the part the rider''s wallet would pay.'
+        − the part the rider''s wallet would pay. driverEarnings = the driver''s part of that total (as TripProjection.driverEarnings
+        after complete), for the sheet''s cash balance.'
       required:
       - tripId
       - total
       - cashDue
+      - driverEarnings
       - earlyEnd
       - fareLines
       properties:
@@ -15505,6 +15508,10 @@ components:
           - $ref: '#/components/schemas/Money'
           description: 'What the driver collects in cash: total less what the rider''s wallet would pay. Send it as cashCollected
             on complete.'
+        driverEarnings:
+          allOf:
+          - $ref: '#/components/schemas/Money'
+          description: The driver's part of total (TripProjection.driverEarnings after complete).
         earlyEnd:
           type: boolean
           description: 'The driver is farther than 300 m from the drop-off: priced as what was driven (owner decision 28).'
