@@ -1831,6 +1831,22 @@ S["Driver"]["properties"]["signUp"] = obj({"since": ref("Timestamp"), "stuck": b
                                           "v0.18.0, admin view only, while the account is pending or on_hold: " + C["driverOnboarding"]["signUpReminders"]["note"])
 S["DocumentReviewCommand"]["description"] += " v0.18.0: " + C["driverOnboarding"]["documentExpiry"]["note"]
 
+# ---- v0.18.0: group 2 admin actions on live (contract.json#driverOnboarding.adminActions)
+AA = C["driverOnboarding"]["adminActions"]
+S["AdminVehicleUpdate"] = obj(dict(EV, make=s(minLength=1), model=s(minLength=1), year=i(minimum=1950, maximum=2100), color=s(minLength=1), plate=s(minLength=1),
+                                  seats=i(minimum=1, maximum=20), fuel=s(enum=DOS["fuels"]), categoryIds=arr(ref("CategoryId"))), ["expectedVersion"], AA["updateVehicle"])
+op("patch", "/admin/vehicles/{vehicleId}", "adminUpdateVehicle", "Update a car (year, seats, fuel, categories …) within the car rules", ["admin"], "Admin · People",
+   params=[pref("VehicleId")], body="AdminVehicleUpdate", ok=(200, "Vehicle"), mutation=True, permission="vehicles.edit", desc="v0.18.0: " + AA["note"] + " " + AA["updateVehicle"])
+S["AdminVehicleDriverCommand"] = obj(dict(EV, driverId={"oneOf": [ref("Id"), {"type": "null"}]}), ["expectedVersion", "driverId"], AA["linkDriver"])
+op("post", "/admin/vehicles/{vehicleId}/driver", "adminLinkVehicleDriver", "Link a car to a driver of its fleet (or free it)", ["admin"], "Admin · People",
+   params=[pref("VehicleId")], body="AdminVehicleDriverCommand", ok=(200, "Vehicle"), mutation=True, permission="vehicles.edit", desc="v0.18.0: " + AA["note"] + " " + AA["linkDriver"])
+S["AdminDriverCategoriesCommand"] = obj(dict(EV, categoryIds=arr(ref("CategoryId"), minItems=1, uniqueItems=True)), ["expectedVersion", "categoryIds"], AA["driverCategories"])
+op("put", "/admin/drivers/{driverId}/categories", "adminSetDriverCategories", "Set the categories a driver takes (only what his car fits)", ["admin"], "Admin · People",
+   params=[pref("DriverId")], body="AdminDriverCategoriesCommand", ok=(200, "Driver"), mutation=True, permission="vehicles.edit", desc="v0.18.0: " + AA["note"] + " " + AA["driverCategories"])
+S["AdminBankReviewCommand"] = obj({"decision": s(enum=["approved", "rejected"]), "note": s(maxLength=1000)}, ["decision"], AA["bankReview"])
+op("post", "/admin/drivers/{driverId}/bank/review", "adminReviewDriverBank", "Approve or reject a driver's bank details", ["admin"], "Admin · People",
+   params=[pref("DriverId")], body="AdminBankReviewCommand", ok=(200, "Document"), mutation=True, permission="documents.approve", desc="v0.18.0: " + AA["note"] + " " + AA["bankReview"])
+
 # ---------------------------------------------------------------- document
 TAG_DESC = {"Admin · System": "Crashes & errors from the apps and the server, grouped (v0.16.0)", "Admin · Zones": "Zones from the server: list, create, outline, open and close (v0.11.0)", "Auth": "Sign-in, tokens and push devices for the rider and driver apps (v0.5.0)", "Admin · Auth": "Admin panel sign-in with e-mail and password (v0.5.1)",
             "Maps": "Address search, geocoding and road routes through the server (v0.5.1); read-only, no Idempotency-Key",

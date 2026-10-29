@@ -8630,6 +8630,225 @@ paths:
           $ref: '#/components/responses/RateLimited'
         '503':
           $ref: '#/components/responses/Unavailable'
+  /admin/vehicles/{vehicleId}:
+    patch:
+      operationId: adminUpdateVehicle
+      summary: Update a car (year, seats, fuel, categories …) within the car rules
+      description: 'v0.18.0: v0.18.0 (owner rule: every admin item of the group works on live; the group 2 admin part): the
+        admin''s Vehicles › Update, Vehicles › Link driver, Drivers › Category and Drivers › Bank details. Each is audited
+        and limited to the admin''s zones (a car by its fleet''s zone, else its driver''s; a driver by his zones): outside
+        them 403 forbidden, reason zone_out_of_scope, checked before the body. "Approve all" was removed by the owner and
+        has no endpoint. PATCH /admin/vehicles/{vehicleId} { expectedVersion, make?, model?, year?, color?, plate?, seats?,
+        fuel?, categoryIds? } (vehicles.edit) → Vehicle. The car after the change must fit every one of its categories (driverOnboarding.vehicleRules:
+        400 invalid_request, reason category_not_allowed, details "<category>:<problem>"); a plate another car has is 409
+        conflict, reason plate_taken. A driver who has the car picked keeps only the categories the car still has.'
+      tags:
+      - Admin · People
+      x-actor:
+      - admin
+      x-permission: vehicles.edit
+      parameters:
+      - $ref: '#/components/parameters/VehicleId'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      - $ref: '#/components/parameters/RequestId'
+      - $ref: '#/components/parameters/ApiVersion'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdminVehicleUpdate'
+      responses:
+        '200':
+          description: OK
+          headers:
+            X-Request-Id:
+              description: Echo of the request id (server-generated if absent).
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Vehicle'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '503':
+          $ref: '#/components/responses/Unavailable'
+  /admin/vehicles/{vehicleId}/driver:
+    post:
+      operationId: adminLinkVehicleDriver
+      summary: Link a car to a driver of its fleet (or free it)
+      description: 'v0.18.0: v0.18.0 (owner rule: every admin item of the group works on live; the group 2 admin part): the
+        admin''s Vehicles › Update, Vehicles › Link driver, Drivers › Category and Drivers › Bank details. Each is audited
+        and limited to the admin''s zones (a car by its fleet''s zone, else its driver''s; a driver by his zones): outside
+        them 403 forbidden, reason zone_out_of_scope, checked before the body. "Approve all" was removed by the owner and
+        has no endpoint. POST /admin/vehicles/{vehicleId}/driver { expectedVersion, driverId: Id | null } (vehicles.edit)
+        → Vehicle. driverId: a driver of the car''s fleet (else 400 invalid_request, reason driver_not_in_fleet) gets the
+        car picked as if he picked it himself (PATCH /driver/profile { vehicleId }): the car approved (409 invalid_transition,
+        vehicle_not_approved) with its documents (409 documents_not_approved, vehicle_documents_not_approved; the photos not
+        asked of a test account), not in use by another driver who is online or on a trip (409 conflict, vehicle_in_use);
+        the target driver not online or on a trip (409 invalid_transition, driver_online); any car he had goes back to the
+        fleet. null takes the car from its driver (not while he is online or on a trip, driver_online).'
+      tags:
+      - Admin · People
+      x-actor:
+      - admin
+      x-permission: vehicles.edit
+      parameters:
+      - $ref: '#/components/parameters/VehicleId'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      - $ref: '#/components/parameters/RequestId'
+      - $ref: '#/components/parameters/ApiVersion'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdminVehicleDriverCommand'
+      responses:
+        '200':
+          description: OK
+          headers:
+            X-Request-Id:
+              description: Echo of the request id (server-generated if absent).
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Vehicle'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '503':
+          $ref: '#/components/responses/Unavailable'
+  /admin/drivers/{driverId}/categories:
+    put:
+      operationId: adminSetDriverCategories
+      summary: Set the categories a driver takes (only what his car fits)
+      description: 'v0.18.0: v0.18.0 (owner rule: every admin item of the group works on live; the group 2 admin part): the
+        admin''s Vehicles › Update, Vehicles › Link driver, Drivers › Category and Drivers › Bank details. Each is audited
+        and limited to the admin''s zones (a car by its fleet''s zone, else its driver''s; a driver by his zones): outside
+        them 403 forbidden, reason zone_out_of_scope, checked before the body. "Approve all" was removed by the owner and
+        has no endpoint. PUT /admin/drivers/{driverId}/categories { expectedVersion, categoryIds: CategoryId[] } (vehicles.edit)
+        → Driver. Only categories of the driver''s picked car that the car fits (400 invalid_request, reason category_not_allowed,
+        details "<category>:<problem>", problem not_on_car or a vehicleRules problem); no car picked: 409 invalid_transition,
+        reason no_vehicle; at least one category.'
+      tags:
+      - Admin · People
+      x-actor:
+      - admin
+      x-permission: vehicles.edit
+      parameters:
+      - $ref: '#/components/parameters/DriverId'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      - $ref: '#/components/parameters/RequestId'
+      - $ref: '#/components/parameters/ApiVersion'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdminDriverCategoriesCommand'
+      responses:
+        '200':
+          description: OK
+          headers:
+            X-Request-Id:
+              description: Echo of the request id (server-generated if absent).
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Driver'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '503':
+          $ref: '#/components/responses/Unavailable'
+  /admin/drivers/{driverId}/bank/review:
+    post:
+      operationId: adminReviewDriverBank
+      summary: Approve or reject a driver's bank details
+      description: 'v0.18.0: v0.18.0 (owner rule: every admin item of the group works on live; the group 2 admin part): the
+        admin''s Vehicles › Update, Vehicles › Link driver, Drivers › Category and Drivers › Bank details. Each is audited
+        and limited to the admin''s zones (a car by its fleet''s zone, else its driver''s; a driver by his zones): outside
+        them 403 forbidden, reason zone_out_of_scope, checked before the body. "Approve all" was removed by the owner and
+        has no endpoint. POST /admin/drivers/{driverId}/bank/review { decision: approved | rejected, note? } (documents.approve)
+        → Document: the review of the account''s bank details document (bank_statement: Kontobevis in Sweden, RIB in France),
+        like POST /admin/documents/{documentId}/review (no expiry date: the type does not expire by default). No such document
+        uploaded: 404 not_found, reason bank_not_uploaded. Rejecting needs a note (400 invalid_request, reason note_required).'
+      tags:
+      - Admin · People
+      x-actor:
+      - admin
+      x-permission: documents.approve
+      parameters:
+      - $ref: '#/components/parameters/DriverId'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      - $ref: '#/components/parameters/RequestId'
+      - $ref: '#/components/parameters/ApiVersion'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdminBankReviewCommand'
+      responses:
+        '200':
+          description: OK
+          headers:
+            X-Request-Id:
+              description: Echo of the request id (server-generated if absent).
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Document'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '503':
+          $ref: '#/components/responses/Unavailable'
   /driver/trips/{tripId}/stops/{stopIndex}/arrive:
     post:
       operationId: driverArriveAtStop
@@ -18706,6 +18925,108 @@ components:
           description: Version the caller last saw; stale → 409 version_mismatch.
         company:
           $ref: '#/components/schemas/FleetCompany'
+    AdminVehicleUpdate:
+      type: object
+      description: 'PATCH /admin/vehicles/{vehicleId} { expectedVersion, make?, model?, year?, color?, plate?, seats?, fuel?,
+        categoryIds? } (vehicles.edit) → Vehicle. The car after the change must fit every one of its categories (driverOnboarding.vehicleRules:
+        400 invalid_request, reason category_not_allowed, details "<category>:<problem>"); a plate another car has is 409
+        conflict, reason plate_taken. A driver who has the car picked keeps only the categories the car still has.'
+      required:
+      - expectedVersion
+      properties:
+        expectedVersion:
+          type: integer
+          minimum: 1
+          description: Version the caller last saw; stale → 409 version_mismatch.
+        make:
+          type: string
+          minLength: 1
+        model:
+          type: string
+          minLength: 1
+        year:
+          type: integer
+          minimum: 1950
+          maximum: 2100
+        color:
+          type: string
+          minLength: 1
+        plate:
+          type: string
+          minLength: 1
+        seats:
+          type: integer
+          minimum: 1
+          maximum: 20
+        fuel:
+          type: string
+          enum:
+          - petrol
+          - diesel
+          - hybrid
+          - electric
+        categoryIds:
+          type: array
+          items:
+            $ref: '#/components/schemas/CategoryId'
+    AdminVehicleDriverCommand:
+      type: object
+      description: 'POST /admin/vehicles/{vehicleId}/driver { expectedVersion, driverId: Id | null } (vehicles.edit) → Vehicle.
+        driverId: a driver of the car''s fleet (else 400 invalid_request, reason driver_not_in_fleet) gets the car picked
+        as if he picked it himself (PATCH /driver/profile { vehicleId }): the car approved (409 invalid_transition, vehicle_not_approved)
+        with its documents (409 documents_not_approved, vehicle_documents_not_approved; the photos not asked of a test account),
+        not in use by another driver who is online or on a trip (409 conflict, vehicle_in_use); the target driver not online
+        or on a trip (409 invalid_transition, driver_online); any car he had goes back to the fleet. null takes the car from
+        its driver (not while he is online or on a trip, driver_online).'
+      required:
+      - expectedVersion
+      - driverId
+      properties:
+        expectedVersion:
+          type: integer
+          minimum: 1
+          description: Version the caller last saw; stale → 409 version_mismatch.
+        driverId:
+          oneOf:
+          - $ref: '#/components/schemas/Id'
+          - type: 'null'
+    AdminDriverCategoriesCommand:
+      type: object
+      description: 'PUT /admin/drivers/{driverId}/categories { expectedVersion, categoryIds: CategoryId[] } (vehicles.edit)
+        → Driver. Only categories of the driver''s picked car that the car fits (400 invalid_request, reason category_not_allowed,
+        details "<category>:<problem>", problem not_on_car or a vehicleRules problem); no car picked: 409 invalid_transition,
+        reason no_vehicle; at least one category.'
+      required:
+      - expectedVersion
+      - categoryIds
+      properties:
+        expectedVersion:
+          type: integer
+          minimum: 1
+          description: Version the caller last saw; stale → 409 version_mismatch.
+        categoryIds:
+          type: array
+          items:
+            $ref: '#/components/schemas/CategoryId'
+          minItems: 1
+          uniqueItems: true
+    AdminBankReviewCommand:
+      type: object
+      description: 'POST /admin/drivers/{driverId}/bank/review { decision: approved | rejected, note? } (documents.approve)
+        → Document: the review of the account''s bank details document (bank_statement: Kontobevis in Sweden, RIB in France),
+        like POST /admin/documents/{documentId}/review (no expiry date: the type does not expire by default). No such document
+        uploaded: 404 not_found, reason bank_not_uploaded. Rejecting needs a note (400 invalid_request, reason note_required).'
+      required:
+      - decision
+      properties:
+        decision:
+          type: string
+          enum:
+          - approved
+          - rejected
+        note:
+          type: string
+          maxLength: 1000
     StopVisit:
       type: object
       description: 'v0.7.1: one extra stop the driver arrived at (contract.json#stopWaits); stop_waiting runs from arrivedAt
