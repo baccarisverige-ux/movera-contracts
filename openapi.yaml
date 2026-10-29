@@ -17646,15 +17646,27 @@ components:
         driver:
           type: array
           items:
-            $ref: '#/components/schemas/DocumentType'
+            anyOf:
+            - $ref: '#/components/schemas/DocumentType'
+            - type: string
+              pattern: ^draft:.{1,40}$
+              description: A new custom type of this draft, named by its draftKey; the server puts the id in its place.
         fleet:
           type: array
           items:
-            $ref: '#/components/schemas/DocumentType'
+            anyOf:
+            - $ref: '#/components/schemas/DocumentType'
+            - type: string
+              pattern: ^draft:.{1,40}$
+              description: A new custom type of this draft, named by its draftKey; the server puts the id in its place.
         vehicle:
           type: array
           items:
-            $ref: '#/components/schemas/DocumentType'
+            anyOf:
+            - $ref: '#/components/schemas/DocumentType'
+            - type: string
+              pattern: ^draft:.{1,40}$
+              description: A new custom type of this draft, named by its draftKey; the server puts the id in its place.
     OnboardingStep:
       type: object
       required:
@@ -17869,7 +17881,11 @@ components:
         expiringTypes:
           type: array
           items:
-            $ref: '#/components/schemas/DocumentType'
+            anyOf:
+            - $ref: '#/components/schemas/DocumentType'
+            - type: string
+              pattern: ^draft:.{1,40}$
+              description: A new custom type of this draft, named by its draftKey; the server puts the id in its place.
           uniqueItems: true
           description: Types that need an expiry date when approved (contract.json#driverOnboarding.documentExpiry).
         steps:

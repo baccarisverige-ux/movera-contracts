@@ -1745,7 +1745,8 @@ o = op("post", "/rides/{rideId}/cancel", "cancelRideDeprecated", "Deprecated ali
 # ---- v0.17.0 (owner 2026-10-29, driver group 2 "Onboarding"): onboarding settings, expiry, reminders, car rules, own company.
 DOS = C["driverOnboarding"]["settings"]; LIM = DOS["limits"]
 def rng(name, desc=None): return i(desc, minimum=LIM[name][0], maximum=LIM[name][1])
-S["OnboardingDocumentLists"] = obj({"driver": arr(ref("DocumentType")), "fleet": arr(ref("DocumentType")), "vehicle": arr(ref("DocumentType"))},
+DOC_OR_DRAFT = {"anyOf": [ref("DocumentType"), s("A new custom type of this draft, named by its draftKey; the server puts the id in its place.", pattern="^draft:.{1,40}$")]}
+S["OnboardingDocumentLists"] = obj({"driver": arr(DOC_OR_DRAFT), "fleet": arr(DOC_OR_DRAFT), "vehicle": arr(DOC_OR_DRAFT)},
                                    ["driver", "fleet", "vehicle"], "v0.17.0 (owner item 10): the documents a person (driver), a company (fleet) and a car (vehicle) need in the country.")
 S["OnboardingStep"] = obj({"id": s(enum=DOS["stepIds"]), "on": b(), "days": rng("stepDays", "Days the step may take before it is late.")}, ["id", "on", "days"])
 S["VehicleCategoryRule"] = obj({"category": ref("CategoryId"), "on": b(), "minYear": rng("minYear"), "minSeats": rng("minSeats"),
@@ -1767,7 +1768,7 @@ S["OnboardingSettings"] = obj(OrderedDict([
     ("version", i("Stamped by the server; 0 = the contract defaults (nothing published).", minimum=0)), ("publishedAt", ref("Timestamp")),
     ("country", ref("CountryCode")),
     ("documents", ref("OnboardingDocumentLists")),
-    ("expiringTypes", arr(ref("DocumentType"), uniqueItems=True, description="Types that need an expiry date when approved (contract.json#driverOnboarding.documentExpiry).")),
+    ("expiringTypes", arr(DOC_OR_DRAFT, uniqueItems=True, description="Types that need an expiry date when approved (contract.json#driverOnboarding.documentExpiry).")),
     ("steps", arr(ref("OnboardingStep"), minItems=1)),
     ("signUpReminders", obj({"on": b(), "everyDays": rng("remindEveryDays"), "stuckAfterDays": rng("stuckAfterDays")}, ["on", "everyDays", "stuckAfterDays"],
                             C["driverOnboarding"]["signUpReminders"]["note"])),
