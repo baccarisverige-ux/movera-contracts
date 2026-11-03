@@ -3049,7 +3049,7 @@
       "cap": 3.0
     },
     "reservations": {
-      "note": "DriverAppConfig.reservations (CONTRACT.md §6). Every field is optional on read: a missing or invalid field keeps this default. Admin ride type ids map normal->normal, airport->airport, long->longTrip, premium->comfortPremium, event->event; Admin lateBackupAfterMin is offlineBackupAfterMin. v0.4.2: there is no leaveNow switch any more (Leave now always opens the trip); a leaveNow field in an older document is ignored. on is the zone switch for every driver (= features.scheduledRides); with Driver.scheduledRides (per driver) it decides who gets new reservations, CONTRACT.md §6.1. v0.18.17 (Book later, owner 2026-11-03 Q1–Q7, contract.json#bookLater): minAheadMin 15 / maxAheadDays 90 (booking window), soonBeforeMin 30 (closer = sent like a live ride at once), listTo and its numbers (who sees it in Scheduled rides), listOpenAll, noticeOn / noticeMaxDrivers / homePopup (the reservation notice), noDriverAlertMin 10, riderReminderMin 60, freeChangeBeforeMin 60; rideTypes.normal.onlineBeforeMin 30 → 60 and every reminderMin [60, 15] → [120, 15] (owner Q5). v0.18.17: maxTripKm 60 (the demo admin's 'Max Trip Distance (Reservations) 60 km', owner 'add if miss anything'). BL-Q1..Q7 (owner 2026-11-03): dispatchBeforeMin 30 (search start), maxTripKm null = no limit, listHomeKm 5, listAtTimeKm 5 / listAtTimeMin 30 (nearAtTime), changeAnswerMin 15.",
+      "note": "DriverAppConfig.reservations (CONTRACT.md §6). Every field is optional on read: a missing or invalid field keeps this default. Admin ride type ids map normal->normal, airport->airport, long->longTrip, premium->comfortPremium, event->event; Admin lateBackupAfterMin is offlineBackupAfterMin. v0.4.2: there is no leaveNow switch any more (Leave now always opens the trip); a leaveNow field in an older document is ignored. on is the zone switch for every driver (= features.scheduledRides); with Driver.scheduledRides (per driver) it decides who gets new reservations, CONTRACT.md §6.1. v0.18.17 (Book later, owner 2026-11-03 Q1–Q7, contract.json#bookLater): minAheadMin 15 / maxAheadDays 90 (booking window), soonBeforeMin 30 (closer = sent like a live ride at once), listTo and its numbers (who sees it in Scheduled rides), listOpenAll, noticeOn / noticeMaxDrivers / homePopup (the reservation notice), noDriverAlertMin 10, riderReminderMin 60, freeChangeBeforeMin 60; rideTypes.normal.onlineBeforeMin 30 → 60 and every reminderMin [60, 15] → [120, 15] (owner Q5). v0.18.17: maxTripKm 60 (the demo admin's 'Max Trip Distance (Reservations) 60 km', owner 'add if miss anything'). BL-Q1..Q7 (owner 2026-11-03): dispatchBeforeMin 30 (search start), maxTripKm null = no limit, listHomeKm 5, listAtTimeKm 5 / listAtTimeMin 30 (nearAtTime), changeAnswerMin 15. M6 (owner 2026-11-03): reminderMin [120] only (the 15-min reminder is dropped).",
       "on": true,
       "lateWarn": true,
       "offlineBackupAfterMin": 5,
@@ -3071,40 +3071,35 @@
           "onlineBeforeMin": 60,
           "spareMin": 15,
           "reminderMin": [
-            120,
-            15
+            120
           ]
         },
         "airport": {
           "onlineBeforeMin": 60,
           "spareMin": 15,
           "reminderMin": [
-            120,
-            15
+            120
           ]
         },
         "longTrip": {
           "onlineBeforeMin": 60,
           "spareMin": 15,
           "reminderMin": [
-            120,
-            15
+            120
           ]
         },
         "comfortPremium": {
           "onlineBeforeMin": 45,
           "spareMin": 15,
           "reminderMin": [
-            120,
-            15
+            120
           ]
         },
         "event": {
           "onlineBeforeMin": 45,
           "spareMin": 15,
           "reminderMin": [
-            120,
-            15
+            120
           ]
         }
       },
@@ -6700,11 +6695,12 @@
       "accept": "POST /driver/reservations/{tripId}/accept { expectedVersion? } → TripProjection (status accepted, transition accept from requested). The first tap wins: another driver already took it → 409 conflict, reason reservation_taken; the search started (dispatch) → 409 reservation_in_dispatch (the ride comes as a normal offer); a clash with a held ride → 409 reservation_clash; not listed for this driver → 404 reservation_not_open. The rider gets push kind reservation_driver_found (Q5 rider: a message when a driver takes the ride).",
       "release": "POST /driver/reservations/{tripId}/release { reasonCode } (a scheduled cancel reason code) → 204: the ride goes back to the list (transition cancel driver accepted → requested, scheduled), the driver's reminders are taken back; it counts in his cancel rate; with less than driverLateCancelHours to pickup it is a late cancel. After dispatchAt it goes straight back to dispatch.",
       "start": "POST /driver/reservations/{tripId}/start → TripProjection (head_to_pickup, accepted → driver_to_pickup), from scheduledAt − onlineBeforeMin of the ride type; earlier → 409 conflict, reason reservation_too_early.",
-      "reminders": "Q5: after accept the driver gets push kind reservation_reminder at scheduledAt − each rideTypes.<type>.reminderMin (default 120 and 15 minutes; a time already passed is skipped) and kind reservation_go_online at scheduledAt − onlineBeforeMin (default 60, the zone may set 30). Still offline offlineBackupAfterMin minutes after that: the driver loses the ride (it goes back to the list, or to dispatch after dispatchAt), push kind reservation_lost.",
+      "reminders": "Q5: after accept the driver gets push kind reservation_reminder at scheduledAt − each rideTypes.<type>.reminderMin (default 120 minutes only, owner M6-a; a time already passed is skipped) and kind reservation_go_online at scheduledAt − onlineBeforeMin (default 60, the zone may set 30). Still offline offlineBackupAfterMin minutes after that: the driver loses the ride (it goes back to the list, or to dispatch after dispatchAt), push kind reservation_lost.",
       "rideType": "airport when the pickup or drop-off is in an airport zone; longTrip when the route is longer than longTripKm; comfortPremium for the comfort and premium categories; else normal (event: not detected by the server yet, acts as normal).",
       "keep": "POST /driver/reservations/{tripId}/keep { keep: boolean } → TripProjection: the driver's answer to the rider's change (owner BL-Q6). No open question → 409 invalid_transition.",
       "homeArea": "PUT /driver/home-area { lat, lng, label? } (label at most 120 chars) or DELETE → the Driver profile with homeArea { lat, lng, label? } (owner BL-Q4: set in the driver app; admins see it on GET /admin/drivers/{driverId}).",
-      "notStarted": "A held ride not started (still accepted) at its pickup time: TripProjection.reservation.notStarted true (the admin's alert 'Booked ride: pickup time, driver has not started')."
+      "notStarted": "A held ride not started (still accepted) at its pickup time: TripProjection.reservation.notStarted true (the admin's alert 'Booked ride: pickup time, driver has not started').",
+      "assigned": "Owner M6-a: the moment a booked ride becomes the driver's (his Accept, an admin-assigned offer, a dispatched offer, a kept change) he gets push kind reservation_assigned."
     },
     "rider": {
       "reminder": "Q5 rider: push kind reservation_reminder at scheduledAt − riderReminderMin (default 60; 0 = off), and reservation_driver_found when a driver takes the ride.",
@@ -6730,7 +6726,8 @@
         "reservation_no_driver",
         "reservation_change_ask",
         "reservation_unassigned",
-        "reservation_not_started"
+        "reservation_not_started",
+        "reservation_assigned"
       ],
       "note": "Push and Notifications list (bell), in the person's language (else the zone country's, else English); {time} is the pickup time HH:MM in the zone's time zone, {driver} the driver's first name. Deep links: rider movera://trips/{tripId}, driver movera-driver://reservations/{tripId}.",
       "texts": {
@@ -6865,6 +6862,18 @@
             "fr": "La prise en charge de {time} est maintenant. Démarrez la course.",
             "en": "The {time} pickup is now. Start the ride."
           }
+        },
+        "reservation_assigned": {
+          "title": {
+            "sv": "Bokad resa är din",
+            "fr": "Course réservée attribuée",
+            "en": "Booked ride is yours"
+          },
+          "body": {
+            "sv": "Hämtning kl. {time}. Den finns under Bokade resor.",
+            "fr": "Prise en charge à {time}. Elle est dans Courses réservées.",
+            "en": "Pickup at {time}. It is in Booked rides."
+          }
         }
       }
     },
@@ -6882,6 +6891,14 @@
       "trip_too_long"
     ],
     "timers": "Server timer kinds (durable, contract §timers): resv_popup, resv_open_all, resv_dispatch, resv_no_driver, resv_rider_reminder, resv_driver_reminder, resv_go_online, resv_offline_check, resv_change_ask, resv_overdue. Planned at booking / accept / change, taken back when the trip leaves the state they need.",
-    "openQuestions": []
+    "openQuestions": [],
+    "ownerAnswers": {
+      "M6-a": "Drop the 15-min reminder; notice when the ride is assigned; keep the 2 h reminder and the go-online notice.",
+      "M6-b": "changeAnswerMin 15.",
+      "M6-c": "nearAtTime 5 km / 30 min.",
+      "M6-d": "offlineBackupAfterMin 5.",
+      "M6-e": "After the pickup time each new round asks again the drivers who declined.",
+      "M6-f": "The gap between two booked rides (smart gap) is the same for every ride type (normal spareMin)."
+    }
   }
 }
