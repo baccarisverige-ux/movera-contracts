@@ -1,4 +1,6 @@
-# Movera shared contract v0.18.22
+# Movera shared contract v0.18.24
+
+v0.18.24 (BASE jobs B11/B12 2026-11-04; builds on v0.18.22 main; additive; 0.18.23 is reserved for the open alerts PR #60): a general write limit — every POST/PUT/PATCH/DELETE counts against a per-minute budget per signed-in user (else per address); over it `429 rate_limited`, reason `too_many_requests`, with `Retry-After`. The OTP and sign-in limits stay. §47, `contract.json#rateLimit`.
 
 v0.18.22 (BASE job admin live updates 2026-11-04; builds on v0.18.21 main; additive; 0.18.20 is taken by the open contracts PR #60): one admin event stream `GET /admin/events` (SSE, `AdminLiveEvent`: trip.changed, driver.status, zone.supply, alert.changed, ticket.changed, incident.changed, approval.changed, payment.failed, resync), zone-scoped, replay with Last-Event-ID; the admin panel drops its 15 s polling and shows a small "Reconnecting…" badge when the stream drops (owner L1). §46, `contract.json#adminLiveEvents`.
 
@@ -1077,3 +1079,13 @@ Owner L1 (2026-11-04, Rules `decisions/admin-fake-by-group.md`): a small "Reconn
 - **Replay**: `after` or `Last-Event-ID`; events kept 24 h; an older cursor gets one `resync` first.
 - **Admin panel**: one EventSource; each type invalidates its lists (`adminLiveEvents.client.invalidates`) on Overview, Alerts, Live map/Dispatch, Trips, Reservations, Support tickets, Incidents, Approvals, Payments. While the stream is open no timed polling; while it is not, a small "Reconnecting…" badge and a refresh every 60 s.
 - **Rider and driver apps**: no change (own streams).
+
+## 47. General write limit — BASE job B11 (v0.18.24)
+
+Architecture audit 2026-11-03 item 9. `contract.json#rateLimit`.
+
+- **What counts**: every `POST`, `PUT`, `PATCH`, `DELETE` under `/api/v1`. Reads and CORS preflights never count. The sign-in limits (§8 `auth.limits`, `countryLimits`, waiting list, admin sign-in) are unchanged and still answer their own reasons.
+- **Whose budget**: a valid access token → that user (actor + `sub`); otherwise the client address seen by the trusted proxy. Many accounts on one address (a load test, a phone operator's NAT) each have their own budget.
+- **Budget**: fixed 60 s window. Defaults: production 120 per user / 60 per address; staging and development 1200 / 600. Server environment `RATE_LIMIT_WRITES_PER_USER_PER_MINUTE`, `RATE_LIMIT_WRITES_PER_ADDRESS_PER_MINUTE` (0 = off). Not an admin setting yet (open owner question).
+- **Answer**: `429 rate_limited`, reason `too_many_requests`, `retryable: true`, `Retry-After` in whole seconds.
+- **Apps and admin**: already treat 429 as "wait and retry" with the `Retry-After` wait (driver `ApiError.isRetryable`, rider `RiderErrorKind.rateLimited`, admin `ApiError.retryable` / `retryAfterSeconds`); no app change in this version.
