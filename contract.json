@@ -1,6 +1,6 @@
 {
   "contract": "movera",
-  "version": "0.18.22",
+  "version": "0.18.26",
   "note": "Canonical cross-app contract for Rider, Driver and Admin. Frontend-only today; a future single backend implements it. Every app ships an identical copy under contracts/ and runs contract tests against it.",
   "wire": {
     "ids": {
@@ -7162,5 +7162,37 @@
       "badgeText": "Reconnecting…"
     },
     "apps": "Rider and driver apps: no change (they use their own trip / offer / config streams). RULE 0 check only."
+  },
+  "phoneDataToServer": {
+    "note": "v0.18.26 (BASE B13, owner 2026-11-03 \"Phone-only data: Yes, all to server\", Rules decisions/admin-fake-by-group.md): the rider's saved places, the driver's ride preferences (switched-off categories) and the driver's emergency contacts are kept on the server, not only on the phone. Builds on v0.18.22; v0.18.23-0.18.25 are reserved by other open jobs. Additive except SavedPlace / SavedPlaceRequest (never served before: no server had /rider/places); X-Api-Version stays 0.5.",
+    "privacy": "Each list is read and changed only by its owner (the signed-in rider for places, the signed-in driver for preferences and contacts); another rider or driver never sees it and an id of someone else's place is 404 place_not_found. Admins never read saved places or ride preferences rows directly; an admin reads a driver's emergency contacts only through a safety incident of that driver (see admin), and every such read is written to the admin audit. Logs never carry the addresses, names or phone numbers.",
+    "riderPlaces": {
+      "routes": "GET /rider/places -> SavedPlacePage (every place, nextCursor null); POST /rider/places SavedPlaceRequest -> 201 SavedPlace; PUT /rider/places/{placeId} SavedPlaceRequest -> 200 SavedPlace; DELETE /rider/places/{placeId} -> 204; POST /rider/places/import SavedPlaceImport -> 200 SavedPlacePage.",
+      "kinds": "kind home and kind work: one each; saving a new home (or work) replaces the old one and keeps its placeId. kind other: as many as maxPlaces allows, each with its own placeId. type is the app's finer word for an other place (gym, mall, school, airport, family, restaurant, other); the app picks the icon and label from it.",
+      "place": "SavedPlaceAddress { address (required, 1-512), lat?, lng? }: places saved on phones before v0.18.26 have only the address text, so the position is optional.",
+      "maxPlaces": 50,
+      "tooMany": "409 conflict, reason too_many_places, past maxPlaces (home and work count).",
+      "import": "One-time upload of the places a phone kept before v0.18.26. Applied only the first time for this rider (the server remembers it); later calls change nothing and answer the server's list. Items follow the POST rules (home / work replace, others added); items past maxPlaces are dropped. The app calls it once after sign-in, then reads GET /rider/places and from then on the server's list is the one shown.",
+      "app": "Rider app: Home and Saved places read the server's list; add, edit and delete call the routes above; the phone keeps a copy only to show something while offline. Sign-out clears the phone copy (the server keeps the places)."
+    },
+    "driverPreferences": {
+      "routes": "GET /driver/preferences -> DriverPreferences; PUT /driver/preferences DriverPreferencesUpdate -> DriverPreferences.",
+      "categoriesOff": "The ride categories the driver switched off in Ride preferences (CategoryId[]; an unknown id is 400 invalid_request, reason unknown_category). Empty = every category his account and car allow.",
+      "dispatch": "The server does not send a switched-off category: the automatic dispatch rounds (Exclusive and Radar), the admin's Add money sent through the zone's dispatch, and the Scheduled rides list skip a driver whose categoriesOff holds the trip's category. Driver.categoryIds (given by the admin from the car) is unchanged by this choice.",
+      "updatedAt": "null until the driver saves once on the server; the app then uploads the choice it kept on the phone once (one-time upload) and afterwards follows the server.",
+      "app": "Driver app: Ride preferences reads and saves through these routes; the phone copy only shows something while offline. Offers already filtered by the server stay filtered in the app too."
+    },
+    "driverEmergencyContacts": {
+      "routes": "GET /driver/emergency-contacts -> EmergencyContactList; PUT /driver/emergency-contacts EmergencyContactListUpdate -> EmergencyContactList (the whole list each time).",
+      "item": "EmergencyContact { name 1-80, phone (digits, optional leading +, 3-15 digits), relation? 0-40 }. 112 is built into the app and never stored.",
+      "maxContacts": 10,
+      "tooMany": "400 invalid_request, reason too_many_contacts, past maxContacts.",
+      "updatedAt": "null until saved once on the server; the app then uploads its phone list once (one-time upload).",
+      "app": "Driver app: Emergency contacts reads and saves through these routes."
+    },
+    "admin": {
+      "emergencyContacts": "GET /admin/incidents/{incidentId}/emergency-contacts (incidents.read; the incident's zone must be in the admin's scope, else 403 zone_out_of_scope) -> IncidentEmergencyContacts { incidentId, driverId, items, updatedAt }: the emergency contacts of the incident's driver, read-only. An incident without a driver answers items []. Every read writes the admin audit line incident.emergency_contacts_viewed (who, when, which incident; never the numbers).",
+      "panel": "Admin > Safety incident detail: a read-only 'Driver's emergency contacts' box with a 'Show' button (the read is audited), name, relation and phone. Admins never edit them. Saved places and ride preferences have no admin screen (not needed for safety; dispatch already sees Driver.categoryIds)."
+    }
   }
 }
