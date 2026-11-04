@@ -7070,7 +7070,8 @@
           "trips",
           "reservations",
           "overview",
-          "dispatch"
+          "dispatch",
+          "payments"
         ],
         "driver.status": [
           "drivers",
