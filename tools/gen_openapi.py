@@ -1087,6 +1087,11 @@ S["ConfigEvent"] = obj({"eventId": ref("Id"), "kind": s(const="config_published"
                         "occurredAt": ref("Timestamp"), "serverTime": ref("Timestamp")},
                        ["eventId", "kind", "doc", "zoneId", "version", "publishedAt", "occurredAt", "serverTime"],
                        "Apps re-fetch the config document on this event.")
+S["RiderTripEvent"] = obj({"eventId": ref("Id"), "kind": s(const="rider_trip_changed"), "tripId": ref("Id"),
+                           "occurredAt": ref("Timestamp"), "serverTime": ref("Timestamp")},
+                          ["eventId", "kind", "tripId", "occurredAt", "serverTime"],
+                          "v0.18.32 (contract.json#bookedRideSeen.riderTripEvent, P21): a trip of this rider changed (made, accepted, any status), "
+                          "also when made elsewhere. The rider app reads GET /rider/trips/active again.")
 
 # --- error
 S["Error"] = obj({"code": ref("ErrorCode"), "message": s(), "requestId": s(), "retryable": b(),
@@ -1439,8 +1444,9 @@ op("post", "/trips/{tripId}/rating", "rateTrip", "Rate the other party (and opti
 op("get", "/rider/trips", "listRiderTrips", "Rider trip history and reservations", ["rider"], "Rider · Booking",
    params=[pref("Cursor"), pref("Limit"), q("status", ref("TripStatus"), multi=True), q("kind", ref("TripKind")), pref("From"), pref("To")],
    ok=(200, "TripProjectionPage"))
-op("get", "/rider/trips/active", "getRiderActiveTrip", "The rider's current non-terminal live trip", ["rider"], "Rider · Booking",
-   ok=(200, TP), desc="204 when there is none.")
+op("get", "/rider/trips/active", "getRiderActiveTrip", "The rider's current non-terminal live trip, else a booked trip whose driver started driving", ["rider"], "Rider · Booking",
+   ok=(200, TP), desc="204 when there is none. v0.18.32 (contract.json#bookedRideSeen): a booked trip (kind scheduled) is returned once it reached driver_to_pickup, "
+                      "until it ends; a live trip wins when both are active (owner Q1, the app shows a banner for the booked one).")
 PATHS["/rider/trips/active"]["get"]["responses"]["204"] = {"description": "No active trip", "headers": HDR_REQ}
 op("get", "/rider/nearby-vehicles", "getRiderNearbyVehicles", "Free cars near a point, for the rider's map", ["rider"], "Rider · Booking",
    params=[{**q("lat", n(minimum=-90, maximum=90)), "required": True}, {**q("lng", n(minimum=-180, maximum=180)), "required": True}],
@@ -1451,7 +1457,7 @@ op("get", "/rider/nearby-vehicles", "getRiderNearbyVehicles", "Free cars near a 
 op("get", "/rider/config", "getRiderConfig", "Published RiderAppConfig for a zone", ["rider"], "Config",
    params=[pref("ZoneIdQuery")], ok=(200, "RiderAppConfig"))
 op("get", "/rider/config/stream", "streamRiderConfig", "config_published events for the rider document", ["rider"], "Realtime",
-   params=[pref("ZoneIdQuery")], content=sse("Server-sent events.", "ConfigEvent"))
+   params=[pref("ZoneIdQuery")], content=sse("Server-sent events. v0.18.32: also RiderTripEvent (kind rider_trip_changed) for the signed-in rider's trips, id = the document version already sent.", "ConfigEvent"))
 op("get", "/rider/profile", "getRiderProfile", "Get own rider profile", ["rider"], "Rider · Account", ok=(200, "Rider"))
 op("patch", "/rider/profile", "updateRiderProfile", "Update own rider profile", ["rider"], "Rider · Account",
    body="RiderProfileUpdate", ok=(200, "Rider"), mutation=True)
