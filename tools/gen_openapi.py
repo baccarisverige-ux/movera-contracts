@@ -2976,6 +2976,11 @@ S["TripProjection"]["properties"]["chain"] = obj({"queued": b("Still queued behi
 S["TripProjection"]["properties"]["nextAfterTripId"] = {"allOf": [ref("Id")], "description": "v0.18.33, driver and admin views: a live trip queued behind this driver's current trip (contract.json#afterTestRules.bookedNext.accept)."}
 S["RiderAppConfig"]["properties"]["wallet"] = obj({"usedFirst": {**b("The balance (one per currency, no conversion) pays first. v0.18.33: " + ATR["walletFirst"]["zone"]), "default": True}})
 
+# v0.18.39 §63 (rule 25: this file is over 1500 lines): newer surface lives in tools/openapi_parts/*.py, run here in order.
+import glob as _glob, os as _os
+for _part in sorted(_glob.glob(_os.path.join(_os.path.dirname(_os.path.abspath(__file__)), "openapi_parts", "*.py"))):
+    exec(compile(open(_part).read(), _part, "exec"), globals())
+
 def to_plain(x):
     if isinstance(x, dict): return {k: to_plain(v) for k, v in x.items()}
     if isinstance(x, list): return [to_plain(v) for v in x]
