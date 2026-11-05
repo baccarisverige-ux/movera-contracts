@@ -31036,6 +31036,10 @@ components:
         popup:
           type: boolean
           description: The Home popup step was reached (reservation_popup sent).
+        riderFirstName:
+          type: string
+          description: 'v0.18.32 (contract.json#bookedRideSeen.leaveNowName): scope=accepted only, the rider''s first name
+            for the leave-now popup.'
         reservation:
           allOf:
           - $ref: '#/components/schemas/ReservationInfo'
