@@ -2893,7 +2893,7 @@
         "en": "An unpaid fee from an earlier trip was added to this trip."
       },
       "driver": {
-        "sv": "Passageraren hade en obetald avgift från en tidigare resa. Den ingår i priset och går till Movera.",
+        "sv": "Resenären hade en obetald avgift från en tidigare resa. Den ingår i priset och går till Movera.",
         "fr": "Le passager avait des frais impayés d’un trajet précédent. Ils sont inclus dans le prix et vont à Movera.",
         "en": "The rider had an unpaid fee from an earlier trip. It is in the price and goes to Movera."
       }
