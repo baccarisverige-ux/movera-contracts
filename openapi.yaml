@@ -17684,6 +17684,19 @@ components:
           type: boolean
           description: 'v0.18.33: TripProjection.walletFirst: boolean (rider and admin views): the switch the trip was booked
             with.'
+        chain:
+          type: object
+          description: 'v0.18.33 (owner Q3 + Q5), all views: a trip a driver on a trip took next. Owner Q5: a late current
+            trip keeps the queued trip with this driver. From lateFreeCancelMin minutes (default 10) after accept, the rider
+            of a chained trip may cancel free also after it started (trips.chained).'
+          required:
+          - queued
+          properties:
+            queued:
+              type: boolean
+              description: Still queued behind the driver's current trip (cancel free).
+            freeCancelAt:
+              $ref: '#/components/schemas/Timestamp'
         nextAfterTripId:
           allOf:
           - $ref: '#/components/schemas/Id'
