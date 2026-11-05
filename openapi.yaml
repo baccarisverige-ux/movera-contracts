@@ -32403,7 +32403,7 @@ components:
           $ref: '#/components/schemas/Timestamp'
     AirportQueueAreaUpdate:
       type: object
-      description: 'v0.18.39 §63: what the admin saves; a missing number keeps its default.'
+      description: 'v0.18.39 §63: what the admin saves (the whole area); a number left out takes its default.'
       required:
       - polygon
       - 'on'

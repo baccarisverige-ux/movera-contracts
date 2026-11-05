@@ -21,7 +21,7 @@ S["AirportQueueAreaUpdate"] = obj({
     "offerSeconds": i(minimum=AQR["offerSeconds"][0], maximum=AQR["offerSeconds"][1]),
     "maxQueueOffers": i(minimum=AQR["maxQueueOffers"][0], maximum=AQR["maxQueueOffers"][1]),
     "keepPlaceAfterDecline": b(),
-}, ["polygon", "on"], "v0.18.39 §63: what the admin saves; a missing number keeps its default.", addl=False)
+}, ["polygon", "on"], "v0.18.39 §63: what the admin saves (the whole area); a number left out takes its default.", addl=False)
 S["AirportQueueStatus"] = obj({
     "status": s(enum=["in_queue", "not_in_area", "off"]),
     "areaId": ref("Id"),
