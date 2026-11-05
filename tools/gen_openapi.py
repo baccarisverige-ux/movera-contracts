@@ -997,7 +997,8 @@ S["CompletePreview"] = obj({"previewId": ref("Id"), "expiresAt": {"allOf": [ref(
                             "fareLines": arr(ref("FareLine"))},
                            ["previewId", "expiresAt", "tripId", "total", "cashDue", "driverEarnings", "earlyEnd", "fareLines"],
                            "v0.18.1 (CONTRACT.md §26): the final price complete would set now, frozen for " + str(CPV["freezeSeconds"]) + " s. " + CPV["same"], addl=False)
-S["RouteRequest"] = obj({"mode": s(enum=MP["routeModes"]), "from": ref("LatLng"), "to": ref("LatLng")}, ["mode", "from", "to"])
+S["RouteRequest"] = obj({"mode": s(enum=MP["routeModes"]), "from": ref("LatLng"), "to": ref("LatLng"),
+                         "via": arr(ref("LatLng"), maxItems=10, description="v0.18.41 §66: " + C["routeVia"]["request"])}, ["mode", "from", "to"])
 S["RoadRoute"] = obj({"points": arr(ref("LatLng"), minItems=2, description="The road geometry, in order."), "distanceMeters": i(minimum=0),
                       "durationSeconds": ref("DurationSeconds"), "provider": s(examples=["osrm"])}, ["points"],
                      "Road route for drawing. ETA shown to the rider stays TripProjection.etaSeconds.")
@@ -1905,7 +1906,7 @@ op("post", "/locations/geocode", "geocodeAddress", "Coordinates for an address o
 op("post", "/locations/reverse-geocode", "reverseGeocode", "Address of a point", ["rider", "driver"], "Maps",
    body="ReverseGeocodeRequest", ok=(200, "ReverseGeocodeResult"), read_only=True, desc="Bad coordinates → 400 invalid_request (invalid_coordinates).")
 op("post", "/routes", "routeBetween", "Road route between two points (Movera OSRM)", ["rider", "driver"], "Maps",
-   body="RouteRequest", ok=(200, "RoadRoute"), read_only=True, desc="No route → 404 not_found (reason no_route); the app then draws a straight line. lat / lng as everywhere else.")
+   body="RouteRequest", ok=(200, "RoadRoute"), read_only=True, desc="No route → 404 not_found (reason no_route); the app then draws a straight line. lat / lng as everywhere else. v0.18.41 §66: " + C["routeVia"]["fallback"])
 op("get", "/routes/driving/{coordinates}", "osrmDrivingRoute", "Turn-by-turn route for driver navigation (OSRM v5 pass-through)", ["driver"], "Maps",
    params=[{"name": "coordinates", "in": "path", "required": True, "description": C["maps"]["osrm"]["coordinates"],
             "schema": {"type": "string", "pattern": r"^-?\d+(\.\d+)?,-?\d+(\.\d+)?(;-?\d+(\.\d+)?,-?\d+(\.\d+)?){1,9}$"}},
