@@ -5,8 +5,8 @@ concurrency:
   cancel-in-progress: true
 
 on:
+  # Owner 2026-11-06: verify runs on PRs and version tags only, not on main pushes.
   push:
-    branches: [main]
     tags: ['v*']
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
