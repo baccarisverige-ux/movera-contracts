@@ -9,9 +9,12 @@ on:
     branches: [main]
     tags: ['v*']
   pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
 
 jobs:
   verify:
+    # CI cost cut (owner 2026-11-06): drafts skip; marking the PR ready runs it.
+    if: github.event.pull_request.draft != true
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
