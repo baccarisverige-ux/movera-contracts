@@ -31,6 +31,16 @@ tmp=$(mktemp)
 python3 tools/gen_openapi.py . "$tmp" >/dev/null
 cmp -s "$tmp" openapi.yaml || { rm -f "$tmp"; echo "openapi.yaml is not what tools/gen_openapi.py generates; run it and commit the result"; exit 1; }
 rm -f "$tmp"
+# v0.18.47 §69: admin stream replay limit (no cursor = from now; > replayMax unseen = one resync).
+python3 - <<'PY'
+import json
+c = json.load(open('contract.json'))
+a = c['adminLiveEvents']
+assert a['replayMax'] == 500, 'adminLiveEvents.replayMax'
+assert 'FROM NOW' in a['replay'] and 'replayMax' in a['replay'], 'adminLiveEvents.replay names the no-cursor and replayMax rules'
+assert 'replayMax' in a['types']['resync']['when'], 'resync.when names replayMax'
+assert a['rule33'], 'adminLiveEvents.rule33'
+PY
 # v0.18.45 §68: the driver config stream lists driver_reservations_changed; §67 note says "renumbered from 0.18.42".
 python3 - <<'PY'
 import json, yaml
