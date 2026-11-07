@@ -31,6 +31,32 @@ tmp=$(mktemp)
 python3 tools/gen_openapi.py . "$tmp" >/dev/null
 cmp -s "$tmp" openapi.yaml || { rm -f "$tmp"; echo "openapi.yaml is not what tools/gen_openapi.py generates; run it and commit the result"; exit 1; }
 rm -f "$tmp"
+# v0.18.50 §72: trip lifecycle decisions L1, L4–L7, L9–L12.
+python3 - <<'PY'
+import json
+c = json.load(open('contract.json'))
+d = c['driverTripPush']
+assert d['kind'] == 'driver_trip_update' and d['bell'] is True and d['deepLink'] == 'movera-driver://trips/{tripId}', 'L1 driverTripPush'
+assert d['moments'] == ['rider_cancelled', 'rider_ended_early', 'admin_cancelled', 'admin_reassigned', 'admin_no_show'], 'L1 moments'
+assert d['title']['fr'] == 'Course annulée', 'L1 title fr (owner « Course annulée »)'
+for m in d['moments'] + ['fee']:
+    assert set(d['texts'][m]) == {'sv', 'fr', 'en'}, f'L1 texts {m}'
+assert '{amount}' in d['texts']['fee']['fr'], 'L1 fee line'
+rp = c['riderTripPush']
+assert rp['moments'][-2:] == ['no_driver_found', 'trip_failed'], 'L11 moments'
+assert rp['texts']['no_driver_found']['title']['fr'] == 'Aucun chauffeur disponible pour le moment', 'L11 no driver fr'
+assert rp['texts']['trip_failed']['title']['fr'] == 'Un problème est survenu, votre course n’a pas pu être réservée', 'L11 failed fr'
+assert {'rater': 'driver', 'status': 'cancelled_by_rider', 'command': 'end_early'}.items() <= [r for r in c['ratingAllowed']['rules'] if r['rater'] == 'driver' and r['status'] == 'cancelled_by_rider'][0].items(), 'L5 driver rates end_early'
+assert [r for r in c['transitions'] if r['command'] == 'release' and r['actor'] == 'system' and r.get('when') == 'live' and r['to'] == 'searching'], 'L12 transition'
+assert 'Access-Control-Expose-Headers' in c['headers']['Date'], 'L9 Date header'
+assert 'driver_cancelled' in c['realtime']['kinds'], 'L7 kind listed'
+lc = c['lifecycle0_18_50']
+assert set(lc) == {'note', 'l1', 'l4', 'l5', 'l6', 'l7', 'l9', 'l10', 'l11', 'l12'}, 'lifecycle index'
+assert 'driverNextTrip' in lc['l4']['rule'] and 'reservation_unassigned' in lc['l6']['rule'] and 'driver_cancelled' in lc['l7']['rule'], 'L4/L6/L7 rules'
+assert lc['l10']['texts']['youPay']['fr'] == 'Vous payez {amount}.', 'L10 text'
+sc = json.load(open('fixtures/scenarios.json'))['scenarios']
+assert [x for x in sc if x['id'] == 'rider_rates_trip_ended_early'][0]['rating'] == {'rider': 'allowed', 'driver': 'allowed'}, 'L5 scenario'
+PY
 # v0.18.49 §71: owner decisions Q6–Q13 (old texts and links gone, new ones present).
 python3 - <<'PY'
 import json, re, yaml
