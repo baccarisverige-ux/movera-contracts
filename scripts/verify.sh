@@ -31,6 +31,67 @@ tmp=$(mktemp)
 python3 tools/gen_openapi.py . "$tmp" >/dev/null
 cmp -s "$tmp" openapi.yaml || { rm -f "$tmp"; echo "openapi.yaml is not what tools/gen_openapi.py generates; run it and commit the result"; exit 1; }
 rm -f "$tmp"
+# v0.18.51 §73: booked waiting from the later of arrival and pickup time, booked fees, L6 row, riderTripPush bell.
+python3 - <<'PY'
+import json
+c = json.load(open('contract.json'))
+b = c['bookedRide0_18_51']
+assert set(b) == {'note', 'waitFrom', 'beforePickup', 'noShow', 'fees', 'texts', 'l6', 'riderTripPushBell', 'driverReservationsLive', 'apps'}, 'bookedRide index'
+assert 'the later of' in b['waitFrom']['rule'] and 'Replaces Owner B' in b['waitFrom']['rule'], 'waitFrom rule (owner: later of Arrived and pickup time)'
+assert 'no admin switch' in b['waitFrom']['fixed'], 'owner: fixed rule'
+for k, t in b['texts'].items():
+    assert set(t) == {'sv', 'fr', 'en'} and all(v.strip() for v in t.values()), f'texts {k} sv/fr/en'
+assert b['texts']['beforePickup']['en'] == 'Before the pickup time', 'beforePickup text'
+lf = c['bookLater']['liveFixes']
+assert 'also when the driver arrives late)' not in lf['includedWaiting'] and 'waitFrom' in lf['includedWaiting'], 'Owner B late rule replaced'
+assert 'counted from the pickup time;' not in lf['includedWaitingPolicy'], 'policy text follows waitFrom'
+assert c['bookLater']['texts']['includedWaiting']['en'] != '{minutes} min free waiting count from the pickup time', 'rider included waiting text'
+f = c['pickupWaiting']['terms']['fields']
+assert 'later of arrival and pickup time' in f['noShowAfterMin'] and 'later of arrival and pickup time' in f['freeWaitMin'], 'terms fields for reservations'
+assert 'never the no-show fee' in c['pickupWaiting']['cancelAfterArrived']['note'], 'cancelAfterArrived excludes booked rides'
+tr = c['transitions']
+ra = [(t['from'], t['to'], t.get('when')) for t in tr if t['command'] == 'reassign' and t['actor'] == 'admin']
+assert ra == [(['accepted'], 'searching', 'live'), (['accepted'], 'requested', 'scheduled'), (['offered', 'driver_to_pickup', 'arrived'], 'searching', None)], 'L6 rows'
+# No two transition rows match the same (status, command, actor, kind) (the server's own table test).
+seen = {}
+for i, t in enumerate(tr):
+    for s in t['from']:
+        for k in ([t['when']] if 'when' in t else ['live', 'scheduled']):
+            key = (s, t['command'], t['actor'], k)
+            assert key not in seen, f'transition rows {seen[key]} and {i} both match {key}'
+            seen[key] = i
+assert 'bell false' not in c['riderTripPush']['note'] and 'bell true' in c['riderTripPush']['note'], 'riderTripPush bell true'
+assert c['driverReservationsLive']['when'].startswith('Sent to every driver stream of the zone when a trip with scheduledAt in that zone changes (created, accepted, released, cancelled, rescheduled, started)'), 'driverReservationsLive.when unchanged'
+# The cases (fixtures/booked_waiting.json) against this oracle.
+fx = json.load(open('fixtures/booked_waiting.json'))
+bad = 0
+for k in fx['waitFrom']:
+    wf = k['arrivedAtMin'] if k['kind'] == 'live' else max(k['arrivedAtMin'], 0)
+    got = {'waitFromMin': wf, 'freeUntilMin': wf + k['freeWaitMin'], 'noShowAtMin': wf + k['noShowAfterMin']}
+    if got != k['expect']: bad += 1; print('WAIT FROM', k['id'], got)
+    for ch in k['checks']:
+        g = {'chargedSeconds': max(0, ch['atMin'] - got['freeUntilMin']) * 60, 'noShowAllowed': ch['atMin'] >= got['noShowAtMin']}
+        if g != {x: ch[x] for x in g}: bad += 1; print('WAIT FROM check', k['id'], ch, g)
+def rfee(rule, fare, before):
+    if rule is None or before >= rule['freeMin']: return 0
+    fee = rule['value'] if rule['type'] == 'fixed' else (fare * rule['value'] * 2 + 100) // 200
+    if rule['min']: fee = max(fee, rule['min']['amountMinor'])
+    if rule['max']: fee = min(fee, rule['max']['amountMinor'])
+    return fee
+for k in fx['fees']:
+    rule = k['cancelRule']
+    if k['kind'] == 'scheduled':
+        before = k['minutesBeforePickup'] if k['event'] == 'rider_cancel_arrived' else (rule['freeMin'] - 1 if rule else 0)
+        fee = rfee(rule, 30000, before); kind = 'cancel' if k['event'] == 'rider_cancel_arrived' else 'no_show'
+        if rule is None and k['event'] == 'no_show': fee = k['noShowFee']  # owner Q2: no booked rule = normal no-show fee
+    elif k['event'] == 'no_show' or (k['switch'] and k['pastFreeWait']):
+        fee = k['noShowFee']; kind = 'no_show'
+    else:
+        fee = 0 if k['minutesSinceAccept'] < rule['freeMin'] else rule['value']; kind = 'cancel'
+    got = {'fee': fee or None, 'feeKind': kind if fee else None}
+    if got != k['expect']: bad += 1; print('BOOKED FEES', k['id'], got)
+assert not bad, f'{bad} booked waiting / fee case mismatches'
+PY
 # v0.18.50 §72: trip lifecycle decisions L1, L4–L7, L9–L12.
 python3 - <<'PY'
 import json
