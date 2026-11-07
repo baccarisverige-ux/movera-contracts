@@ -556,20 +556,30 @@
       "from": [
         "accepted"
       ],
+      "to": "searching",
+      "when": "live",
+      "note": "v0.18.51 §73: a live trip in accepted, as before (split from the general reassign row)."
+    },
+    {
+      "command": "reassign",
+      "actor": "admin",
+      "from": [
+        "accepted"
+      ],
       "to": "requested",
       "when": "scheduled",
-      "note": "v0.18.51 §73 (L6, owner 2026-11-07 'Same as Unassign'): admin Reassign on a booked ride a driver holds (accepted, not started) = Reservations › Unassign: back to the list (contract.json#lifecycle0_18_50.l6). Before the general reassign row: rows are tried in table order."
+      "note": "v0.18.51 §73 (L6, owner 2026-11-07 'Same as Unassign'): admin Reassign on a booked ride a driver holds (accepted, not started) = Reservations › Unassign: back to the list (contract.json#lifecycle0_18_50.l6). With the live row above it replaces 'accepted' of the general reassign row (no overlap)."
     },
     {
       "command": "reassign",
       "actor": "admin",
       "from": [
         "offered",
-        "accepted",
         "driver_to_pickup",
         "arrived"
       ],
-      "to": "searching"
+      "to": "searching",
+      "note": "v0.18.51 §73: 'accepted' moved to the two rows above (live → searching, scheduled → requested), so no two rows match the same input."
     },
     {
       "command": "cancel",
@@ -8406,7 +8416,7 @@
         "en": "Free waiting from"
       }
     },
-    "l6": "contract.json#transitions gains { reassign, admin, from [accepted], to requested, when scheduled }, placed before the general reassign row: the transition the server makes since v0.18.50 §72 L6 (lifecycle0_18_50.l6).",
+    "l6": "contract.json#transitions: admin reassign from accepted is split by trip kind — { reassign, admin, [accepted] → searching, when live } (as before) and { reassign, admin, [accepted] → requested, when scheduled } (new) — and the general reassign row keeps offered, driver_to_pickup and arrived; no two rows match the same input. The scheduled row is the transition the server makes since v0.18.50 §72 L6 (lifecycle0_18_50.l6).",
     "riderTripPushBell": "riderTripPush.note now says bell true (S4 ISSUE 2: it said bell false while the server writes the rider's trip pushes with bell true).",
     "driverReservationsLive": "driverReservationsLive.when is unchanged: the hint goes out only when a booked ride is created, accepted, released, cancelled, rescheduled or started — never for a location fix, chat message, call, search step or island alert (server fix, S4 ISSUE 1: it went out on every location fix).",
     "apps": "Rule 0: server — waitFrom, freeUntil / noShowAt from it, the admin no-show time, the booked fees, the reservations hint only at the listed changes; driver app — the waiting timer from waitFrom with the negative countdown and texts.beforePickup, the no-show button from noShowAt, the confirm amount from waiting.noShowFee; rider app — the same timer and label on the driver-arrived sheet, bookLater.texts.includedWaiting and texts.noShow / cancelAfterArrived in the booked-ride terms, the cancel sheet after arrival shows the booking fee; admin — the trip waiting box shows waitFrom (texts.adminWaitFrom), Mark no-show enabled only from noShowAt, Reassign on a held booked ride says it goes back to the list (the new transition row); no new admin setting (fixed rule)."

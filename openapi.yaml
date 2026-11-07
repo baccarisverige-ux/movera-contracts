@@ -5206,8 +5206,10 @@ paths:
         list (status requested; searched at once if its dispatch time has passed), the driver gets reservation_unassigned;
         as with Unassign he is NOT barred from it (owner 2026-11-07: re-offer allowed, no cancelled_driver_ids). Audit trip.reassign.
         (L1) The driver taken off gets driverTripPush admin_reassigned (a held booked ride: reservation_unassigned). v0.18.51
-        §73: contract.json#transitions gains { reassign, admin, from [accepted], to requested, when scheduled }, placed before
-        the general reassign row: the transition the server makes since v0.18.50 §72 L6 (lifecycle0_18_50.l6).'
+        §73: contract.json#transitions: admin reassign from accepted is split by trip kind — { reassign, admin, [accepted]
+        → searching, when live } (as before) and { reassign, admin, [accepted] → requested, when scheduled } (new) — and the
+        general reassign row keeps offered, driver_to_pickup and arrived; no two rows match the same input. The scheduled
+        row is the transition the server makes since v0.18.50 §72 L6 (lifecycle0_18_50.l6).'
   /admin/trips/{tripId}/assign:
     post:
       operationId: adminAssignTrip

@@ -50,9 +50,16 @@ f = c['pickupWaiting']['terms']['fields']
 assert 'later of arrival and pickup time' in f['noShowAfterMin'] and 'later of arrival and pickup time' in f['freeWaitMin'], 'terms fields for reservations'
 assert 'never the no-show fee' in c['pickupWaiting']['cancelAfterArrived']['note'], 'cancelAfterArrived excludes booked rides'
 tr = c['transitions']
-i6 = [i for i, t in enumerate(tr) if t['command'] == 'reassign' and t['actor'] == 'admin' and t.get('when') == 'scheduled' and t['from'] == ['accepted'] and t['to'] == 'requested']
-ig = [i for i, t in enumerate(tr) if t['command'] == 'reassign' and t['actor'] == 'admin' and 'when' not in t]
-assert len(i6) == 1 and ig and i6[0] < ig[0], 'L6 row before the general reassign row'
+ra = [(t['from'], t['to'], t.get('when')) for t in tr if t['command'] == 'reassign' and t['actor'] == 'admin']
+assert ra == [(['accepted'], 'searching', 'live'), (['accepted'], 'requested', 'scheduled'), (['offered', 'driver_to_pickup', 'arrived'], 'searching', None)], 'L6 rows'
+# No two transition rows match the same (status, command, actor, kind) (the server's own table test).
+seen = {}
+for i, t in enumerate(tr):
+    for s in t['from']:
+        for k in ([t['when']] if 'when' in t else ['live', 'scheduled']):
+            key = (s, t['command'], t['actor'], k)
+            assert key not in seen, f'transition rows {seen[key]} and {i} both match {key}'
+            seen[key] = i
 assert 'bell false' not in c['riderTripPush']['note'] and 'bell true' in c['riderTripPush']['note'], 'riderTripPush bell true'
 assert c['driverReservationsLive']['when'].startswith('Sent to every driver stream of the zone when a trip with scheduledAt in that zone changes (created, accepted, released, cancelled, rescheduled, started)'), 'driverReservationsLive.when unchanged'
 # The cases (fixtures/booked_waiting.json) against this oracle.
