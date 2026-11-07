@@ -54,7 +54,7 @@ assert not left, f'old French texts still in the contract: {left}'
 for _p in (('legal', 'defaults', 'SE', 'terms', 'text'), ('legal', 'defaults', 'FR', 'terms', 'text'), ('pickupWaiting', 'servedConfig', 'cancelAfterArrivedIsNoShow', 'adminText'), ('arrivedWaiting', 'termsTexts', 'lines', 'category'), ('arrivedWaiting', 'termsTexts', 'lines', 'rule')):
     _t = c
     for _k in _p: _t = _t[_k]
-    assert 'client absent' not in _t['fr'].lower() and 'absence du passager' in _t['fr'], f'{_p} fr still says client absent'
+    assert 'client absent' not in _t['fr'].lower() and 'absence du passager' in _t['fr'].lower(), f'{_p} fr still says client absent'
 assert c['arrivedWaiting']['reverseNoShow']['texts']['done']['fr'] == 'Absence du passager annulée', 'reverseNoShow.done fr'
 assert 'frais de non-présentation du passager' in c['pickupWaiting']['servedConfig']['cancelAfterArrivedIsNoShow']['adminText']['fr'], 'adminText fee wording'
 assert not [x for x in frs(c) if 'frais d’absence' in x], 'owner fee wording is « frais de non-présentation du passager »'
