@@ -31,6 +31,24 @@ tmp=$(mktemp)
 python3 tools/gen_openapi.py . "$tmp" >/dev/null
 cmp -s "$tmp" openapi.yaml || { rm -f "$tmp"; echo "openapi.yaml is not what tools/gen_openapi.py generates; run it and commit the result"; exit 1; }
 rm -f "$tmp"
+# v0.18.48 §70: owner French wording for 24 texts (fr only).
+python3 - <<'PY'
+import json
+c = json.load(open('contract.json'))
+assert c['statusWords']['families']['tripStatus']['approaching_dropoff']['fr'] == 'Approche de la destination', 'approaching_dropoff fr'
+assert c['pickupWaiting']['pickupMove']['texts']['island']['fr'] == 'Le lieu de prise en charge a changé', 'pickupMove.island fr'
+assert c['arrivedWaiting']['pin']['texts']['driverWrong']['fr'] == 'Code incorrect. Il vous reste {left} tentatives.', 'pin.driverWrong fr'
+def frs(o):
+    if isinstance(o, dict):
+        for k, v in o.items():
+            if k == 'fr' and isinstance(v, str): yield v
+            else: yield from frs(v)
+    elif isinstance(o, list):
+        for v in o: yield from frs(v)
+old = ['Approche de la dépose', 'Marquer comme client absent ? Vous recevez {amount}', 'Le point de départ a été déplacé', 'Trop d’essais. Réessayez dans {min} min', 'Ouvrir les réglages', 'Vous avez été déconnecté – reconnectez-vous']
+left = [v for v in frs(c) if v in old]
+assert not left, f'old French texts still in the contract: {left}'
+PY
 # v0.18.47 §69: admin stream replay limit (no cursor = from now; > replayMax unseen = one resync).
 python3 - <<'PY'
 import json
