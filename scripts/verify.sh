@@ -55,6 +55,9 @@ for _p in (('legal', 'defaults', 'SE', 'terms', 'text'), ('legal', 'defaults', '
     _t = c
     for _k in _p: _t = _t[_k]
     assert 'client absent' not in _t['fr'].lower() and 'absence du passager' in _t['fr'], f'{_p} fr still says client absent'
+assert c['arrivedWaiting']['reverseNoShow']['texts']['done']['fr'] == 'Absence du passager annulée', 'reverseNoShow.done fr'
+import re
+assert not [x for x in frs(c) if re.search('(?i)client absent', x)], 'a contract French text still says « client absent » (owner: « absence du passager »)'
 PY
 # v0.18.47 §69: admin stream replay limit (no cursor = from now; > replayMax unseen = one resync).
 python3 - <<'PY'
