@@ -54,6 +54,7 @@ lc = c['lifecycle0_18_50']
 assert set(lc) == {'note', 'l1', 'l4', 'l5', 'l6', 'l7', 'l9', 'l10', 'l11', 'l12'}, 'lifecycle index'
 assert 'driverNextTrip' in lc['l4']['rule'] and 'reservation_unassigned' in lc['l6']['rule'] and 'driver_cancelled' in lc['l7']['rule'], 'L4/L6/L7 rules'
 assert lc['l10']['texts']['youPay']['fr'] == 'Vous payez {amount}.', 'L10 text'
+assert 'rule' not in lc['l10']['texts'] and 'ONLY' in lc['l10']['rule'], 'L10 (owner): only the amount, no explanation line'
 sc = json.load(open('fixtures/scenarios.json'))['scenarios']
 assert [x for x in sc if x['id'] == 'rider_rates_trip_ended_early'][0]['rating'] == {'rider': 'allowed', 'driver': 'allowed'}, 'L5 scenario'
 PY
