@@ -51,6 +51,10 @@ def frs(o):
 old = ['Marquer comme client absent ? Vous recevez {amount}', 'Frais de client absent {amount}', 'Trop d’essais. Réessayez dans {min} min', 'Ouvrir les réglages', 'Annuler le client absent', 'Mise en ligne', 'Approche de la dépose', 'Le point de départ a été déplacé', 'Vous avez été déconnecté – reconnectez-vous']
 left = [v for v in frs(c) if v in old]
 assert not left, f'old French texts still in the contract: {left}'
+for _p in (('legal', 'defaults', 'SE', 'terms', 'text'), ('legal', 'defaults', 'FR', 'terms', 'text'), ('pickupWaiting', 'servedConfig', 'cancelAfterArrivedIsNoShow', 'adminText'), ('arrivedWaiting', 'termsTexts', 'lines', 'category'), ('arrivedWaiting', 'termsTexts', 'lines', 'rule')):
+    _t = c
+    for _k in _p: _t = _t[_k]
+    assert 'client absent' not in _t['fr'].lower() and 'absence du passager' in _t['fr'], f'{_p} fr still says client absent'
 PY
 # v0.18.47 §69: admin stream replay limit (no cursor = from now; > replayMax unseen = one resync).
 python3 - <<'PY'
