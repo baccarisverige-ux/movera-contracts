@@ -83,6 +83,7 @@ assert '409' in spec['paths']['/auth/sign-out']['post']['responses'], 'Q8 openap
 # Q10: booked cancel by the category rule only.
 assert 'no longer makes a cancel free' in c['bookLater']['rider']['cancel'] and 'freeMin' in c['bookLater']['rider']['cancel'], 'Q10 bookLater.rider.cancel'
 assert 'freeMin' in c['afterTestRules']['bookedCancel']['rule'] and 'does not decide' in c['afterTestRules']['bookedCancel']['rule'], 'Q10 bookedCancel.rule'
+assert c['afterTestRules']['bookedCancel']['graceAfterBookingMin'] == 5 and 'graceAfterBookingMin' in c['bookLater']['rider']['cancel'], 'Q10 update: 5 min free cancel after booking'
 bl = json.load(open('fixtures/book_later.json'))
 assert all('freeMin' in x and x['expect'] in ('free', 'fee') for x in bl['riderCancel']), 'Q10 riderCancel fixture'
 assert {'id': 'q10_change_window_no_longer_free', 'minutesBefore': 90, 'freeChangeBeforeMin': 60, 'freeMin': 120, 'expect': 'fee'} in bl['riderCancel'], 'Q10 B6 case'
