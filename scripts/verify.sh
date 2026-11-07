@@ -83,6 +83,7 @@ for k in fx['fees']:
     if k['kind'] == 'scheduled':
         before = k['minutesBeforePickup'] if k['event'] == 'rider_cancel_arrived' else (rule['freeMin'] - 1 if rule else 0)
         fee = rfee(rule, 30000, before); kind = 'cancel' if k['event'] == 'rider_cancel_arrived' else 'no_show'
+        if rule is None and k['event'] == 'no_show': fee = k['noShowFee']  # owner Q2: no booked rule = normal no-show fee
     elif k['event'] == 'no_show' or (k['switch'] and k['pastFreeWait']):
         fee = k['noShowFee']; kind = 'no_show'
     else:
