@@ -31,6 +31,67 @@ tmp=$(mktemp)
 python3 tools/gen_openapi.py . "$tmp" >/dev/null
 cmp -s "$tmp" openapi.yaml || { rm -f "$tmp"; echo "openapi.yaml is not what tools/gen_openapi.py generates; run it and commit the result"; exit 1; }
 rm -f "$tmp"
+# v0.18.49 §71: owner decisions Q6–Q13 (old texts and links gone, new ones present).
+python3 - <<'PY'
+import json, re, yaml
+c = json.load(open('contract.json'))
+spec = yaml.safe_load(open('openapi.yaml'))
+def strs(o):
+    if isinstance(o, dict):
+        for v in o.values(): yield from strs(v)
+    elif isinstance(o, list):
+        for v in o: yield from strs(v)
+    elif isinstance(o, str): yield o
+def frs(o):
+    if isinstance(o, dict):
+        for k, v in o.items():
+            if k == 'fr' and isinstance(v, str): yield v
+            else: yield from frs(v)
+    elif isinstance(o, list):
+        for v in o: yield from frs(v)
+# Q9: one spelling, trips/{tripId}.
+assert not [x for x in strs(c) if re.search(r'://trip/', x)], 'Q9: a contract link still says trip/ (use trips/{tripId})'
+assert c['onTrip']['rideCheck']['push']['deepLink'] == {'rider': 'movera-rider://trips/{tripId}', 'driver': 'movera-driver://trips/{tripId}'}, 'Q9 rideCheck links'
+assert c['pickupWaiting']['headingCheck']['notHeadingNotice']['deepLink'] == 'movera-driver://trips/{tripId}', 'Q9 heading notice link'
+assert c['riderTripPush']['deepLink'] == 'movera://trips/{tripId}', 'Q9 riderTripPush link'
+assert 'movera-rider://trips/{tripId}/receipt' in c['finish']['receipt']['resend'], 'Q9 receipt resend link'
+# Q11: « Course programmée », no « réservée » left in contract French.
+assert not [x for x in strs(c) if re.search(r'(?i)courses? réservées?', x)], 'Q11: « Course réservée » still in the contract (owner: « Course programmée »)'
+assert c['arrivedWaiting']['rules']['texts']['scheduled']['fr'] == 'Course programmée', 'Q11 scheduled fr'
+assert c['bookLater']['texts']['badge']['fr'] == 'Course programmée · {time}', 'Q11 badge fr'
+# Q12: rider pushes « Votre chauffeur … ».
+t = c['riderTripPush']['texts']
+assert t['driver_arrived']['title']['fr'] == 'Votre chauffeur est arrivé', 'Q12 driver_arrived fr'
+assert t['driver_arriving']['title']['fr'] == 'Votre chauffeur arrive bientôt', 'Q12 driver_arriving fr'
+assert not [x for x in frs(c) if x in ('Le chauffeur est arrivé', 'Le chauffeur arrive')], 'Q12: old rider push titles still in the contract'
+assert t['driver_arriving']['body']['fr'] == 'Préparez-vous à le rejoindre.', 'Q12 driver_arriving body fr'
+assert not [x for x in frs(c) if 'dans la voiture' in x], 'Q13: « à bord » everywhere, no « dans la voiture » in contract French'
+assert c['finish']['receipt']['texts']['paidInCar']['fr'] == 'Payé à bord', 'Q13 receipt line'
+# Q13: « Payer à bord ».
+pm = c['finish']['paymentMethods']['texts']
+assert pm['cash'] == {'sv': 'Betala i bilen', 'fr': 'Payer à bord', 'en': 'Pay in car'}, 'Q13 cash label'
+assert pm['payment_method_coming_soon']['fr'].endswith('Choisissez Payer à bord.'), 'Q13 coming soon names the cash label'
+assert not [x for x in strs(c) if re.search(r'Payer en espèces à bord|Payer dans la voiture', x)], 'Q13: an old cash label is still in the contract'
+# Q6: lost refresh answer accepted once.
+tk = c['auth']['tokens']
+assert tk['refreshRetryWindowSeconds'] == 60 and 'ONCE' in tk['refreshRetry'] and 'refresh_token_reused' in tk['refreshRetry'], 'Q6 refreshRetry'
+assert 'late_retry_at' in tk['lostAnswer']['once'] and tk['lostAnswer']['rule33'], 'Q6 lostAnswer'
+assert 'v0.18.49' in spec['paths']['/auth/refresh']['post']['description'], 'Q6 openapi refresh'
+# Q8: driver sign-out refused during a trip.
+so = c['auth']['signOutOnTrip']
+assert (so['status'], so['code'], so['reason'], so['actors']) == (409, 'conflict', 'sign_out_on_trip', ['driver']), 'Q8 signOutOnTrip'
+assert so['texts']['finishTripFirst'] == {'sv': 'Avsluta resan först.', 'fr': 'Terminez d’abord la course.', 'en': 'Finish the trip first.'}, 'Q8 texts'
+assert so['code'] in c['errors']['codes'] and 'sign_out_on_trip' in c['errors']['reason'], 'Q8 error reason listed'
+assert '409' in spec['paths']['/auth/sign-out']['post']['responses'], 'Q8 openapi 409 on sign-out'
+# Q10: booked cancel by the category rule only.
+assert 'no longer makes a cancel free' in c['bookLater']['rider']['cancel'] and 'freeMin' in c['bookLater']['rider']['cancel'], 'Q10 bookLater.rider.cancel'
+assert 'freeMin' in c['afterTestRules']['bookedCancel']['rule'] and 'does not decide' in c['afterTestRules']['bookedCancel']['rule'], 'Q10 bookedCancel.rule'
+assert c['afterTestRules']['bookedCancel']['graceAfterBookingMin'] == 5 and 'graceAfterBookingMin' in c['bookLater']['rider']['cancel'], 'Q10 update: 5 min free cancel after booking'
+bl = json.load(open('fixtures/book_later.json'))
+assert all('freeMin' in x and x['expect'] in ('free', 'fee') for x in bl['riderCancel']), 'Q10 riderCancel fixture'
+assert {'id': 'q10_change_window_no_longer_free', 'minutesBefore': 90, 'freeChangeBeforeMin': 60, 'freeMin': 120, 'expect': 'fee'} in bl['riderCancel'], 'Q10 B6 case'
+assert set(c['ownerDecisions0_18_49']) == {'note', 'q6', 'q8', 'q9', 'q10', 'q11', 'q12', 'q13'}, 'ownerDecisions0_18_49 index'
+PY
 # v0.18.48 §70: owner French wording (fr only).
 python3 - <<'PY'
 import json
