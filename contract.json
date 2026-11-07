@@ -8273,7 +8273,7 @@
     "q13": "Cash payment label fr « Payer à bord » (finish.paymentMethods.texts.cash) and every contract French that said « dans la voiture »: payment_method_coming_soon, cashHint « Payez le chauffeur à bord … », receipt paidInCar « Payé à bord », tip_cash_after_trip_off « … seulement à bord. »."
   },
   "driverTripPush": {
-    "note": "v0.18.50 §72 (owner, lifecycle supervisor 2026-11-07, Rules plan/finders-2026-11-07/LIFECYCLE.md L1): the driver gets a push AND a Notifications-list entry (bell true) when his current trip ends or leaves him because of someone else: the rider cancels or ends early, or an admin cancels, reassigns or marks a no-show. In the driver's language (else the trip country's: SE sv, FR fr, else English). Written in the same transaction as the command (sent after commit; rule 33: one notice per change, any server copy). Not sent for his own steps, nor for the rider's cancel of a queued next trip (afterTestRules.onTripOffers.queuedCancelNotice already tells him), nor for a booked ride he holds that is unassigned (bookLater push reservation_unassigned).",
+    "note": "v0.18.50 §72 (owner, lifecycle supervisor 2026-11-07, Rules plan/finders-2026-11-07/LIFECYCLE.md L1): the driver gets a push AND a Notifications-list entry (bell true) when his current trip ends or leaves him because of someone else: the rider cancels or ends early, or an admin cancels, reassigns or marks a no-show. In the driver's language (else the trip country's: SE sv, FR fr, else English). Written in the same transaction as the command (sent after commit; rule 33: one notice per change, any server copy). Not sent for his own steps, nor for the rider's cancel of a queued next trip (afterTestRules.onTripOffers.queuedCancelNotice already tells him), nor for a booked ride he holds that is unassigned or reassigned (bookLater push reservation_unassigned).",
     "kind": "driver_trip_update",
     "deepLink": "movera-driver://trips/{tripId}",
     "bell": true,
@@ -8333,7 +8333,7 @@
       "driverApp": "The Next-trip card gets Cancel with the driverNextTrip reasons (DriverAppConfig.cancelReasons.driverNextTrip, else the contract list)."
     },
     "l6": {
-      "rule": "Admin Reassign (POST /admin/trips/{tripId}/reassign) on a BOOKED ride (kind scheduled) a driver holds (status accepted, not started) does what Reservations › Unassign does: back to the Scheduled rides list (status requested; searched at once if its dispatch time has passed), the driver gets reservation_unassigned, and the ride is never offered or listed to him again (cancelled_driver_ids). Audit trip.reassign. Any other booked ride the admin reassigns is also never offered to the driver taken off.",
+      "rule": "Admin Reassign (POST /admin/trips/{tripId}/reassign) on a BOOKED ride (kind scheduled) a driver holds (status accepted, not started) does what Reservations › Unassign does: back to the Scheduled rides list (status requested; searched at once if its dispatch time has passed), the driver gets reservation_unassigned; as with Unassign he is NOT barred from it (owner 2026-11-07: re-offer allowed, no cancelled_driver_ids). Audit trip.reassign.",
       "admin": "Trips page: Reassign on such a ride says 'Back to the Scheduled rides list' (same words as Unassign)."
     },
     "l7": {

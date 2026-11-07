@@ -5179,10 +5179,9 @@ paths:
           $ref: '#/components/responses/Unavailable'
       description: 'v0.18.50 §72 (L6): Admin Reassign (POST /admin/trips/{tripId}/reassign) on a BOOKED ride (kind scheduled)
         a driver holds (status accepted, not started) does what Reservations › Unassign does: back to the Scheduled rides
-        list (status requested; searched at once if its dispatch time has passed), the driver gets reservation_unassigned,
-        and the ride is never offered or listed to him again (cancelled_driver_ids). Audit trip.reassign. Any other booked
-        ride the admin reassigns is also never offered to the driver taken off. (L1) The driver taken off gets driverTripPush
-        admin_reassigned (a held booked ride: reservation_unassigned).'
+        list (status requested; searched at once if its dispatch time has passed), the driver gets reservation_unassigned;
+        as with Unassign he is NOT barred from it (owner 2026-11-07: re-offer allowed, no cancelled_driver_ids). Audit trip.reassign.
+        (L1) The driver taken off gets driverTripPush admin_reassigned (a held booked ride: reservation_unassigned).'
   /admin/trips/{tripId}/assign:
     post:
       operationId: adminAssignTrip
