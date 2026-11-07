@@ -64,6 +64,9 @@ t = c['riderTripPush']['texts']
 assert t['driver_arrived']['title']['fr'] == 'Votre chauffeur est arrivé', 'Q12 driver_arrived fr'
 assert t['driver_arriving']['title']['fr'] == 'Votre chauffeur arrive bientôt', 'Q12 driver_arriving fr'
 assert not [x for x in frs(c) if x in ('Le chauffeur est arrivé', 'Le chauffeur arrive')], 'Q12: old rider push titles still in the contract'
+assert t['driver_arriving']['body']['fr'] == 'Préparez-vous à le rejoindre.', 'Q12 driver_arriving body fr'
+assert not [x for x in frs(c) if 'dans la voiture' in x], 'Q13: « à bord » everywhere, no « dans la voiture » in contract French'
+assert c['finish']['receipt']['texts']['paidInCar']['fr'] == 'Payé à bord', 'Q13 receipt line'
 # Q13: « Payer à bord ».
 pm = c['finish']['paymentMethods']['texts']
 assert pm['cash'] == {'sv': 'Betala i bilen', 'fr': 'Payer à bord', 'en': 'Pay in car'}, 'Q13 cash label'
