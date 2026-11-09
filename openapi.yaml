@@ -4924,9 +4924,10 @@ paths:
       summary: The sign-in waiting list (newest first)
       description: 'v0.15.0 (owner 2026-10-29, decision 5): the numbers that asked to join, newest lastAt first; the admin
         page reads it again every 15 s. GET /admin/waitlist (overview.read) → WaitlistPage of WaitlistEntry { phone, app,
-        locale?, firstAt, lastAt, count }, newest lastAt first; the admin''s Waiting list page reads it again every 15 s (live).
-        v0.18.54 §76: GET /admin/waitlist: WaitlistEntry.phone masked for every admin without riders.viewSensitive; no Reveal
-        (pre-account, no person to audit against); the full number is never answered to a masked role.'
+        locale?, firstAt, lastAt, count }, newest lastAt first (v0.18.54 §76: phone masked without riders.viewSensitive, no
+        Reveal); the admin''s Waiting list page reads it again every 15 s (live). v0.18.54 §76: GET /admin/waitlist: WaitlistEntry.phone
+        masked for every admin without riders.viewSensitive; no Reveal (pre-account, no person to audit against); the full
+        number is never answered to a masked role.'
       tags:
       - Admin · Lists
       x-actor:
@@ -23648,10 +23649,10 @@ components:
       - count
       properties:
         phone:
-          allOf:
-          - $ref: '#/components/schemas/PhoneE164'
-          description: 'v0.18.54 §76: GET /admin/waitlist: WaitlistEntry.phone masked for every admin without riders.viewSensitive;
-            no Reveal (pre-account, no person to audit against); the full number is never answered to a masked role.'
+          type: string
+          description: 'E.164 for an admin with riders.viewSensitive; v0.18.54 §76: GET /admin/waitlist: WaitlistEntry.phone
+            masked for every admin without riders.viewSensitive; no Reveal (pre-account, no person to audit against); the
+            full number is never answered to a masked role. The admin accepts both shapes.'
         app:
           type: string
           enum:

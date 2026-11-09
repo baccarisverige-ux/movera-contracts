@@ -11,7 +11,7 @@ S["Driver"]["properties"]["dateOfBirth"]["description"] += _MASK_D + " " + AM["s
 S["Driver"]["properties"]["sensitiveMasked"] = b("v0.18.54 §76: true on an admin answer when phone / email / dateOfBirth were masked (the admin lacks drivers.viewSensitive); absent when the values are full. The admin shows Reveal (POST /admin/drivers/{driverId}/reveal).")
 S["Fleet"]["properties"]["ownerEmail"]["description"] += _MASK_D + " " + AM["shapes"]["email"]
 S["Fleet"]["properties"]["sensitiveMasked"] = b("v0.18.54 §76: true on an admin answer when ownerEmail was masked (the admin lacks drivers.viewSensitive); absent when the value is full. The admin shows Reveal (POST /admin/fleets/{fleetId}/reveal).")
-S["WaitlistEntry"]["properties"]["phone"] = {"allOf": [ref("PhoneE164")], "description": "v0.18.54 §76: " + AM["masked"]["waitlist"]}
+S["WaitlistEntry"]["properties"]["phone"] = {"type": "string", "description": "E.164 for an admin with riders.viewSensitive; v0.18.54 §76: " + AM["masked"]["waitlist"] + " The admin accepts both shapes."}
 for _p, _k in (("/admin/riders", "riders"), ("/admin/drivers", "drivers"), ("/admin/fleets", "fleets"), ("/admin/waitlist", "waitlist")):
     PATHS[_p]["get"]["description"] = (PATHS[_p]["get"].get("description", "") + " v0.18.54 §76: " + AM["masked"][_k] + (" " + AM["search"] if _k == "riders" else "")).strip()
 PATHS["/admin/drivers/{driverId}"]["get"]["description"] += " v0.18.54 §76: " + AM["masked"]["drivers"]
