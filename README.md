@@ -27,6 +27,10 @@ The version lives in `contract.json#version` and in the first lines of
 `CONTRACT.md`. Every released version is a git tag `v<version>` on `main`.
 A consumer pins a tag, never `main`.
 
+Version order (2026-11-09, step 21): a new `version` must be higher than every released tag, compared number by
+number (0.18.10 > 0.18.9); `scripts/check_version_order.py` fails the PR otherwise. A released or given-up number
+(0.18.46) is never reused. After every merge, tag it (`git tag v<version> && git push origin v<version>`).
+
 - Additive change (a new optional field, a new endpoint): patch or minor bump.
 - Breaking change (a renamed field, a removed value, a changed transition):
   minor bump at least, named in `CONTRACT.md` with what the apps must do.
