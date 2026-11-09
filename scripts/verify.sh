@@ -31,6 +31,19 @@ tmp=$(mktemp)
 python3 tools/gen_openapi.py . "$tmp" >/dev/null
 cmp -s "$tmp" openapi.yaml || { rm -f "$tmp"; echo "openapi.yaml is not what tools/gen_openapi.py generates; run it and commit the result"; exit 1; }
 rm -f "$tmp"
+# v0.18.52 §74: restored trip never offline on a trip; offline fixes not stored (owner Q14 + Q15, 2026-11-09).
+python3 - <<'PY'
+import json, yaml
+c = json.load(open('contract.json'))
+o = c['driverHome']['offlineLocation']
+assert set(o) == {'note', 'app', 'server', 'appsNoChange'}, 'offlineLocation index'
+assert 'never go offline' in o['note'] and 'Not stored' in o['note'], 'owner words'
+assert o['server']['accepted'] == 0 and 'no active trip' in o['server']['rule'] and 'always stored' in o['server']['rule'], 'server rule'
+assert 'stops the location sender' in o['app']['rule'], 'app rule'
+assert 'stops when a trip restored after a restart ends' in c['driverHome']['backgroundLocation']['note'], 'backgroundLocation note'
+spec = yaml.safe_load(open('openapi.yaml'))
+assert 'accepted 0' in spec['paths']['/driver/location']['post']['description'], 'openapi /driver/location names the not-stored rule'
+PY
 # v0.18.51 §73: booked waiting from the later of arrival and pickup time, booked fees, L6 row, riderTripPush bell.
 python3 - <<'PY'
 import json
