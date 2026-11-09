@@ -239,4 +239,7 @@ case "$tag" in
   v*) v=$(python3 -c "import json;print(json.load(open('contract.json'))['version'])")
       [ "$tag" = "v$v" ] || { echo "tag $tag does not match contract.json version $v"; exit 1; } ;;
 esac
+# Step 21 (2026-11-09): the version must be higher than every released tag (0.18.10 > 0.18.9); a tag push of the same version passes.
+python3 scripts/check_version_order.py --self-test
+python3 scripts/check_version_order.py
 echo "contract ok"
