@@ -7038,7 +7038,7 @@
       "en": "Your driver"
     },
     "bell": "v0.18.14: also kept in the rider's Notifications list (bell true), shown in his current language.",
-    "consent": "Owner 2026-11-02 (driver-g13) and 2026-11-09 (START-HERE Q36-Q39, v0.18.53 §75): Rider.consents.rideUpdates false stops ONLY 'driver_found' and 'driver_arriving'. ALWAYS sent, whatever the switch: 'driver_arrived', 'driver_changed' (a new driver), 'trip_cancelled', 'no_driver_found', 'trip_failed'; also the booked-ride kinds reservation_no_driver, reservation_no_driver_found and reservation_lost (bookLater.push), and the support answer (support.answerPush). The server applies this in ONE place, the push dispatcher (the row is always stored for the bell)."
+    "consent": "Owner 2026-11-02 (driver-g13) and 2026-11-09 (START-HERE Q36-Q39, v0.18.53 §75): Rider.consents.rideUpdates false stops ONLY 'driver_found' and 'driver_arriving'. ALWAYS sent, whatever the switch: 'driver_arrived', 'driver_changed' (a new driver), 'trip_cancelled', 'no_driver_found', 'trip_failed'; also the booked-ride kinds reservation_no_driver and reservation_no_driver_found (bookLater.push), and the support answer (support.answerPush). The server applies this in ONE place, the push dispatcher (the row is always stored for the bell)."
   },
   "fleetShareRemoved": "v0.18.13 (owner G10-1 'Movera dont care about what fleet owner take from drivers … if there is any % u delete that'): PricingDocument.fleetCommissionPct is removed (schema, defaults, fixtures). For a fleet driver Movera pays the whole driver earnings to the fleet owner (Driver.payoutTo fleet); the owner settles with his drivers outside Movera. A document that still carries the key is accepted and the key ignored.",
   "drivingLimits": {
@@ -7192,7 +7192,7 @@
         "reservation_taken_back",
         "reservation_no_driver_found"
       ],
-      "note": "Push and Notifications list (bell), in the person's language (else the zone country's, else English); {time} is the pickup time HH:MM in the zone's time zone, {driver} the driver's first name. Deep links: rider movera://trips/{tripId}, driver movera-driver://reservations/{tripId}. v0.18.53 §75: reservation_no_driver, reservation_no_driver_found and reservation_lost to the rider are always sent, whatever Rider.consents.rideUpdates (riderTripPush.consent).",
+      "note": "Push and Notifications list (bell), in the person's language (else the zone country's, else English); {time} is the pickup time HH:MM in the zone's time zone, {driver} the driver's first name. Deep links: rider movera://trips/{tripId}, driver movera-driver://reservations/{tripId}. v0.18.53 §75: reservation_no_driver and reservation_no_driver_found to the rider are always sent, whatever Rider.consents.rideUpdates (riderTripPush.consent).",
       "texts": {
         "reservation_new": {
           "title": {
