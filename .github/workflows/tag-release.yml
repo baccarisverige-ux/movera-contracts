@@ -1,0 +1,36 @@
+name: Tag released version
+
+# Step 21 (2026-11-09, plan row 0.5): after every merge into main, the contract's
+# version gets its git tag v<version>, so consumers can pin it and the
+# version-order check has something to compare with. Runs only the cheap
+# version-order check (no pip), ~20 s; the full verify already ran on the PR.
+# A tag pushed with GITHUB_TOKEN starts no other workflow (GitHub rule), so
+# nothing else is triggered. If the tag already exists, nothing happens.
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  tag:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Version must be above every released tag
+        run: python3 scripts/check_version_order.py
+      - name: Tag v<version> on this commit (if missing)
+        run: |
+          set -eu
+          v="$(python3 -c "import json;print(json.load(open('contract.json'))['version'])")"
+          if git ls-remote --tags --refs origin "refs/tags/v$v" | grep -q .; then
+            echo "tag v$v already exists; nothing to do"; exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag -a "v$v" -m "Contract v$v"
+          git push origin "v$v"
+          echo "tagged v$v at $(git rev-parse --short HEAD)"
