@@ -1,4 +1,6 @@
-# Movera shared contract v0.18.56
+# Movera shared contract v0.18.57
+
+v0.18.57 (owner 2026-11-10, Rule 0; X-Api-Version stays `0.5`; additive; no migration): **emergency numbers per country from admin, not a fixed 112** — `CountryRules.emergencyNumbers` (country standard only) = list of `EmergencyNumber { kind police|ambulance|fire|general, number, label {sv,fr,en} }`, 1–6 rows, defaults SE 112, FR 112, TN police 197 + ambulance (SAMU) 190; copied into `RiderAppConfig.emergencyNumbers` / `DriverAppConfig.emergencyNumbers`; the safety shield, SOS, ride check "Need help" and the admin case page show them. See §79.
 
 v0.18.56 (G9 part 2 chat & calls, owner Q79–Q85 2026-11-10; X-Api-Version stays `0.5`; additive; no contract migration): **chat settings in `country_rules` with defaults** (`CountryRules.chat`: keepDays 90, maxLength 2000, spamPerMin 10, sound on, sheetAutoOpen `new_message`, readAloudDefault off, translation on, quick replies per country and side, automatic "I've arrived" on); new `GET /trips/{tripId}/messages/options`, `POST /trips/{tripId}/messages/translate` (503 `coming_soon` until a provider is set), `GET /admin/chats`, `POST /admin/drivers/{driverId}/message`, `POST /admin/riders/{riderId}/message`; automatic "I've arrived" message once per trip on tap and auto-arrive (Q85); badge from `message` events on the trip stream; incoming-call push (web; iPhone plain notification first, Q79); microphone with the screen locked after the device proof (Q80); chat header line "Problem? Use Support or SOS", no report/block button (Q81). See §78.
 
@@ -1460,3 +1462,14 @@ Owner Q79–Q85 (2026-11-10) and the G9 decisions (Rules `decisions/driver-g9.md
 - **Background microphone (`inAppCalls.background`, Q80)**: the microphone stays on with the screen locked (Android microphone service + "Movera call" notification; iOS audio mode), built after the device proof (step 69).
 - **TURN (`inAppCalls.turnEnv`)**: server environment names `MOVERA_STUN_URLS`, `MOVERA_TURN_URLS`, `MOVERA_TURN_SECRET` (names only; values never in git).
 - **Order / apps (Rule 0)**: contract → server (settings with defaults, options route, quick replies, auto arrived, spam/length, admin chats + message, translate 503, call push, TURN names in start-up check) → admin (Chat settings card + quick-reply lists, live chat list from `/admin/chats`, Message button) → driver and rider apps (stream badge, chips, sheet card + auto-open, sound, read aloud, translate link, header line, call push, background microphone).
+
+## 79. Emergency numbers per country (v0.18.57)
+
+Owner 2026-11-10 (Rule 0: contract, server, admin incl. setting, driver app, rider app). X-Api-Version stays `0.5`; additive; older apps keep working (they still show 112). contract.json#emergencyNumbers, defaults `configDefaults.emergencyNumbers`.
+
+- **Setting**: Admin › Pricing › Tips & limits per country › Emergency numbers → `CountryRules.emergencyNumbers` of the country standard, published with `country_rules` (`settings.edit` / `settings.publish`). A zone's own `country_rules` with this field → 400 `invalid_request`, reason `emergency_numbers_country_only`. Never saved = the default.
+- **Item**: `EmergencyNumber { kind: police | ambulance | fire | general, number: ^\+?[0-9]{2,15}$, label: { sv, fr, en } 1–40 }`; 1–6 rows; the first row is the main number. Bad list → 400 `invalid_request`, reason `invalid_emergency_numbers`.
+- **Defaults**: SE `112` general · FR `112` general · TN police `197`, ambulance (SAMU) `190`. No default and nothing saved → 112.
+- **Apps**: the server writes the zone country's list into `RiderAppConfig.emergencyNumbers` and `DriverAppConfig.emergencyNumbers` (config_published), like `dontMatchAgain`. Screens (both apps): shield with no trip — one "Call {label} {number}" button per row instead of "Call 112"; SOS — dials the first row and alerts Movera, the other rows as extra buttons on "SOS sent"; ride check "Need help" — same buttons; driver emergency contacts — the built-in number is the country list. Last list kept offline; fallback 112 only if none was ever received. Texts `emergencyNumbers.texts` sv/fr/en.
+- **Admin case page**: the "Emergency numbers" box shows the incident country's list (dialled from the admin's own phone). The old free-form numbers in incident settings stay stored but are no longer read (Rule 21).
+- **Order (Rule 0)**: contract → server (field + defaults + validation + copy into app configs) → admin (setting editor + case page) → driver app and rider app (screens above).
