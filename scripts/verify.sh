@@ -31,6 +31,15 @@ tmp=$(mktemp)
 python3 tools/gen_openapi.py . "$tmp" >/dev/null
 cmp -s "$tmp" openapi.yaml || { rm -f "$tmp"; echo "openapi.yaml is not what tools/gen_openapi.py generates; run it and commit the result"; exit 1; }
 rm -f "$tmp"
+# v0.18.55 §77: admin reads of a trip and its events need trips.read + the trip's zone (owner Q34, 2026-11-10).
+python3 - <<'PY'
+import yaml
+spec = yaml.safe_load(open('openapi.yaml'))
+for p in ('/trips/{tripId}', '/trips/{tripId}/events'):
+    o = spec['paths'][p]['get']
+    assert o.get('x-permission') == 'trips.read', f'{p} x-permission trips.read'
+    assert 'zone_out_of_scope' in o['description'] and 'missing_permission' in o['description'], f'{p} names the 403 reasons'
+PY
 # v0.18.52 §74: restored trip never offline on a trip; offline fixes not stored (owner Q14 + Q15, 2026-11-09).
 python3 - <<'PY'
 import json, yaml
