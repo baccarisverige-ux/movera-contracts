@@ -48,6 +48,9 @@ for path, m, perm in (('/admin/chats', 'get', 'support.reply'), ('/admin/drivers
                       ('/trips/{tripId}/messages/translate', 'post', None)):
     o = spec['paths'][path][m]
     assert o.get('x-permission') == perm, f'{m} {path} x-permission {perm}'
+for _p in ('/admin/chats', '/admin/drivers/{driverId}/message', '/admin/riders/{riderId}/message'):
+    assert 'zone_out_of_scope' in str(spec['paths'][_p]), f'{_p} names zone_out_of_scope'
+assert cs['Message']['properties']['auto']['enum'] == ['arrived', 'on_my_way'], 'Message.auto'
 assert 'coming_soon' in spec['paths']['/trips/{tripId}/messages/translate']['post']['description'], 'translate 503 coming_soon'
 assert 'once per trip' in spec['paths']['/trips/{tripId}/arrive']['post']['description'], 'auto arrived once per trip'
 assert c['inAppCalls']['turnEnv']['names'] == ['MOVERA_STUN_URLS', 'MOVERA_TURN_URLS', 'MOVERA_TURN_SECRET'], 'TURN names'

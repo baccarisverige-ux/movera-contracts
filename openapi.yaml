@@ -1020,7 +1020,10 @@ paths:
       description: 'v0.5.4, CONTRACT.md §4. The rider''s "I''m on the way" (shown once the driver has arrived, also while
         the driver is coming) reaches the driver as a `rider_on_the_way` realtime event carrying the current projection. Not
         a lifecycle transition: status and version do not change. Allowed while the trip is accepted, driver_to_pickup or
-        arrived; any other state → 409 invalid_transition. No request body.'
+        arrived; any other state → 409 invalid_transition. No request body. v0.18.56 §78: When the rider calls POST /trips/{tripId}/on-the-way
+        the server, besides the rider_on_the_way event, writes ONE chat message from the rider, Message.auto = on_my_way,
+        once per trip (a repeat writes none), in the DRIVER''s app language (Driver.language, else the zone country''s language,
+        else en); kind message on the trip stream (the driver''s sheet card).'
       tags:
       - Rider · Booking
       x-actor:
@@ -17409,10 +17412,13 @@ paths:
       operationId: translateTripMessage
       summary: Translate one chat message (503 coming_soon until a provider is set)
       description: 'v0.18.56 §78: POST /trips/{tripId}/messages/translate { messageId, to: sv|fr|en } by the trip''s rider
-        or driver (open trip, a message of that trip) → 200 TranslatedMessage { messageId, to, text } when a translation provider
-        is configured on the server (keys only in the server environment). Until one is configured: 503 unavailable, reason
-        coming_soon; the app shows "Translation coming soon". CountryRules.chat.translation false → 403 forbidden, reason
-        translation_off. Nothing is stored.'
+        or driver (open trip, a message of that trip) (to = the trip zone country''s language: in France → French, in Sweden
+        → Swedish; owner''s words decisions/driver-g9.md 2b; owner to confirm) → 200 TranslatedMessage { messageId, to, text
+        } when a translation provider is configured on the server (keys only in the server environment). Until one is configured:
+        503 unavailable, reason coming_soon; the app shows "Translation coming soon". CountryRules.chat.translation false
+        → 403 forbidden, reason translation_off. Nothing is stored. Target language (owner to confirm): the trip zone country''s
+        language (FR → fr, SE → sv); the link reads "Translate to <that language>". Another to is 400 invalid_request, reason
+        translate_target_not_allowed.'
       tags:
       - Notifications & messages
       x-actor:
@@ -20605,11 +20611,15 @@ components:
           type: string
           enum:
           - arrived
+          - on_my_way
           description: 'v0.18.56 §78: When the trip goes to arrived through POST /trips/{tripId}/arrive, both on the driver''s
             tap and on auto-arrive (the driver app''s arrival geofence calls the same route), the server writes ONE chat message
             from the driver, Message.auto = arrived, once per trip (a second arrive, a retry or a resync writes none). The
             text is CountryRules.chat.autoArrived.text in the RIDER''s app language (Rider.language, else the zone country''s
-            language, else en).'
+            language, else en). When the rider calls POST /trips/{tripId}/on-the-way the server, besides the rider_on_the_way
+            event, writes ONE chat message from the rider, Message.auto = on_my_way, once per trip (a repeat writes none),
+            in the DRIVER''s app language (Driver.language, else the zone country''s language, else en); kind message on the
+            trip stream (the driver''s sheet card).'
     TripCall:
       type: object
       description: 'v0.13.0: a masked call between the trip''s rider and driver (contract.json#chat.call). v0.18.38 §62: POST
@@ -26784,8 +26794,8 @@ components:
             pin_blocked, pin_trip_over, not_a_no_show. v0.18.24 reason: too_many_requests (429 rate_limited, contract.json#rateLimit).
             v0.18.30 reasons: invalid_ticket_category, invalid_ticket_body (contract.json#smallFixes.ticketReasons). v0.18.44
             reason: dropoff_too_close (400 invalid_request, contract.json#sameAddress). v0.18.49 reason: sign_out_on_trip
-            (409 conflict, contract.json#auth.signOutOnTrip). v0.18.56 reasons: message_too_long, unknown_quick_reply (400
-            invalid_request), translation_off (403 forbidden), coming_soon (503 unavailable) (contract.json#chat, §78).'
+            (409 conflict, contract.json#auth.signOutOnTrip). v0.18.56 reasons: message_too_long, unknown_quick_reply, translate_target_not_allowed
+            (400 invalid_request), translation_off (403 forbidden), coming_soon (503 unavailable) (contract.json#chat, §78).'
         details:
           type: array
           items:
@@ -34397,6 +34407,11 @@ components:
                 sv: Var exakt är du?
                 fr: Où êtes-vous exactement ?
                 en: Where exactly are you?
+            - id: ok_got_it
+              text:
+                sv: OK, uppfattat!
+                fr: D'accord, bien reçu !
+                en: OK, got it!
             rider:
             - id: coming_now
               text:
@@ -34450,7 +34465,7 @@ components:
             'on': true
             text:
               sv: Jag är framme vid upphämtningsplatsen.
-              fr: Je suis arrivé au point de prise en charge.
+              fr: Je suis au point de prise en charge.
               en: I've arrived at the pickup point.
     ChatOptions:
       type: object
@@ -34512,10 +34527,13 @@ components:
     TranslateMessageRequest:
       type: object
       description: 'v0.18.56 §78: POST /trips/{tripId}/messages/translate { messageId, to: sv|fr|en } by the trip''s rider
-        or driver (open trip, a message of that trip) → 200 TranslatedMessage { messageId, to, text } when a translation provider
-        is configured on the server (keys only in the server environment). Until one is configured: 503 unavailable, reason
-        coming_soon; the app shows "Translation coming soon". CountryRules.chat.translation false → 403 forbidden, reason
-        translation_off. Nothing is stored.'
+        or driver (open trip, a message of that trip) (to = the trip zone country''s language: in France → French, in Sweden
+        → Swedish; owner''s words decisions/driver-g9.md 2b; owner to confirm) → 200 TranslatedMessage { messageId, to, text
+        } when a translation provider is configured on the server (keys only in the server environment). Until one is configured:
+        503 unavailable, reason coming_soon; the app shows "Translation coming soon". CountryRules.chat.translation false
+        → 403 forbidden, reason translation_off. Nothing is stored. Target language (owner to confirm): the trip zone country''s
+        language (FR → fr, SE → sv); the link reads "Translate to <that language>". Another to is 400 invalid_request, reason
+        translate_target_not_allowed.'
       required:
       - messageId
       - to

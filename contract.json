@@ -3782,6 +3782,14 @@
               "fr": "Où êtes-vous exactement ?",
               "en": "Where exactly are you?"
             }
+          },
+          {
+            "id": "ok_got_it",
+            "text": {
+              "sv": "OK, uppfattat!",
+              "fr": "D'accord, bien reçu !",
+              "en": "OK, got it!"
+            }
           }
         ],
         "rider": [
@@ -3823,7 +3831,7 @@
         "on": true,
         "text": {
           "sv": "Jag är framme vid upphämtningsplatsen.",
-          "fr": "Je suis arrivé au point de prise en charge.",
+          "fr": "Je suis au point de prise en charge.",
           "en": "I've arrived at the pickup point."
         }
       }
@@ -3931,7 +3939,7 @@
       "unavailable",
       "internal"
     ],
-    "reason": "optional machine-readable detail under a code (snake_case), e.g. invalid_request + invalid_phone, invalid_otp_code, invalid_otp_session; never shown to users as is. v0.15.0: the sign-in reasons are listed in auth.signInErrors. v0.18.5 reasons: invalid_file_content, categories_required, note_required, expiry_too_far, driver_photo_unavailable, legal_country_unknown. v0.18.7 reasons: pickup_move_too_far, pickup_fixed_after_arrival, route_change_not_available. v0.18.8 reasons: pin_required, pin_wrong, pin_locked, pin_not_required, pin_not_now, pin_blocked, pin_trip_over, not_a_no_show. v0.18.24 reason: too_many_requests (429 rate_limited, contract.json#rateLimit). v0.18.30 reasons: invalid_ticket_category, invalid_ticket_body (contract.json#smallFixes.ticketReasons). v0.18.44 reason: dropoff_too_close (400 invalid_request, contract.json#sameAddress). v0.18.49 reason: sign_out_on_trip (409 conflict, contract.json#auth.signOutOnTrip). v0.18.56 reasons: message_too_long, unknown_quick_reply (400 invalid_request), translation_off (403 forbidden), coming_soon (503 unavailable) (contract.json#chat, §78)."
+    "reason": "optional machine-readable detail under a code (snake_case), e.g. invalid_request + invalid_phone, invalid_otp_code, invalid_otp_session; never shown to users as is. v0.15.0: the sign-in reasons are listed in auth.signInErrors. v0.18.5 reasons: invalid_file_content, categories_required, note_required, expiry_too_far, driver_photo_unavailable, legal_country_unknown. v0.18.7 reasons: pickup_move_too_far, pickup_fixed_after_arrival, route_change_not_available. v0.18.8 reasons: pin_required, pin_wrong, pin_locked, pin_not_required, pin_not_now, pin_blocked, pin_trip_over, not_a_no_show. v0.18.24 reason: too_many_requests (429 rate_limited, contract.json#rateLimit). v0.18.30 reasons: invalid_ticket_category, invalid_ticket_body (contract.json#smallFixes.ticketReasons). v0.18.44 reason: dropoff_too_close (400 invalid_request, contract.json#sameAddress). v0.18.49 reason: sign_out_on_trip (409 conflict, contract.json#auth.signOutOnTrip). v0.18.56 reasons: message_too_long, unknown_quick_reply, translate_target_not_allowed (400 invalid_request), translation_off (403 forbidden), coming_soon (503 unavailable) (contract.json#chat, §78)."
   },
   "headers": {
     "Idempotency-Key": "required on every mutation, 16–128 chars",
@@ -5393,7 +5401,7 @@
     },
     "translate": {
       "note": "v0.18.56 §78 (G9 part 2, owner Q79–Q85 2026-11-10): translation link (G9-2.10, owner g9 2b, 3).",
-      "route": "POST /trips/{tripId}/messages/translate { messageId, to: sv|fr|en } by the trip's rider or driver (open trip, a message of that trip) → 200 TranslatedMessage { messageId, to, text } when a translation provider is configured on the server (keys only in the server environment). Until one is configured: 503 unavailable, reason coming_soon; the app shows \"Translation coming soon\". CountryRules.chat.translation false → 403 forbidden, reason translation_off. Nothing is stored.",
+      "route": "POST /trips/{tripId}/messages/translate { messageId, to: sv|fr|en } by the trip's rider or driver (open trip, a message of that trip) (to = the trip zone country's language: in France → French, in Sweden → Swedish; owner's words decisions/driver-g9.md 2b; owner to confirm) → 200 TranslatedMessage { messageId, to, text } when a translation provider is configured on the server (keys only in the server environment). Until one is configured: 503 unavailable, reason coming_soon; the app shows \"Translation coming soon\". CountryRules.chat.translation false → 403 forbidden, reason translation_off. Nothing is stored.",
       "texts": {
         "translateTo": {
           "sv": "Översätt till {language}",
@@ -5405,7 +5413,8 @@
           "fr": "Traduction bientôt disponible",
           "en": "Translation coming soon"
         }
-      }
+      },
+      "target": "Target language (owner to confirm): the trip zone country's language (FR → fr, SE → sv); the link reads \"Translate to <that language>\". Another to is 400 invalid_request, reason translate_target_not_allowed."
     },
     "adminChats": {
       "note": "v0.18.56 §78 (G9 part 2, owner Q79–Q85 2026-11-10): admin live chat list (G9-2.16, AUDIT A15 N16).",
@@ -5416,6 +5425,16 @@
       "note": "v0.18.56 §78 (G9 part 2, owner Q79–Q85 2026-11-10): admin \"Message\" on a driver or rider page (G9-2.12, owner g9 Q5).",
       "route": "POST /admin/drivers/{driverId}/message and POST /admin/riders/{riderId}/message { text (1–2000) } (support.reply; the person must have a zone in the admin's zones, Super admin: all, else 403 forbidden, reason zone_out_of_scope) → 201 SupportTicket: the server opens a support ticket for that person (openedBy admin, topic help, the text as its first message from support, zoneId = the person's first zone), which the person sees in the app's Support inbox (GET /support/tickets) and answers there. Audited driver.message / rider.message { ticketId } (never the text).",
       "push": "No push in this version: the push half is IN-OTHER.1, the first job of G13. The person sees the message on the next open of Support."
+    },
+    "retentionV0_18_56": "v0.18.56 §78: chat.retentionDays (90) and the fixed 90 days in chat.retention are replaced by CountryRules.chat.keepDays (default 90, configDefaults.chat.keepDays); the daily purge reads the setting of the trip zone's country. The safety-case rule is unchanged.",
+    "onTheWay": {
+      "note": "v0.18.56 §78: the rider's \"I'm on my way\" also lands in the driver's chat (G9-2.14, owner g9 Q4).",
+      "when": "When the rider calls POST /trips/{tripId}/on-the-way the server, besides the rider_on_the_way event, writes ONE chat message from the rider, Message.auto = on_my_way, once per trip (a repeat writes none), in the DRIVER's app language (Driver.language, else the zone country's language, else en); kind message on the trip stream (the driver's sheet card).",
+      "text": {
+        "sv": "Jag är på väg till bilen.",
+        "fr": "Je suis en route vers la voiture.",
+        "en": "I'm on my way to the car."
+      }
     }
   },
   "tripPath": {

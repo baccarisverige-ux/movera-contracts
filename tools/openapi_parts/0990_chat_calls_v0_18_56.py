@@ -28,7 +28,7 @@ S["ChatOptions"] = obj({"quickReplies": arr(ref("QuickReply")), "quickRepliesOn"
                        _V + CH["settings"]["apps"] + " " + CH["header"]["note"])
 S["MessageRequest"]["properties"]["quickReplyId"] = s(_V + CH["quickReplies"]["send"], pattern="^[a-z][a-z0-9_]{0,39}$")
 S["Message"]["properties"]["quickReplyId"] = s(_V + "set when the message was sent from a quick-reply chip.")
-S["Message"]["properties"]["auto"] = s(_V + CH["autoArrived"]["when"] + " " + CH["autoArrived"]["language"], enum=["arrived"])
+S["Message"]["properties"]["auto"] = s(_V + CH["autoArrived"]["when"] + " " + CH["autoArrived"]["language"] + " " + CH["onTheWay"]["when"], enum=["arrived", "on_my_way"])
 S["TranslateMessageRequest"] = obj({"messageId": ref("Id"), "to": s(enum=["sv", "fr", "en"])}, ["messageId", "to"], _V + CH["translate"]["route"])
 S["TranslatedMessage"] = obj({"messageId": ref("Id"), "to": s(enum=["sv", "fr", "en"]), "text": s(minLength=1)}, ["messageId", "to", "text"], _V + "nothing is stored.")
 S["AdminChatRow"] = obj({"tripId": ref("Id"), "zoneId": ref("Id"), "status": ref("TripStatus"), "riderFirstName": {"type": ["string", "null"]},
@@ -41,7 +41,7 @@ S["AdminPersonMessageCommand"] = obj({"text": s(minLength=1, maxLength=2000)}, [
 op("get", "/trips/{tripId}/messages/options", "tripChatOptions", "Chat options of the trip: quick replies and chat settings", ["rider", "driver"], "Notifications & messages",
    params=TID, ok=(200, "ChatOptions"), desc=_V + CH["settings"]["apps"])
 op("post", "/trips/{tripId}/messages/translate", "translateTripMessage", "Translate one chat message (503 coming_soon until a provider is set)", ["rider", "driver"], "Notifications & messages",
-   params=TID, body="TranslateMessageRequest", ok=(200, "TranslatedMessage"), desc=_V + CH["translate"]["route"])
+   params=TID, body="TranslateMessageRequest", ok=(200, "TranslatedMessage"), desc=_V + CH["translate"]["route"] + " " + CH["translate"]["target"])
 op("get", "/admin/chats", "adminChats", "Open trips with chat messages (live chat list)", ["admin"], "Admin · Support",
    params=[pref("ListZoneId"), pref("ListZoneIds"), pref("ListCountry"), pref("Cursor"), pref("Limit")], ok=(200, "AdminChatPage"), permission="support.reply",
    desc=_V + CH["adminChats"]["route"] + " " + CH["adminChats"]["row"])
@@ -56,3 +56,5 @@ _m["get"]["description"] += " " + _V + CH["stream"]["badge"] + " " + CH["stream"
 _m["post"]["description"] += " " + _V + CHF["maxLength"] + " " + CHF["spamPerMin"] + " " + CH["quickReplies"]["send"]
 PATHS["/trips/{tripId}/arrive"]["post"]["description"] += " " + _V + CH["autoArrived"]["when"] + " " + CH["autoArrived"]["language"] + " " + CH["autoArrived"]["off"]
 PATHS["/trips/{tripId}/call"]["post"]["description"] += " " + _V + IC56["push"]["when"] + " " + IC56["push"]["iphone"] + " " + IC56["background"]["rule"] + " Server environment names: " + ", ".join(IC56["turnEnv"]["names"]) + "."
+PATHS["/trips/{tripId}/on-the-way"]["post"]["description"] += " " + _V + CH["onTheWay"]["when"]
+S["TranslateMessageRequest"]["description"] += " " + CH["translate"]["target"]
