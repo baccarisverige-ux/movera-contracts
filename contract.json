@@ -5414,7 +5414,7 @@
           "en": "Translation coming soon"
         }
       },
-      "target": "Target language (owner A1): the reading user's own app language; the link reads \"Translate to <that language>\". Another to is 400 invalid_request, reason translate_target_not_allowed."
+      "target": "Target language (owner A1): the reading user's own app language; the link reads \"Translate to <that language>\". Under each translated message the app shows a link \"See original\" that switches back to the original text, and then \"Translate\" again (owner 2026-11-10); the original text is always kept in the app. Another to is 400 invalid_request, reason translate_target_not_allowed."
     },
     "adminChats": {
       "note": "v0.18.56 §78 (G9 part 2, owner Q79–Q85 2026-11-10): admin live chat list (G9-2.16, AUDIT A15 N16).",

@@ -17417,7 +17417,9 @@ paths:
         (keys only in the server environment). Until one is configured: 503 unavailable, reason coming_soon; the app shows
         "Translation coming soon". CountryRules.chat.translation false → 403 forbidden, reason translation_off. Nothing is
         stored. Target language (owner A1): the reading user''s own app language; the link reads "Translate to <that language>".
-        Another to is 400 invalid_request, reason translate_target_not_allowed.'
+        Under each translated message the app shows a link "See original" that switches back to the original text, and then
+        "Translate" again (owner 2026-11-10); the original text is always kept in the app. Another to is 400 invalid_request,
+        reason translate_target_not_allowed.'
       tags:
       - Notifications & messages
       x-actor:
@@ -34531,7 +34533,9 @@ components:
         (keys only in the server environment). Until one is configured: 503 unavailable, reason coming_soon; the app shows
         "Translation coming soon". CountryRules.chat.translation false → 403 forbidden, reason translation_off. Nothing is
         stored. Target language (owner A1): the reading user''s own app language; the link reads "Translate to <that language>".
-        Another to is 400 invalid_request, reason translate_target_not_allowed.'
+        Under each translated message the app shows a link "See original" that switches back to the original text, and then
+        "Translate" again (owner 2026-11-10); the original text is always kept in the app. Another to is 400 invalid_request,
+        reason translate_target_not_allowed.'
       required:
       - messageId
       - to
