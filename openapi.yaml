@@ -17412,13 +17412,12 @@ paths:
       operationId: translateTripMessage
       summary: Translate one chat message (503 coming_soon until a provider is set)
       description: 'v0.18.56 §78: POST /trips/{tripId}/messages/translate { messageId, to: sv|fr|en } by the trip''s rider
-        or driver (open trip, a message of that trip) (to = the trip zone country''s language: in France → French, in Sweden
-        → Swedish; owner''s words decisions/driver-g9.md 2b; owner to confirm) → 200 TranslatedMessage { messageId, to, text
-        } when a translation provider is configured on the server (keys only in the server environment). Until one is configured:
-        503 unavailable, reason coming_soon; the app shows "Translation coming soon". CountryRules.chat.translation false
-        → 403 forbidden, reason translation_off. Nothing is stored. Target language (owner to confirm): the trip zone country''s
-        language (FR → fr, SE → sv); the link reads "Translate to <that language>". Another to is 400 invalid_request, reason
-        translate_target_not_allowed.'
+        or driver (open trip, a message of that trip) (to = the reading user''s own app language, sv|fr|en; owner answer A1
+        2026-11-10) → 200 TranslatedMessage { messageId, to, text } when a translation provider is configured on the server
+        (keys only in the server environment). Until one is configured: 503 unavailable, reason coming_soon; the app shows
+        "Translation coming soon". CountryRules.chat.translation false → 403 forbidden, reason translation_off. Nothing is
+        stored. Target language (owner A1): the reading user''s own app language; the link reads "Translate to <that language>".
+        Another to is 400 invalid_request, reason translate_target_not_allowed.'
       tags:
       - Notifications & messages
       x-actor:
@@ -34527,13 +34526,12 @@ components:
     TranslateMessageRequest:
       type: object
       description: 'v0.18.56 §78: POST /trips/{tripId}/messages/translate { messageId, to: sv|fr|en } by the trip''s rider
-        or driver (open trip, a message of that trip) (to = the trip zone country''s language: in France → French, in Sweden
-        → Swedish; owner''s words decisions/driver-g9.md 2b; owner to confirm) → 200 TranslatedMessage { messageId, to, text
-        } when a translation provider is configured on the server (keys only in the server environment). Until one is configured:
-        503 unavailable, reason coming_soon; the app shows "Translation coming soon". CountryRules.chat.translation false
-        → 403 forbidden, reason translation_off. Nothing is stored. Target language (owner to confirm): the trip zone country''s
-        language (FR → fr, SE → sv); the link reads "Translate to <that language>". Another to is 400 invalid_request, reason
-        translate_target_not_allowed.'
+        or driver (open trip, a message of that trip) (to = the reading user''s own app language, sv|fr|en; owner answer A1
+        2026-11-10) → 200 TranslatedMessage { messageId, to, text } when a translation provider is configured on the server
+        (keys only in the server environment). Until one is configured: 503 unavailable, reason coming_soon; the app shows
+        "Translation coming soon". CountryRules.chat.translation false → 403 forbidden, reason translation_off. Nothing is
+        stored. Target language (owner A1): the reading user''s own app language; the link reads "Translate to <that language>".
+        Another to is 400 invalid_request, reason translate_target_not_allowed.'
       required:
       - messageId
       - to

@@ -5401,7 +5401,7 @@
     },
     "translate": {
       "note": "v0.18.56 §78 (G9 part 2, owner Q79–Q85 2026-11-10): translation link (G9-2.10, owner g9 2b, 3).",
-      "route": "POST /trips/{tripId}/messages/translate { messageId, to: sv|fr|en } by the trip's rider or driver (open trip, a message of that trip) (to = the trip zone country's language: in France → French, in Sweden → Swedish; owner's words decisions/driver-g9.md 2b; owner to confirm) → 200 TranslatedMessage { messageId, to, text } when a translation provider is configured on the server (keys only in the server environment). Until one is configured: 503 unavailable, reason coming_soon; the app shows \"Translation coming soon\". CountryRules.chat.translation false → 403 forbidden, reason translation_off. Nothing is stored.",
+      "route": "POST /trips/{tripId}/messages/translate { messageId, to: sv|fr|en } by the trip's rider or driver (open trip, a message of that trip) (to = the reading user's own app language, sv|fr|en; owner answer A1 2026-11-10) → 200 TranslatedMessage { messageId, to, text } when a translation provider is configured on the server (keys only in the server environment). Until one is configured: 503 unavailable, reason coming_soon; the app shows \"Translation coming soon\". CountryRules.chat.translation false → 403 forbidden, reason translation_off. Nothing is stored.",
       "texts": {
         "translateTo": {
           "sv": "Översätt till {language}",
@@ -5414,7 +5414,7 @@
           "en": "Translation coming soon"
         }
       },
-      "target": "Target language (owner to confirm): the trip zone country's language (FR → fr, SE → sv); the link reads \"Translate to <that language>\". Another to is 400 invalid_request, reason translate_target_not_allowed."
+      "target": "Target language (owner A1): the reading user's own app language; the link reads \"Translate to <that language>\". Another to is 400 invalid_request, reason translate_target_not_allowed."
     },
     "adminChats": {
       "note": "v0.18.56 §78 (G9 part 2, owner Q79–Q85 2026-11-10): admin live chat list (G9-2.16, AUDIT A15 N16).",
