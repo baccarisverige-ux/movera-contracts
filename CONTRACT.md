@@ -1,4 +1,6 @@
-# Movera shared contract v0.18.57
+# Movera shared contract v0.18.58
+
+v0.18.58 (owner 2026-11-10, Rule 0; X-Api-Version stays `0.5`; additive; no migration): **"counts as arrived" distance per zone, larger at airports** — `DriverAppConfig.cancelFees.earlyEnd.arrivedWithinMeters` (default 300, 50–2000) and `airportArrivedWithinMeters` (default 1000, 100–3000, used when the drop-off is in a `Zone.kind` airport zone) replace the fixed `pricing.completeNearDropoffMeters` 300; within the limit a driver completion is a normal finish, not "ended early". `CompletePreview` gains `arrivedLimitMeters`, `distanceToDropoffMeters`. See §80.
 
 v0.18.57 (owner 2026-11-10, Rule 0; X-Api-Version stays `0.5`; additive; no migration): **emergency numbers per country from admin, not a fixed 112** — `CountryRules.emergencyNumbers` (country standard only) = list of `EmergencyNumber { kind police|ambulance|fire|general, number, label {sv,fr,en} }`, 1–6 rows, defaults SE 112, FR 112, TN police 197 + ambulance (SAMU) 190; copied into `RiderAppConfig.emergencyNumbers` / `DriverAppConfig.emergencyNumbers`; the safety shield, SOS, ride check "Need help" and the admin case page show them. See §79.
 
@@ -1473,3 +1475,14 @@ Owner 2026-11-10 (Rule 0: contract, server, admin incl. setting, driver app, rid
 - **Apps**: the server writes the zone country's list into `RiderAppConfig.emergencyNumbers` and `DriverAppConfig.emergencyNumbers` (config_published), like `dontMatchAgain`. Screens (both apps): shield with no trip — one "Call {label} {number}" button per row instead of "Call 112"; SOS — dials the first row and alerts Movera, the other rows as extra buttons on "SOS sent"; ride check "Need help" — same buttons; driver emergency contacts — the built-in number is the country list. Last list kept offline; fallback 112 only if none was ever received. Texts `emergencyNumbers.texts` sv/fr/en.
 - **Admin case page**: the "Emergency numbers" box shows the incident country's list (dialled from the admin's own phone). The old free-form numbers in incident settings stay stored but are no longer read (Rule 21).
 - **Order (Rule 0)**: contract → server (field + defaults + validation + copy into app configs) → admin (setting editor + case page) → driver app and rider app (screens above).
+
+## 80. Counts-as-arrived distance per zone (v0.18.58)
+
+Owner 2026-11-10 (Rule 0), after a Tunis trip was marked "Terminée plus tôt" when the driver completed ~940 m from the airport drop pin. Until now the limit was fixed: `pricing.completeNearDropoffMeters` 300 (owner decision 28). X-Api-Version stays `0.5`; additive. contract.json#arrivedDistance.
+
+- **Settings** (`EarlyEndSettings`, i.e. `DriverAppConfig.cancelFees.earlyEnd`, Admin › Cancellation › Ended early, per zone or country standard, next to `repriceOverKm` / `repriceOverMin`): `arrivedWithinMeters` default 300 (50–2000) · `airportArrivedWithinMeters` default 1000 (100–3000). Out of range, or airport below normal → 400 `invalid_request`, reason `invalid_arrived_distance`.
+- **Airport**: the airport value applies when the drop-off is inside a zone of kind `airport` (same lookup as `fees.airportDropoff`); the values are read from the trip's priced (pickup) zone.
+- **Rule**: complete / complete-preview with the driver's latest fix within the limit (or no fix) → normal finish (booked fare, stop waiting, drop-off airport fee, `endedEarly` false); farther → driver early end as before. Kept at booking in `bookingSnapshot.earlyEnd`; trips booked earlier use 300 / 1000.
+- **Preview**: `CompletePreview.arrivedLimitMeters` and `distanceToDropoffMeters` (absent with no fix).
+- **Old field**: `pricing.completeNearDropoffMeters` stays as the fallback value (Rule 21). Past trips are not re-judged; support uses driver-pay change / refund.
+- **Order (Rule 0)**: contract → server (fields, defaults, validation, airport lookup, snapshot, preview fields) → admin (two inputs in Cancellation) → driver app (uses the preview; "You are {m} m from the destination – the trip ends early" warning) → rider app (no new screen; receipt / sheet already follow `endedEarly`; check nothing hard-codes 300 m).

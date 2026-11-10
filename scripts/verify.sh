@@ -31,6 +31,22 @@ tmp=$(mktemp)
 python3 tools/gen_openapi.py . "$tmp" >/dev/null
 cmp -s "$tmp" openapi.yaml || { rm -f "$tmp"; echo "openapi.yaml is not what tools/gen_openapi.py generates; run it and commit the result"; exit 1; }
 rm -f "$tmp"
+# v0.18.58 §80: counts-as-arrived distance per zone, larger at airports (owner 2026-11-10).
+python3 - <<'PY'
+import json, yaml
+c = json.load(open('contract.json'))
+spec = yaml.safe_load(open('openapi.yaml'))
+d = c['configDefaults']['earlyEnd']
+assert (d['arrivedWithinMeters'], d['airportArrivedWithinMeters'], d['repriceOverKm'], d['repriceOverMin']) == (300, 1000, 2, 10), 'earlyEnd defaults'
+p = spec['components']['schemas']['EarlyEndSettings']['properties']
+assert (p['arrivedWithinMeters']['minimum'], p['arrivedWithinMeters']['maximum'], p['arrivedWithinMeters']['default']) == (50, 2000, 300), 'arrivedWithinMeters'
+assert (p['airportArrivedWithinMeters']['minimum'], p['airportArrivedWithinMeters']['maximum'], p['airportArrivedWithinMeters']['default']) == (100, 3000, 1000), 'airportArrivedWithinMeters'
+assert 'invalid_arrived_distance' in p['arrivedWithinMeters']['description'] and 'kind airport' in p['airportArrivedWithinMeters']['description'], 'reason + airport rule'
+cp = spec['components']['schemas']['CompletePreview']['properties']
+assert 'arrivedLimitMeters' in cp and 'distanceToDropoffMeters' in cp, 'CompletePreview limit fields'
+for t in c['arrivedDistance']['texts'].values():
+    assert set(t) == {'sv', 'fr', 'en'} and all(t.values()), 'texts sv/fr/en'
+PY
 # v0.18.57 §79: emergency numbers per country from admin (owner 2026-11-10).
 python3 - <<'PY'
 import json, yaml
