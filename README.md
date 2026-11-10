@@ -6,8 +6,8 @@ serve all three. This repository is the only place the contract changes.
 Each app and the server carries a byte-for-byte copy under `contracts/` and checks it
 against `CHECKSUMS`.
 
-Current version: **0.18.58** (`contract.json#version`, tag `v0.18.58`). All four consumers
-(server, admin, driver, rider) carry 0.18.54 (0.18.55 to 0.18.58 land in them after the merge).
+Current version: **0.18.59** (`contract.json#version`, tag `v0.18.59`). All four consumers
+(server, admin, driver, rider) carry 0.18.54 (0.18.55 to 0.18.59 land in them after the merge).
 
 ## What is here
 
@@ -87,7 +87,7 @@ test become the next version, landed in all consumers together.
 
 ## History
 
-v0.5.4 to v0.18.58 (October–November 2026): the notes of every version are at the top of
+v0.5.4 to v0.18.59 (October–November 2026): the notes of every version are at the top of
 `CONTRACT.md`, newest first.
 
 v0.5.3 (25 October 2026): driver sign-up details, fleets with a join code, the documents each
