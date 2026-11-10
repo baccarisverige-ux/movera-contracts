@@ -3,10 +3,11 @@
 One contract for the three Movera apps and the server: **Rider** (Flutter),
 **Driver** (Flutter), **Admin** (React/TypeScript), and the backend that will
 serve all three. This repository is the only place the contract changes.
-Each app carries a byte-for-byte copy under `contracts/` and checks it against
-`CHECKSUMS`; the server builds against a tag.
+Each app and the server carries a byte-for-byte copy under `contracts/` and checks it
+against `CHECKSUMS`.
 
-Current version: **0.5.3** (`contract.json#version`, tag `v0.5.3`). Consumers still on v0.4.4, v0.5.0, v0.5.1 or v0.5.2 move to it in one PR set.
+Current version: **0.18.54** (`contract.json#version`, tag `v0.18.54`). All four consumers
+(server, admin, driver, rider) carry 0.18.54.
 
 ## What is here
 
@@ -19,7 +20,8 @@ Current version: **0.5.3** (`contract.json#version`, tag `v0.5.3`). Consumers st
 | `reference_check.py` | Reference engine: proves the fixtures agree with `contract.json` |
 | `tools/gen_openapi.py` | Generates `openapi.yaml` from `contract.json` plus the hand-written surface |
 | `CHECKSUMS` | sha256 of every file above, the list the apps' copy tests read |
-| `scripts/` | `verify.sh` (the checks CI runs), `checksums.sh` (rewrites `CHECKSUMS`), `sync.sh` (copies the contract into an app) |
+| `scripts/` | `verify.sh` (the checks CI runs), `checksums.sh` (rewrites `CHECKSUMS`), `sync.sh` (copies the contract into an app), `check_version_order.py` (the new version is higher than every tag) |
+| `docs/` | Audit notes (not part of the contract, not in `CHECKSUMS`) |
 
 ## Versions and tags
 
@@ -42,21 +44,40 @@ number (0.18.10 > 0.18.9); `scripts/check_version_order.py` fails the PR otherwi
    (needs `pyyaml`); add or update fixtures for the change.
 2. `python3 reference_check.py` must pass. Bump `version`.
 3. `scripts/checksums.sh`, then `scripts/verify.sh`.
-4. Open a pull request. CI runs `scripts/verify.sh`.
-5. After the merge, tag: `git tag v<version> && git push origin v<version>`.
-   CI checks that the tag matches `contract.json#version`.
-6. Land the same version in every consumer in one go: run `scripts/sync.sh
-   <app-dir>` from the tag in each app repository and open one pull request
-   per app (the admin panel also bumps `webapp/src/domain/contract.ts`).
+4. Open a pull request. CI (`.github/workflows/verify.yml`, "Contract checks") runs
+   `scripts/verify.sh` on pull requests and on `v*` tags, not on pushes to `main`
+   (owner 2026-11-06); drafts are skipped.
+5. After the merge, `.github/workflows/tag-release.yml` ("Tag released version") tags
+   `v<version>` on the merge commit if that tag is missing (step 21, 2026-11-09). By hand it
+   is `git tag v<version> && git push origin v<version>`; `verify.sh` on the tag checks that
+   it matches `contract.json#version`.
+6. Land the same version in every consumer in one go (Rule 43(4): the copy PRs start right
+   after the merge, one per repo): in each consumer run its sync script with the tag
+   (`tools/sync_contract.sh v<version>` in the server and the admin, `tool/sync_contract.sh
+   v<version>` in the driver and rider apps; each runs this repo's `scripts/sync.sh`) and
+   commit `contracts/` exactly as it comes out. Never edit a consumer's `contracts/` by hand.
+   The admin panel also bumps `CONTRACT_VERSION` in `webapp/src/domain/contract.ts`. Each
+   consumer's "Contract copy" workflow checks the copy on every PR and push, and once a day
+   opens or closes the issue "Contract copy behind movera-contracts main".
 
 ## Consumers
 
 | Consumer | Copy | Pinned |
 |---|---|---|
-| `baccarisverige-ux/movera-rider-app` | `contracts/` | v0.4.4 |
-| `baccarisverige-ux/Movera-driver-app` | `contracts/` | v0.4.4 |
-| `baccarisverige-ux/admin-panel-movera-dispatch` | `contracts/` + `CONTRACT_VERSION` in `webapp/src/domain/contract.ts` | v0.4.4 |
-| Server | builds against a tag | to be set |
+| `baccarisverige-ux/movera-rider-app` | `contracts/` (`tool/sync_contract.sh`) | v0.18.54 |
+| `baccarisverige-ux/Movera-driver-app` | `contracts/` (`tool/sync_contract.sh`) | v0.18.54 |
+| `baccarisverige-ux/Admin-panel-movera-dispatch` | `contracts/` (`tools/sync_contract.sh`) + `CONTRACT_VERSION` in `webapp/src/domain/contract.ts` | v0.18.54 |
+| `baccarisverige-ux/movera-server` | `contracts/` (`tools/sync_contract.sh`); `test/contract_copy.test.ts` fails on drift | v0.18.54 |
+
+## Working rules
+
+- The owner's memory for the whole project is the Rules repository (`Movera-team/Rules`:
+  `RULES.md`, `decisions/`, `plan/`). Read it before changing anything here.
+- Rule 25: a hand-written file over 1,500 lines is split first; `contract.json`,
+  `openapi.yaml` and `CHECKSUMS` are exempt.
+- Rule 21: never delete anything without asking the owner.
+- Pull requests use `.github/pull_request_template.md`; security problems go through
+  `SECURITY.md` (private reporting), never a public issue.
 
 ## Freeze
 
@@ -65,6 +86,9 @@ real test week, the contract does not change. Changes collected during the
 test become the next version, landed in all consumers together.
 
 ## History
+
+v0.5.4 to v0.18.54 (October–November 2026): the notes of every version are at the top of
+`CONTRACT.md`, newest first.
 
 v0.5.3 (25 October 2026): driver sign-up details, fleets with a join code, the documents each
 country and account type needs, uploaded to the server (`§14`). Additive; notes at the top of
