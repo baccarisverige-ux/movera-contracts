@@ -31,6 +31,37 @@ tmp=$(mktemp)
 python3 tools/gen_openapi.py . "$tmp" >/dev/null
 cmp -s "$tmp" openapi.yaml || { rm -f "$tmp"; echo "openapi.yaml is not what tools/gen_openapi.py generates; run it and commit the result"; exit 1; }
 rm -f "$tmp"
+# v0.18.56 §78: G9 part 2 chat & calls (owner Q79–Q85, 2026-11-10): settings with defaults, new routes, texts in sv/fr/en.
+python3 - <<'PY'
+import json, yaml
+c = json.load(open('contract.json'))
+spec = yaml.safe_load(open('openapi.yaml'))
+d = c['configDefaults']['chat']
+assert (d['keepDays'], d['maxLength'], d['spamPerMin'], d['sound'], d['sheetAutoOpen'], d['readAloudDefault'], d['translation']) == (90, 2000, 10, True, 'new_message', False, True), 'chat defaults'
+assert d['autoArrived']['on'] is True and all(len(d['quickReplies'][k]) <= 8 for k in ('driver', 'rider')), 'quick replies / autoArrived defaults'
+cs = spec['components']['schemas']
+assert cs['CountryRules']['properties']['chat'] == {'$ref': '#/components/schemas/ChatSettings'}, 'CountryRules.chat'
+for k, v in cs['ChatSettings']['properties'].items():
+    assert 'default' in v, f'ChatSettings.{k} has a default (rule 16)'
+for path, m, perm in (('/admin/chats', 'get', 'support.reply'), ('/admin/drivers/{driverId}/message', 'post', 'support.reply'),
+                      ('/admin/riders/{riderId}/message', 'post', 'support.reply'), ('/trips/{tripId}/messages/options', 'get', None),
+                      ('/trips/{tripId}/messages/translate', 'post', None)):
+    o = spec['paths'][path][m]
+    assert o.get('x-permission') == perm, f'{m} {path} x-permission {perm}'
+assert 'coming_soon' in spec['paths']['/trips/{tripId}/messages/translate']['post']['description'], 'translate 503 coming_soon'
+assert 'once per trip' in spec['paths']['/trips/{tripId}/arrive']['post']['description'], 'auto arrived once per trip'
+assert c['inAppCalls']['turnEnv']['names'] == ['MOVERA_STUN_URLS', 'MOVERA_TURN_URLS', 'MOVERA_TURN_SECRET'], 'TURN names'
+def langs(x, at):
+    if isinstance(x, dict):
+        if set(x) & {'sv', 'fr', 'en'}:
+            assert set(x) == {'sv', 'fr', 'en'} and all(x.values()), f'{at} sv/fr/en'
+        for k, v in x.items(): langs(v, at + '.' + k)
+    elif isinstance(x, list):
+        for n, v in enumerate(x): langs(v, f'{at}[{n}]')
+for k in ('quickReplies', 'autoArrived'): langs(d[k], 'configDefaults.chat.' + k)
+for k in ('header', 'translate'): langs(c['chat'][k], 'chat.' + k)
+for k in ('push', 'background'): langs(c['inAppCalls'][k], 'inAppCalls.' + k)
+PY
 # v0.18.55 §77: admin reads of a trip and its events need trips.read + the trip's zone (owner Q34, 2026-11-10).
 python3 - <<'PY'
 import yaml
