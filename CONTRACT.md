@@ -1,4 +1,6 @@
-# Movera shared contract v0.18.58
+# Movera shared contract v0.18.59
+
+v0.18.59 (owner 2026-11-10, Rule 0; X-Api-Version stays `0.5`; display only; no wire change; no migration): **Tunisian dinar written with a dot** — TND amounts show as `12.350 DT` (dot decimal sign, 3 decimals, space between thousands: `1 250.000 DT`) in every app, admin page and server text; SEK `126,75 kr` and EUR `7,41 €` keep the comma (`contract.json#moneyDisplay`, §81). **First language = phone language** — sv/fr/en from the phone, otherwise en; the start-country default is dropped (`auth.firstLanguage.countryDefault` kept, unused); a saved choice wins; after sign-in the account language is used only if the person picked one (§82).
 
 v0.18.58 (owner 2026-11-10, Rule 0; X-Api-Version stays `0.5`; additive; no migration): **"counts as arrived" distance per zone, larger at airports** — `DriverAppConfig.cancelFees.earlyEnd.arrivedWithinMeters` (default 300, 50–2000) and `airportArrivedWithinMeters` (default 1000, 100–3000, used when the drop-off is in a `Zone.kind` airport zone) replace the fixed `pricing.completeNearDropoffMeters` 300; within the limit a driver completion is a normal finish, not "ended early". `CompletePreview` gains `arrivedLimitMeters`, `distanceToDropoffMeters`. See §80.
 
@@ -1486,3 +1488,21 @@ Owner 2026-11-10 (Rule 0), after a Tunis trip was marked "Terminée plus tôt" w
 - **Preview**: `CompletePreview.arrivedLimitMeters` and `distanceToDropoffMeters` (absent with no fix).
 - **Old field**: `pricing.completeNearDropoffMeters` stays as the fallback value (Rule 21). Past trips are not re-judged; support uses driver-pay change / refund.
 - **Order (Rule 0)**: contract → server (fields, defaults, validation, airport lookup, snapshot, preview fields) → admin (two inputs in Cancellation) → driver app (uses the preview; "You are {m} m from the destination – the trip ends early" warning) → rider app (no new screen; receipt / sheet already follow `endedEarly`; check nothing hard-codes 300 m).
+
+## 81. Money display: Tunisian dinar with a dot (v0.18.59)
+
+Owner 2026-11-10 (Rule 0). Display only; amounts on the wire stay integer minor units. contract.json#moneyDisplay.
+
+- **TND**: dot as decimal sign, 3 decimals, a space between thousands, then ` DT`: 12350 minor → `12.350 DT`, 1250000 → `1 250.000 DT`. Where a screen or text already drops the decimals of a whole amount (tips `2 DT`), it keeps doing so.
+- **SEK / EUR**: unchanged, comma as decimal sign: `126,75 kr`, `7,41 €`.
+- The format follows the currency, not the app language (French or Swedish screens also show `12.350 DT`).
+- **Where**: server texts (push, SMS, receipts, e-mail: `majorText` / `localAmount`), admin money formatting, driver and rider `formatMoney`.
+- **Order (Rule 0)**: contract → server → admin → driver app → rider app; each with a test TND 12350 → `12.350 DT`, SEK unchanged.
+
+## 82. First language: phone language, otherwise English (v0.18.59)
+
+Owner 2026-11-10 "Use phone language" (Rule 0). Changes v0.18.2 `auth.firstLanguage`.
+
+- Before sign-in: a language saved on the phone (globe button) wins; else the phone language if it is sv, fr or en; else en. The start country no longer picks the language (`auth.firstLanguage.countryDefault` stays in contract.json, unused, Rule 21).
+- After sign-in: the account language (`profile.language`) replaces the phone choice only when the person picked one. The server stores `null` for a new account and leaves `language` out of the profile until it is set, so no default `sv` is forced.
+- **Order (Rule 0)**: contract → server (no change: new riders and drivers get language null) → admin (no change) → driver app and rider app (first-language logic).

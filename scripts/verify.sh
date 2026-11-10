@@ -31,6 +31,18 @@ tmp=$(mktemp)
 python3 tools/gen_openapi.py . "$tmp" >/dev/null
 cmp -s "$tmp" openapi.yaml || { rm -f "$tmp"; echo "openapi.yaml is not what tools/gen_openapi.py generates; run it and commit the result"; exit 1; }
 rm -f "$tmp"
+# v0.18.59 §81/§82: TND with a dot; first language = phone language (owner 2026-11-10).
+python3 - <<'PY'
+import json
+c = json.load(open('contract.json'))
+f = c['moneyDisplay']['formats']
+assert (f['TND']['decimalSign'], f['TND']['decimals'], f['TND']['thousandsSeparator']) == ('.', 3, ' '), 'TND dot'
+assert f['TND']['examples']['12350'] == '12.350 DT' and f['TND']['examples']['1250000'] == '1 250.000 DT', 'TND examples'
+assert f['SEK']['decimalSign'] == ',' and f['EUR']['decimalSign'] == ',', 'SEK/EUR comma'
+assert c['currencies']['TND']['exponent'] == f['TND']['decimals'], 'TND decimals = exponent'
+fl = c['auth']['firstLanguage']
+assert fl['fallback'] == 'en' and fl['supported'] == ['sv', 'fr', 'en'] and 'countryDefaultUnused' in fl, 'first language'
+PY
 # v0.18.58 §80: counts-as-arrived distance per zone, larger at airports (owner 2026-11-10).
 python3 - <<'PY'
 import json, yaml
