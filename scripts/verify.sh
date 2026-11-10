@@ -31,6 +31,27 @@ tmp=$(mktemp)
 python3 tools/gen_openapi.py . "$tmp" >/dev/null
 cmp -s "$tmp" openapi.yaml || { rm -f "$tmp"; echo "openapi.yaml is not what tools/gen_openapi.py generates; run it and commit the result"; exit 1; }
 rm -f "$tmp"
+# v0.18.57 §79: emergency numbers per country from admin (owner 2026-11-10).
+python3 - <<'PY'
+import json, yaml
+c = json.load(open('contract.json'))
+spec = yaml.safe_load(open('openapi.yaml'))
+d = c['configDefaults']['emergencyNumbers']
+assert [(x['kind'], x['number']) for x in d['SE']] == [('general', '112')], 'SE default 112'
+assert [(x['kind'], x['number']) for x in d['FR']] == [('general', '112')], 'FR default 112'
+assert [(x['kind'], x['number']) for x in d['TN']] == [('police', '197'), ('ambulance', '190')], 'TN defaults 197 / 190'
+assert set(d) == set(c['supportDesk']['settings']['countries']), 'a default for every country'
+for k, rows in d.items():
+    for x in rows:
+        assert set(x['label']) == {'sv', 'fr', 'en'} and all(x['label'].values()), f'{k} label sv/fr/en'
+cs = spec['components']['schemas']
+assert cs['EmergencyNumber']['properties']['kind']['enum'] == ['police', 'ambulance', 'fire', 'general'], 'EmergencyNumber.kind'
+for n in ('CountryRules', 'RiderAppConfig', 'DriverAppConfig'):
+    assert cs[n]['properties']['emergencyNumbers']['items'] == {'$ref': '#/components/schemas/EmergencyNumber'}, f'{n}.emergencyNumbers'
+assert 'emergency_numbers_country_only' in cs['CountryRules']['properties']['emergencyNumbers']['description'], 'country only'
+for t in c['emergencyNumbers']['texts'].values():
+    assert set(t) == {'sv', 'fr', 'en'} and all(t.values()), 'texts sv/fr/en'
+PY
 # v0.18.56 §78: G9 part 2 chat & calls (owner Q79–Q85, 2026-11-10): settings with defaults, new routes, texts in sv/fr/en.
 python3 - <<'PY'
 import json, yaml
