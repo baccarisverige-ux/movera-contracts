@@ -4,7 +4,9 @@
 contract.json#version must be HIGHER than every released tag v<version> of this
 repository, compared number by number (0.18.10 > 0.18.9). One exception: when
 the commit being checked IS the tag of that version (a tag push), equal is
-right. A number that was released, or given up (0.18.46, owner 2026-11-09),
+right. Second exception (2026-11-10): a change that leaves the released
+contract files untouched (CHECKSUMS identical to the tag's: README, workflows,
+docs) may keep the released number — nothing new is released. A number that was released, or given up (0.18.46, owner 2026-11-09),
 never comes back: tags only go up.
 
 Tags are read from the remote (git ls-remote), so a shallow CI checkout works.
@@ -28,8 +30,9 @@ def parse(version):
     return tuple(int(x) for x in version.split("."))
 
 
-def check(version, tags, head_tags=()):
-    """Returns (ok, message). tags: released tag names; head_tags: the tags on the checked commit."""
+def check(version, tags, head_tags=(), unchanged=False):
+    """Returns (ok, message). tags: released tag names; head_tags: the tags on the checked commit;
+    unchanged: the contract files (CHECKSUMS) are identical to the tag of this version (docs-only change)."""
     released = sorted(parse(m.group(1)) for t in tags for m in [TAG.match(t)] if m)
     v = parse(version)
     if not released:
@@ -40,6 +43,8 @@ def check(version, tags, head_tags=()):
         return True, f"version {version} is above the latest tag v{top_s}"
     if v == top and f"v{version}" in head_tags:
         return True, f"tag v{version} is this commit: version matches"
+    if v == top and unchanged:
+        return True, f"version {version} is released (tag v{top_s}) and the contract files are unchanged: docs-only change"
     if v == top:
         return False, f"version {version} is already released (tag v{top_s}); take the next number"
     return False, f"version {version} is LOWER than the latest tag v{top_s}; tags only go up (0.18.46 was given up and stays unused)"
@@ -65,6 +70,21 @@ def head_tag_names():
     return names
 
 
+def unchanged_since_tag(version):
+    """True when CHECKSUMS in this tree equals CHECKSUMS at tag v<version> (fetched from origin when missing)."""
+    tag = f"v{version}"
+    if git("rev-parse", "-q", "--verify", f"refs/tags/{tag}").returncode != 0:
+        if git("fetch", "--depth", "1", "origin", "tag", tag).returncode != 0:
+            return False
+    tagged = git("show", f"{tag}:CHECKSUMS")
+    if tagged.returncode != 0:
+        return False
+    try:
+        return tagged.stdout == open("CHECKSUMS").read()
+    except OSError:
+        return False
+
+
 def self_test():
     cases = [
         ("0.18.10", ["v0.18.9"], (), True),  # number order, not text order
@@ -76,9 +96,13 @@ def self_test():
         ("0.19.0", ["v0.18.51", "v0.4.4", "not-a-tag"], (), True),
         ("1.0", ["v0.18.51"], (), True),
         ("0.18.52", [], (), True),  # a repository with no tags yet
+        ("0.18.54", ["v0.18.54"], (), True, True),  # docs-only: released number kept, contract files unchanged
+        ("0.18.53", ["v0.18.54"], (), False, True),  # unchanged files never excuse a LOWER number
     ]
-    for version, tags, head, want in cases:
-        ok, msg = check(version, tags, head)
+    for case in cases:
+        version, tags, head, want = case[:4]
+        unchanged = case[4] if len(case) > 4 else False
+        ok, msg = check(version, tags, head, unchanged)
         assert ok == want, f"{version} vs {tags} head={head}: got {ok} ({msg})"
     print(f"version-order self-test: {len(cases)} cases pass")
 
@@ -89,6 +113,6 @@ if __name__ == "__main__":
         sys.exit(0)
     os.chdir(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
     current = json.load(open("contract.json"))["version"]
-    ok, message = check(current, remote_tags(), head_tag_names())
+    ok, message = check(current, remote_tags(), head_tag_names(), unchanged_since_tag(current))
     print(("OK   " if ok else "FAIL ") + message)
     sys.exit(0 if ok else 1)
