@@ -416,4 +416,25 @@ S = spec['components']['schemas']
 assert S['NextTripsRequest']['required'] == ['on'] and S['Driver']['properties']['nextTripsOff']['default'] is False, 'nextTripsOff'
 assert 'nextTripsOff' in S['LiveDriver']['properties'], 'LiveDriver.nextTripsOff'
 PY
+# v0.18.66 §87: call connect timeout setting, failure hint, notice language TN fr, admin chat translations (owner 2026-11-11).
+python3 - <<'PY'
+import json, yaml
+c = json.load(open('contract.json'))
+spec = yaml.safe_load(open('openapi.yaml'))
+S = spec['components']['schemas']
+assert c['configDefaults']['calls']['connectTimeoutSeconds'] == 25 and c['inAppCalls']['settings']['ranges']['connectTimeoutSeconds'] == [10, 60], 'connectTimeoutSeconds default 25, 10-60'
+ct = S['CountryRules']['properties']['calls']['properties']['connectTimeoutSeconds']
+assert (ct['minimum'], ct['maximum'], ct['default']) == (10, 60, 25), 'CountryRules.calls.connectTimeoutSeconds'
+for n in ('TripCall', 'CallView'):
+    assert S[n]['properties']['connectTimeoutSeconds']['default'] == 25, f'{n}.connectTimeoutSeconds'
+h = c['inAppCalls']['texts']['connectFailedHint']
+assert set(h) == {'sv', 'fr', 'en'} and all(h.values()) and h['en'] == "Couldn't connect. Check your network or use chat.", 'connectFailedHint sv/fr/en'
+assert 'Tablet ON, phone OFF' in c['callConnect']['speakerDefault']['owner'] and '600 dp' in c['callConnect']['speakerDefault']['rule'], 'speaker default'
+cl = c['configDefaults']['countries']
+assert (cl['SE']['defaultLanguage'], cl['FR']['defaultLanguage'], cl['TN']['defaultLanguage']) == ('sv', 'fr', 'fr'), 'country languages'
+assert 'TN fr' in c['noticeLanguage']['rule'] and 'else en' in c['noticeLanguage']['rule'], 'noticeLanguage TN fr'
+mt = S['Message']['properties']['translations']
+assert mt['items'] == {'$ref': '#/components/schemas/MessageTranslation'} and S['MessageTranslation']['required'] == ['to', 'text'], 'Message.translations'
+assert 'never asks the provider' in c['chat']['autoTranslate']['adminView'], 'admin view read-only'
+PY
 echo "contract ok"
