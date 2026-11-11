@@ -1,4 +1,6 @@
-# Movera shared contract v0.18.62
+# Movera shared contract v0.18.63
+
+v0.18.63 (docs only, Rule 0 sync with server PR #179 and rider PR #590; X-Api-Version stays `0.5`; no wire change; no migration): **the server closes `GET /rider/config/stream` and `GET /driver/config/stream` when it cannot guarantee delivery** (its LISTEN connection reconnects); `rider_trip_changed` / `driver_reservations_changed` hints are not replayed, so on every stream reconnect (not the first connect) the rider app reads `GET /rider/trips/active` and its Upcoming list again, and the driver app re-reads its reservations (§53, §68).
 
 v0.18.62 (docs fix, no behaviour change; X-Api-Version stays `0.5`; no migration): **`POST /admin/auth/sign-in-locks/unlock` `{ phone }` documented as the server answers**: needs `settings.edit` (`x-permission`; else `403 forbidden` `missing_permission`); answers **`200 { phone, lifted }`** (the number sent, not masked; `lifted` = how many wrong-code sessions of the last 24 h were unlocked, `0` is still 200), not "No content"; `400 invalid_request` reason `invalid_body` (phone missing/not a string) or `invalid_phone` (not international form); never 404 (`contract.json#signInUnlock`). See §84.
 
@@ -1098,7 +1100,7 @@ Owner: fix-plan Q5 2026-11-04; job-2 Q1 "Live ride + banner", Q2 (driver change)
 - **Both active**: the live trip stays on screen; banner "Your booked driver is on the way" while `GET /rider/trips?kind=scheduled&status=driver_to_pickup&status=arrived` lists one.
 - **Driver change**: before he started driving, the rider sees nothing; after, the normal "Searching for a new driver", then the new driver heading to the pickup.
 - **Late but kept**: no message to the rider.
-- **Trip made elsewhere (P21)**: `rider_trip_changed { tripId }` on `GET /rider/config/stream` for every event of the rider's trips; the Home also polls `GET /rider/trips/active` every 8 s while it shows no trip.
+- **Trip made elsewhere (P21)**: `rider_trip_changed { tripId }` on `GET /rider/config/stream` for every event of the rider's trips; the Home also polls `GET /rider/trips/active` every 8 s while it shows no trip. The server closes the stream when it cannot guarantee delivery (its LISTEN connection reconnects); hints are not replayed, so on every stream reconnect (not the first connect) the rider app reads `GET /rider/trips/active` and its Upcoming list again (as `driverReservationsLive.app`).
 - **Leave-now popup**: push `reservation_leave_now` has `data.riderFirstName`; title "Time to drive to pickup · {name}"; Start opens the normal trip screen.
 - **Rules**: the rider app reads `booking.freeChangeBeforeMin` and `cancelFees.reservation` from `/rider/config`; `GET /rider/scheduled-rides/rules` is not used.
 - **409**: `version_mismatch` carries `projection`; reschedule, cancel and raise-price retry once with its version.
@@ -1208,7 +1210,7 @@ Proven cause (rule 36, rider-app main 10f17471, server main 129d148): (1) the ri
 
 ## 68. Driver booked rides live — driver_reservations_changed (v0.18.45)
 
-- **`GET /driver/config/stream`** also carries **`driver_reservations_changed`** `{ eventId, kind, tripId, occurredAt, serverTime }`. Its SSE `id:` stays the config version already sent (as `rider_trip_changed`).
+- **`GET /driver/config/stream`** also carries **`driver_reservations_changed`** `{ eventId, kind, tripId, occurredAt, serverTime }`. Its SSE `id:` stays the config version already sent (as `rider_trip_changed`). The server closes the stream when it cannot guarantee delivery (LISTEN reconnect); hints are not replayed, the app re-reads on reconnect.
 - **Hint only**: no reservation data; the app re-reads `GET /driver/reservations?scope=open` and `?scope=accepted`, which alone decides what the driver sees.
 - **When**: a trip with `scheduledAt` in the stream's zone changes (created, accepted, released, cancelled, rescheduled, started), or the trip names this driver. A now-ride sends nothing. Only after commit; a rolled-back change sends nothing.
 - **App**: re-read at sign-in, on every reconnect and on the event; debounce bursts (≤ 1 re-read per 2 s); demo rides cleared at sign-in.

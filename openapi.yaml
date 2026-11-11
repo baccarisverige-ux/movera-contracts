@@ -1,11 +1,11 @@
-# Movera API v0.18.62 — generated from contract.json (+ CONTRACT.md §7). PROPOSED; no backend exists.
+# Movera API v0.18.63 — generated from contract.json (+ CONTRACT.md §7). PROPOSED; no backend exists.
 openapi: 3.1.0
 info:
   title: Movera API
-  version: 0.18.62
+  version: 0.18.63
   description: '**Proposed contract — no backend exists yet.** One future backend serves the Rider (Flutter), Driver (Flutter)
     and Admin (React/TS) apps. Source of truth for names, enums, transitions, realtime and errors is `contract.json` + `CONTRACT.md`
-    v0.18.62 in this folder; this file must agree with them.
+    v0.18.63 in this folder; this file must agree with them.
 
 
     Wire rules: ids match `^[A-Za-z0-9_-]{1,64}$`; times are RFC 3339 UTC with `Z`; durations are integer seconds; money is
@@ -84,7 +84,7 @@ tags:
 - name: Admin · Finance
 x-contract:
   name: movera
-  version: 0.18.62
+  version: 0.18.63
   source: contract.json
 paths:
   /auth/otp/request:
@@ -3329,7 +3329,9 @@ paths:
         zone when a trip with scheduledAt in that zone changes (created, accepted, released, cancelled, rescheduled, started),
         and to the stream of the driver the trip names. A trip without scheduledAt (a now-ride) sends nothing. Sent only after
         the change commits; a rolled-back change sends nothing. The driver app re-reads at sign-in, on every stream reconnect
-        and on this event, and debounces bursts (at most 1 re-read per 2 s). Demo rides are cleared at sign-in.'
+        and on this event, and debounces bursts (at most 1 re-read per 2 s). Demo rides are cleared at sign-in. v0.18.63:
+        the server closes the stream when it cannot guarantee delivery (its LISTEN connection reconnects); hints are not replayed,
+        so the re-read on reconnect is what catches up.'
   /driver/earnings:
     get:
       operationId: getDriverEarnings
