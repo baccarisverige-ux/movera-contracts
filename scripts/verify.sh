@@ -125,6 +125,26 @@ for k in ('quickReplies', 'autoArrived'): langs(d[k], 'configDefaults.chat.' + k
 for k in ('header', 'translate'): langs(c['chat'][k], 'chat.' + k)
 for k in ('push', 'background'): langs(c['inAppCalls'][k], 'inAppCalls.' + k)
 PY
+# v0.18.64 §85: chat messages arrive translated (owner 2026-11-11); setting default on, Message.lang, auto flag, cache.
+python3 - <<'PY'
+import json, yaml
+c = json.load(open('contract.json'))
+spec = yaml.safe_load(open('openapi.yaml'))
+assert c['configDefaults']['chat']['autoTranslate'] is True, 'configDefaults.chat.autoTranslate default true'
+at = c['chat']['autoTranslate']
+for k in ('rule', 'when', 'sourceLanguage', 'request', 'sameLanguage', 'cache', 'failure', 'admin'):
+    assert at.get(k), f'chat.autoTranslate.{k}'
+for k, v in at['texts'].items():
+    assert set(v) == {'sv', 'fr', 'en'} and all(v.values()), f'chat.autoTranslate.texts.{k} sv/fr/en'
+sc = spec['components']['schemas']
+assert sc['ChatSettings']['properties']['autoTranslate']['default'] is True, 'ChatSettings.autoTranslate default'
+assert 'autoTranslate' in sc['ChatOptions']['properties'], 'ChatOptions.autoTranslate'
+assert sc['Message']['properties']['lang']['enum'] == ['sv', 'fr', 'en'], 'Message.lang'
+assert sc['TranslateMessageRequest']['properties']['auto']['type'] == 'boolean', 'TranslateMessageRequest.auto'
+d = spec['paths']['/trips/{tripId}/messages/translate']['post']['description']
+for w in ('auto_translate_off', 'See original', '0097'):
+    assert w in d, f'translateTripMessage names {w}'
+PY
 # v0.18.62 §84: POST /admin/auth/sign-in-locks/unlock as the server answers: settings.edit, 200 { phone, lifted }, no 404.
 python3 - <<'PY'
 import yaml
