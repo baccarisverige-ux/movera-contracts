@@ -437,4 +437,13 @@ mt = S['Message']['properties']['translations']
 assert mt['items'] == {'$ref': '#/components/schemas/MessageTranslation'} and S['MessageTranslation']['required'] == ['to', 'text'], 'Message.translations'
 assert 'never asks the provider' in c['chat']['autoTranslate']['adminView'], 'admin view read-only'
 PY
+# v0.18.67: §86 next-trips end wording (server #187) + migration lock timeout (server #189), wording only.
+python3 - <<'PY'
+import json
+c = json.load(open('contract.json'))
+e = c['nextTripsSwitch']['end']
+assert 'the trip he is DRIVING ends' in e and 'keeps it' in e and 'begins with the radar on' in e, 'nextTripsSwitch.end wording'
+bp = c['fastDispatch']['backPressure']
+assert 'DATABASE_STATEMENT_TIMEOUT_MS' in bp and 'DATABASE_MIGRATION_LOCK_TIMEOUT_MS instead (default 5000 ms, 0 = none)' in bp and 'VALIDATE CONSTRAINT' in bp, 'backPressure migration lock timeout'
+PY
 echo "contract ok"
