@@ -125,6 +125,20 @@ for k in ('quickReplies', 'autoArrived'): langs(d[k], 'configDefaults.chat.' + k
 for k in ('header', 'translate'): langs(c['chat'][k], 'chat.' + k)
 for k in ('push', 'background'): langs(c['inAppCalls'][k], 'inAppCalls.' + k)
 PY
+# v0.18.62 §84: POST /admin/auth/sign-in-locks/unlock as the server answers: settings.edit, 200 { phone, lifted }, no 404.
+python3 - <<'PY'
+import yaml
+spec = yaml.safe_load(open('openapi.yaml'))
+o = spec['paths']['/admin/auth/sign-in-locks/unlock']['post']
+assert o.get('x-permission') == 'settings.edit', 'unlockSignIn x-permission settings.edit'
+r = o['responses']
+assert r['200']['content']['application/json']['schema'] == {'$ref': '#/components/schemas/SignInUnlockResult'}, 'unlockSignIn 200 body'
+assert '404' not in r and '204' not in r, 'unlockSignIn: no 404/204'
+sc = spec['components']['schemas']['SignInUnlockResult']
+assert sc['required'] == ['phone', 'lifted'] and sc['properties']['lifted']['type'] == 'integer', 'SignInUnlockResult shape'
+for w in ('invalid_phone', 'invalid_body', 'missing_permission'):
+    assert w in o['description'], f'unlockSignIn names {w}'
+PY
 # v0.18.61 §83: GET /payments/{paymentId}: admin needs finance.read (owner 2026-11-11 "Finance permission"); cash-only typed 400.
 python3 - <<'PY'
 import yaml
