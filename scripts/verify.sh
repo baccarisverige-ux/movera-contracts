@@ -125,6 +125,15 @@ for k in ('quickReplies', 'autoArrived'): langs(d[k], 'configDefaults.chat.' + k
 for k in ('header', 'translate'): langs(c['chat'][k], 'chat.' + k)
 for k in ('push', 'background'): langs(c['inAppCalls'][k], 'inAppCalls.' + k)
 PY
+# v0.18.61 §83: GET /payments/{paymentId}: admin needs finance.read (owner 2026-11-11 "Finance permission"); cash-only typed 400.
+python3 - <<'PY'
+import yaml
+spec = yaml.safe_load(open('openapi.yaml'))
+o = spec['paths']['/payments/{paymentId}']['get']
+assert o.get('x-permission') == spec['paths']['/admin/payments']['get']['x-permission'] == 'finance.read', 'getPayment x-permission finance.read'
+for w in ('payment_method_not_available', 'missing_permission', 'zone_out_of_scope', 'own payment'):
+    assert w in o['description'], f'getPayment names {w}'
+PY
 # v0.18.55 §77: admin reads of a trip and its events need trips.read + the trip's zone (owner Q34, 2026-11-10).
 python3 - <<'PY'
 import yaml
