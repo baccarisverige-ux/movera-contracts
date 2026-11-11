@@ -43,6 +43,17 @@ assert c['currencies']['TND']['exponent'] == f['TND']['decimals'], 'TND decimals
 fl = c['auth']['firstLanguage']
 assert fl['fallback'] == 'en' and fl['supported'] == ['sv', 'fr', 'en'] and 'countryDefaultUnused' in fl, 'first language'
 PY
+# v0.18.60: the §76 masked-phone example follows its own rule (one dot per hidden digit, last 2 shown).
+python3 - <<'PY'
+import json, re
+c = json.load(open('contract.json'))
+ph = c['adminMasking']['shapes']['phone']
+m = re.search(r'e\.g\. (\+46)(•+)(\d\d) for \+46(\d+)', ph)
+assert m, 'masked phone example'
+assert len(m.group(2)) == len(m.group(4)) - 2 and m.group(4).endswith(m.group(3)), 'masked phone example dot count'
+md = open('CONTRACT.md', encoding='utf-8').read()
+assert md.count('+46•••••••12') >= 2 and not re.search(r'\+46•{5}12', md), 'CONTRACT.md masked phone example'
+PY
 # v0.18.58 §80: counts-as-arrived distance per zone, larger at airports (owner 2026-11-10).
 python3 - <<'PY'
 import json, yaml
