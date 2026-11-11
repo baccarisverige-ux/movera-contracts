@@ -43,6 +43,17 @@ assert c['currencies']['TND']['exponent'] == f['TND']['decimals'], 'TND decimals
 fl = c['auth']['firstLanguage']
 assert fl['fallback'] == 'en' and fl['supported'] == ['sv', 'fr', 'en'] and 'countryDefaultUnused' in fl, 'first language'
 PY
+# v0.18.60: the §76 masked-phone example follows its own rule (one dot per hidden digit, last 2 shown).
+python3 - <<'PY'
+import json, re
+c = json.load(open('contract.json'))
+ph = c['adminMasking']['shapes']['phone']
+m = re.search(r'e\.g\. (\+46)(•+)(\d\d) for \+46(\d+)', ph)
+assert m, 'masked phone example'
+assert len(m.group(2)) == len(m.group(4)) - 2 and m.group(4).endswith(m.group(3)), 'masked phone example dot count'
+md = open('CONTRACT.md', encoding='utf-8').read()
+assert md.count('+46•••••••12') >= 2 and not re.search(r'\+46•{5}12', md), 'CONTRACT.md masked phone example'
+PY
 # v0.18.58 §80: counts-as-arrived distance per zone, larger at airports (owner 2026-11-10).
 python3 - <<'PY'
 import json, yaml
@@ -347,5 +358,6 @@ esac
 # Step 21 (2026-11-09): the version must be higher than every released tag (0.18.10 > 0.18.9); a tag push of the same version passes;
 # a change that leaves the contract files untouched (CHECKSUMS = the tag's; README, workflows) may keep the released number (2026-11-10).
 python3 scripts/check_version_order.py --self-test
+python3 scripts/size_ratchet.py --self-test
 python3 scripts/check_version_order.py
 echo "contract ok"
