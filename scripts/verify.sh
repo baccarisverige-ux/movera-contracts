@@ -403,4 +403,17 @@ esac
 python3 scripts/check_version_order.py --self-test
 python3 scripts/size_ratchet.py --self-test
 python3 scripts/check_version_order.py
+# v0.18.65 §86: the trip radar's "stop next trips" reaches the server (owner phone test 2026-11-11).
+python3 - <<'PY'
+import json, yaml
+c = json.load(open('contract.json'))
+nt = c['nextTripsSwitch']
+assert 'migration 0098' in nt['note'] and 'next_trips_off' in nt['noOffers'], 'nextTripsSwitch'
+spec = yaml.safe_load(open('openapi.yaml'))
+op = spec['paths']['/driver/next-trips']['post']
+assert op['requestBody']['content']['application/json']['schema']['$ref'].endswith('/NextTripsRequest'), 'next-trips body'
+S = spec['components']['schemas']
+assert S['NextTripsRequest']['required'] == ['on'] and S['Driver']['properties']['nextTripsOff']['default'] is False, 'nextTripsOff'
+assert 'nextTripsOff' in S['LiveDriver']['properties'], 'LiveDriver.nextTripsOff'
+PY
 echo "contract ok"
