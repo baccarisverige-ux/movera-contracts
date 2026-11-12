@@ -733,12 +733,15 @@ assert tx == {'sv': 'Betala föraren {amount} i bilen', 'fr': 'Payez {amount} au
 assert set(tx) == set(c['languages']['values']), 'G33 every app language'
 pl = c['finish']['payInCarLine']
 assert '{amount} = TripProjection.finish.cashToCollect' in pl and 'CompletePreview.cashDue' in pl and "receipt's cashPaid" in pl, 'G33 amount source'
-assert 'Not shown when cashToCollect is 0' in pl and 'lifecycle0_18_50.l10 texts.youPay' in pl and '(status completed), never earlier' in pl, 'G33 when'
+assert 'Not shown when cashToCollect is 0' in pl and 'lifecycle0_18_50.l10 texts.youPay' in pl and '(status completed), never earlier, and only when cashToCollect is above 0' in pl and 'completed by the driver or by an admin' in pl, 'G33 when'
 assert 'Server: no change' in pl and 'Admin: none' in pl and 'Driver: none' in pl, 'G33 Rule 0 line'
 al = c['adminListFilters']
 tot = al['total']
 assert tot['lists'] == ['GET /admin/' + n for n in ['trips', 'riders', 'drivers', 'fleets', 'vehicles', 'payments', 'refunds', 'payouts', 'tickets', 'incidents']], 'total lists'
 assert 'counted without cursor and limit' in tot['rule'] and 'absent = not counted' in tot['rule'] and 'never send total' in tot['rule'] and 'there is no totalAtLeast' in tot['rule'], 'total rule'
+assert 'within the list\'s time budget; never a guess' in tot['rule'] and 'total is left out and the page is still served; the count never fails or slows the list' in tot['rule'], 'total Rule 33'
+assert '/rider/refunds' not in tot['rule'] and '/admin/refunds/payouts' not in tot['rule'], 'total other shapes'
+assert 'never filtered in code after the read' in tot['server'], 'total vehicles zone in SQL'
 ib = al['incidentsByPerson']
 assert 'driverId (cases whose Incident.driverId is that driver)' in ib and 'riderId (cases whose Incident.riderId is that rider)' in ib and 'unknown_filter' in ib and 'may add an index on incidents.driver_id and incidents.rider_id' in ib, 'incidents filters'
 spec = yaml.safe_load(open('openapi.yaml'))
@@ -759,7 +762,7 @@ assert cc['allOf'] == [{'$ref': '#/components/schemas/Money'}] and 'payDriverInC
 assert 'cashToCollect' in sch['TripFinish']['required'], 'cashToCollect still required'
 md = open('CONTRACT.md').read()
 assert md.startswith('# Movera shared contract v' + c['version'] + '\n') or tuple(map(int, c['version'].split('.'))) > (0, 18, 78), 'CONTRACT.md title'
-assert 'supersedes the S5 J16 `totalAtLeast` idea' in md and '**G33 rider pay-in-car line**' in md and '**admin lists “50 of N”**' in md, 'CONTRACT.md v0.18.78 note'
+assert 'supersedes the S5 J16 `totalAtLeast` idea' in md and '**G33 rider pay-in-car line**' in md and 'first page when counted exactly' in md and '**admin lists “50 of N”**' in md, 'CONTRACT.md v0.18.78 note'
 assert md.count('\n') <= 1500, 'CONTRACT.md over 1,500 lines'
 PY
 echo "contract ok"
