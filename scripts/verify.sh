@@ -696,4 +696,30 @@ spec = yaml.safe_load(open('openapi.yaml'))
 assert "detail.from is 'active'" in spec['paths']['/admin/drivers/{driverId}/status']['post']['description'], 'openapi R2-1'
 assert 'never got a code' in spec['components']['schemas']['AccountEmailChallenge']['properties']['delivery']['description'], 'openapi R2-3'
 PY
+# v0.18.77 (G30, owner 2026-11-12 ~15:02 "Max 10 tries/hour"): besides 3 accepted e-mail code sends per hour, at most 10 e-mail
+# code starts per hour per account, counting every start (sent or pending_provider); over it 429 change_too_many.
+python3 - <<'PY'
+import json, yaml
+c = json.load(open('contract.json'))
+assert tuple(map(int, c['version'].split('.'))) >= (0, 18, 77), 'version'
+dl = c['emailVerified']['delivery']
+assert 'v0.18.77 (owner 2026-11-12 ~15:02' in dl and 'at most 10 e-mail code starts per hour per account, counting EVERY start, sent or pending_provider' in dl, 'v0.18.77 delivery cap'
+assert 'The 11th start within the hour → 429 change_too_many (Retry-After), before any e-mail is sent' in dl and 'whichever limit is reached first refuses' in dl, 'v0.18.77 over the cap'
+assert 'gets the same answer and no code, so the answer never tells' in dl and 'does not count' in dl.split('v0.18.77')[1] and 'phone starts are unchanged' in dl, 'v0.18.77 what counts'
+assert "only when its answer is delivery 'sent'" in dl, 'v0.18.76 3 accepted sends kept'
+a = c['deepFix1']['accountChange']
+assert 'v0.18.77: for e-mail also at most 10 starts per hour per account, counting every start, sent or pending_provider (429 change_too_many; contract.json#emailVerified.delivery)' in a, 'v0.18.77 accountChange'
+assert 'at most 3 starts per hour per account and kind (429 change_too_many);' in a, 'accountChange 3/hour kept'
+spec = yaml.safe_load(open('openapi.yaml'))
+op = spec['paths']['/account/email/change']['post']
+assert 'at most 10 e-mail code starts per hour per account' in op['description'] and 'v0.18.77: for e-mail also at most 10 starts' in op['description'], 'openapi email change description'
+r = op['responses']['429']
+assert 'change_too_many' in r['description'] and 'at most 10 code starts' in r['description'] and 'Retry-After' in r['headers'], 'openapi email change 429'
+assert r['content']['application/json']['schema'] == {'$ref': '#/components/schemas/Error'}, 'openapi 429 Error shape'
+assert spec['paths']['/account/phone/change']['post']['responses']['429'] == {'$ref': '#/components/responses/RateLimited'}, 'phone 429 unchanged'
+assert 'at most 10 e-mail code starts' in spec['components']['schemas']['AccountEmailChallenge']['properties']['delivery']['description'], 'openapi delivery'
+md = open('CONTRACT.md').read()
+assert md.startswith('# Movera shared contract v' + c['version'] + '\n') or tuple(map(int, c['version'].split('.'))) > (0, 18, 77), 'CONTRACT.md title'
+assert '**at most 10 e-mail code starts per hour**' in md and 'counting every start (`sent` or `pending_provider`)' in md, 'CONTRACT.md v0.18.77 note'
+PY
 echo "contract ok"
