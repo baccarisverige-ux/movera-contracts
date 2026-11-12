@@ -479,4 +479,20 @@ assert 'TELEMETRY_PER_ADDRESS_PER_MINUTE' in t['limits'] and 'reason telemetry_t
 md = open('CONTRACT.md').read()
 assert 'telemetry_too_many' in md and 'RIDE_CHECK_APP_MAX_PER_TRIP' in md and '**Safety writes**' in md and 'TELEMETRY_PER_ADDRESS_PER_MINUTE' in md, 'CONTRACT.md v0.18.69 wording'
 PY
+# v0.18.70: no mass offline after an outage; the booked offline check waits the same grace (server S4 B1.23, owner Q83), additive.
+python3 - <<'PY'
+import json
+c = json.load(open('contract.json'))
+assert c['version'] == '0.18.70', 'version'
+s = c['driverHome']['setOffline']
+g = s['outageGrace']
+assert g['lateSeconds'] == 60 and g['fixCheckEverySeconds'] == 10 and sorted(g) == ['fixCheckEverySeconds', 'lateSeconds', 'note'], 'outageGrace values'
+assert 'heardAgainAt' in g['note'] and 'WEB_COPIES > 1' in g['note'] and 'configDefaults.noFixMinutesBeforeOffline' in g['note'] and 'No new setting, no app change' in g['note'] and 'One signal only' in g['note'] and 'The first fix stored after an outage also marks it' in g['note'] and 'whichever is earlier' in g['note'] and 'While the row is overdue every stored fix checks' in g['note'] and 'only after it found the row missing or not overdue' in g['note'] and 'a separate run it books right away' in g['note'] and 'not covered' in g['note'] and 'never later than the ride\'s dispatchAt' in g['note'] and 'A parked job row gives no signal' in g['note'], 'outageGrace note'
+assert s['auditAction'] == 'driver.auto_offline' and s['default'] == 5 and s['jobEverySeconds'] == 30, 'setOffline kept'
+assert 'v0.18.70 (B1.23)' in s['note'] and '(outageGrace)' in s['note'], 'setOffline.note v0.18.70'
+rm = c['bookLater']['driver']['reminders']
+assert 'driverHome.setOffline.outageGrace' in rm and 'reservation_lost' in rm and 'dispatchAt' in rm, 'bookLater.driver.reminders v0.18.70'
+md = open('CONTRACT.md').read()
+assert '## 88. No mass offline after an outage' in md and 'contract.json#driverHome.setOffline.outageGrace' in md and 'heardAgainAt' in md and 'not covered' in md and '`dispatchAt`' in md and 'first fix stored after it' in md and 'separate run right after it' in md, 'CONTRACT.md v0.18.70 wording'
+PY
 echo "contract ok"
