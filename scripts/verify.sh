@@ -663,7 +663,7 @@ assert 'blocks_online' in rm['levels'] and 'due_soon' in rm['levels'], 'levels'
 assert 'blocks_online (red) with text texts.email_not_verified_approval' in k and 'OnboardingSettings.emailVerifiedForApproval is on and he was never active before' in k and 'otherwise due_soon (orange' in k, 'reminder level'
 assert 'nor a red email_not_verified line' in rm['kinds']['account_not_active'], 'account_not_active vs red e-mail line'
 t = rm['texts']['email_not_verified_approval']
-assert set(t) == {'sv', 'fr', 'en'} and t['en'].endswith('needed for approval. Tap to verify it.') and 'approbation' in t['fr'] and 'godkännande' in t['sv'], 'approval text sv/fr/en'
+assert set(t) == {'sv', 'fr', 'en'} and t['en'].endswith('needed for approval. Tap to verify it.') and 'approbation' in t['fr'] and 'för att bli godkänd' in t['sv'] and 'godkännande' not in t['sv'], 'approval text sv/fr/en'
 assert rm['texts']['email_not_verified']['fr'] == 'Votre e-mail n’est pas vérifié. Appuyez pour le vérifier.', 'fr Appuyez'
 assert not any('Touchez' in v for tx in rm['texts'].values() if isinstance(tx, dict) for v in tx.values()), 'no Touchez'
 assert 'texts.email_not_verified_approval' in e['apps']['driver'] and 'never blocks going online' in e['apps']['driver'], 'driver app red/orange'
@@ -676,5 +676,24 @@ assert 'email_not_verified_approval' in spec['paths']['/driver/reminders']['get'
 assert 'delivery: pending_provider' not in spec['paths']['/account/email/change']['post']['description'], 'openapi accountChange'
 md = open('CONTRACT.md').read()
 assert '(also a refused or failed send)' in md and 'red “needed for approval”' in md and 'for a driver never active before, not for re-activating one' in md, 'CONTRACT.md owner answers'
+PY
+# v0.18.76 round 3 (supervisor R2-1..R2-3): once-active backfill also from audit 'from active' and trips; seed paths named;
+# account_not_active left out only when the red line is actually sent; a pending_provider start does not count toward 3/hour.
+python3 - <<'PY'
+import json, yaml
+c = json.load(open('contract.json'))
+e = c['emailVerified']
+na = e['neverActive']
+assert 'seedDriver' in na and 'seedTest' in na and 'start my own company' in na and 'active → on_hold' in na and 'by any path' in na, 'R2-1 paths'
+assert "detail.from is 'active'" in na and 'detail.to is active' in na and 'any trip carrying his driver_id' in na and 'earliest such time' in na, 'R2-1 backfill'
+assert 'only fills it (never deletes or changes other data)' in na and 'counts as never active' in na, 'R2-1 no delete'
+ana = c['driverOnboarding']['reminders']['kinds']['account_not_active']
+assert 'nor a red email_not_verified line actually sent in this answer' in ana and 'below 0.18.76 never gets that line, so it still gets account_not_active' in ana, 'R2-2'
+dl = e['delivery']
+assert "only when its answer is delivery 'sent'" in dl and "'pending_provider' start (no service, or a refused or failed send) does not count" in dl and 'never got a code' in dl, 'R2-3 delivery'
+assert 'which does not count toward the 3 starts per hour' in c['deepFix1']['accountChange'], 'R2-3 accountChange'
+spec = yaml.safe_load(open('openapi.yaml'))
+assert "detail.from is 'active'" in spec['paths']['/admin/drivers/{driverId}/status']['post']['description'], 'openapi R2-1'
+assert 'never got a code' in spec['components']['schemas']['AccountEmailChallenge']['properties']['delivery']['description'], 'openapi R2-3'
 PY
 echo "contract ok"
