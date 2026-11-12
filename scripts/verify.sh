@@ -560,4 +560,20 @@ assert md.startswith('# Movera shared contract v' + c['version'] + '\n') or tupl
 assert '**Streams end with their session** (v0.18.73' in md and '`: session ended; sign in again`' in md and '`contract.json#realtime.sessionEnd`' in md, 'CONTRACT.md §4 v0.18.73'
 assert '**Rider back before pickup** (v0.18.73, G26-back' in md and '`contract.json#riderBack`' in md and '**a stopped dispatch round restarts once** (B1.14' in md, 'CONTRACT.md v0.18.73 wording'
 PY
+# v0.18.74 (wording only, server B1.24 9f35e1e, owner W1 Q84 + 2026-11-12 "None of these"): exactly six admin safety reads are never shed.
+python3 - <<'PY'
+import json, yaml
+c = json.load(open('contract.json'))
+assert tuple(map(int, c['version'].split('.'))) >= (0, 18, 74), 'version'
+s = c['fastDispatch']['shedOnly']
+reads = ['GET /admin/incidents,', 'GET /admin/incidents/{incidentId},', 'GET /admin/incidents/{incidentId}/emergency-contacts,', 'GET /admin/ride-checks,', 'GET /admin/alerts/book,', 'GET /admin/trips/{tripId} (']
+assert all(r in s for r in reads) and 'exactly six, no more' in s and 'matched on the route pattern' in s and 'a path that matches no route is still shed' in s and 'Every other GET /admin/* read is still shed' in s and 'can still answer server_busy' in s, 'fastDispatch.shedOnly v0.18.74'
+assert s.startswith('Only new low-priority work is ever refused with server_busy: POST /quotes'), 'shedOnly start kept'
+spec = yaml.safe_load(open('openapi.yaml'))
+assert str(spec['info']['version']) == c['version'], 'openapi version'
+md = open('CONTRACT.md').read()
+assert md.startswith('# Movera shared contract v' + c['version'] + '\n') or tuple(map(int, c['version'].split('.'))) > (0, 18, 74), 'CONTRACT.md title'
+assert '**admin safety reads are never shed** — exactly six' in md and '`GET /admin/incidents/{incidentId}/emergency-contacts`' in md and '`GET /admin/alerts/book`' in md, 'CONTRACT.md v0.18.74 note'
+assert "GPS and streams are never shed; v0.18.74 (B1.24): nor are the six admin safety reads (incidents list, an incident, its emergency contacts, ride checks, the alert book, a trip's detail; `contract.json#fastDispatch.shedOnly`). Apps treat it like 429" in md, 'CONTRACT.md Overload bullet v0.18.74'
+PY
 echo "contract ok"
