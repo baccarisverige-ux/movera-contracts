@@ -51,7 +51,7 @@ ph = c['adminMasking']['shapes']['phone']
 m = re.search(r'e\.g\. (\+46)(•+)(\d\d) for \+46(\d+)', ph)
 assert m, 'masked phone example'
 assert len(m.group(2)) == len(m.group(4)) - 2 and m.group(4).endswith(m.group(3)), 'masked phone example dot count'
-md = open('CONTRACT.md', encoding='utf-8').read()
+md = open('CONTRACT.md', encoding='utf-8').read() + open('CHANGELOG.md', encoding='utf-8').read()  # v0.18.74: the v0.18.60 note moved to CHANGELOG.md
 assert md.count('+46•••••••12') >= 2 and not re.search(r'\+46•{5}12', md), 'CONTRACT.md masked phone example'
 PY
 # v0.18.58 §80: counts-as-arrived distance per zone, larger at airports (owner 2026-11-10).
@@ -461,7 +461,7 @@ assert 'STREAM_READ_RETRIES (default 3)' in sc and 'STREAM_CLOSE_SPREAD_MS (defa
 t = c['fastDispatch']['timers']
 assert 'HOUSEKEEPING_LANES, default 1' in t and 'general lanes never take them' in t and 'never wait behind a clean-up' in t, 'fastDispatch.timers housekeeping lane'
 md = open('CONTRACT.md').read()
-assert 'STREAM_READ_RETRIES' in md and ': stream read failed; reconnect to catch up' in md and 'HOUSEKEEPING_LANES' in md, 'CONTRACT.md v0.18.68 wording'
+assert 'STREAM_READ_RETRIES' in md and ': stream read failed; reconnect to catch up' in md and 'HOUSEKEEPING_LANES' in open('CHANGELOG.md').read(), 'CONTRACT.md v0.18.68 wording (its note moved to CHANGELOG.md in v0.18.74)'
 PY
 # v0.18.69: safety writes outside the write limit + telemetry's own budget (server B1.22, owner W1 Q82), wording only.
 python3 - <<'PY'
@@ -559,5 +559,21 @@ md = open('CONTRACT.md').read()
 assert md.startswith('# Movera shared contract v' + c['version'] + '\n') or tuple(map(int, c['version'].split('.'))) > (0, 18, 73), 'CONTRACT.md title'
 assert '**Streams end with their session** (v0.18.73' in md and '`: session ended; sign in again`' in md and '`contract.json#realtime.sessionEnd`' in md, 'CONTRACT.md §4 v0.18.73'
 assert '**Rider back before pickup** (v0.18.73, G26-back' in md and '`contract.json#riderBack`' in md and '**a stopped dispatch round restarts once** (B1.14' in md, 'CONTRACT.md v0.18.73 wording'
+PY
+# v0.18.74 (wording only, server B1.24 9f35e1e, owner W1 Q84 + 2026-11-12 "None of these"): exactly six admin safety reads are never shed.
+python3 - <<'PY'
+import json, yaml
+c = json.load(open('contract.json'))
+assert tuple(map(int, c['version'].split('.'))) >= (0, 18, 74), 'version'
+s = c['fastDispatch']['shedOnly']
+reads = ['GET /admin/incidents,', 'GET /admin/incidents/{incidentId},', 'GET /admin/incidents/{incidentId}/emergency-contacts,', 'GET /admin/ride-checks,', 'GET /admin/alerts/book,', 'GET /admin/trips/{tripId} (']
+assert all(r in s for r in reads) and 'exactly six, no more' in s and 'matched on the route pattern' in s and 'a path that matches no route is still shed' in s and 'Every other GET /admin/* read is still shed' in s and 'can still answer server_busy' in s, 'fastDispatch.shedOnly v0.18.74'
+assert s.startswith('Only new low-priority work is ever refused with server_busy: POST /quotes'), 'shedOnly start kept'
+spec = yaml.safe_load(open('openapi.yaml'))
+assert str(spec['info']['version']) == c['version'], 'openapi version'
+md = open('CONTRACT.md').read()
+assert md.startswith('# Movera shared contract v' + c['version'] + '\n') or tuple(map(int, c['version'].split('.'))) > (0, 18, 74), 'CONTRACT.md title'
+assert '**admin safety reads are never shed** — exactly six' in md and '`GET /admin/incidents/{incidentId}/emergency-contacts`' in md and '`GET /admin/alerts/book`' in md, 'CONTRACT.md v0.18.74 note'
+assert "GPS and streams are never shed; v0.18.74 (B1.24): nor are the six admin safety reads (incidents list, an incident, its emergency contacts, ride checks, the alert book, a trip's detail; `contract.json#fastDispatch.shedOnly`). Apps treat it like 429" in md, 'CONTRACT.md Overload bullet v0.18.74'
 PY
 echo "contract ok"
