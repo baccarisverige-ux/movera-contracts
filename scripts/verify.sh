@@ -576,4 +576,23 @@ assert md.startswith('# Movera shared contract v' + c['version'] + '\n') or tupl
 assert '**admin safety reads are never shed** — exactly six' in md and '`GET /admin/incidents/{incidentId}/emergency-contacts`' in md and '`GET /admin/alerts/book`' in md, 'CONTRACT.md v0.18.74 note'
 assert "GPS and streams are never shed; v0.18.74 (B1.24): nor are the six admin safety reads (incidents list, an incident, its emergency contacts, ride checks, the alert book, a trip's detail; `contract.json#fastDispatch.shedOnly`). Apps treat it like 429" in md, 'CONTRACT.md Overload bullet v0.18.74'
 PY
+# v0.18.75 (server B1.25 641f1e6, owner W1 Q85): a total per server copy for no-token telemetry; additive keys, no API shape change.
+python3 - <<'PY'
+import json, yaml
+c = json.load(open('contract.json'))
+assert tuple(map(int, c['version'].split('.'))) >= (0, 18, 75), 'version'
+t = c['telemetry']
+assert t['anonRowsPerMinute'] == 600 and t['anonBytesPerMinute'] == 2097152 and t['perAddressPerMinute'] == 120, 'telemetry anon caps'
+l = t['limits']
+assert 'TELEMETRY_ANON_ROWS_PER_MINUTE / TELEMETRY_ANON_BYTES_PER_MINUTE' in l and 'NOT divided by WEB_COPIES' in l and 'still answers 202 with an empty body but is not stored' in l and 'A signed-in caller is never counted here' in l and 'none sent, or stale/bad' in l, 'telemetry.limits v0.18.75'
+assert l.startswith('B1.22: its own budget'), 'telemetry.limits start kept'
+spec = yaml.safe_load(open('openapi.yaml'))
+assert str(spec['info']['version']) == c['version'], 'openapi version'
+for p in ('/telemetry/logs', '/telemetry/analytics', '/telemetry/crashes'):
+    d = spec['paths'][p]['post']['description']
+    assert 'v0.18.75 (B1.25): without a valid token, a server copy stores at most contract.json#telemetry.anonRowsPerMinute (600) lines and anonBytesPerMinute (2097152) bytes per minute in total; over it the call still answers 202 but is not stored.' in d, 'openapi ' + p
+md = open('CONTRACT.md').read()
+assert md.startswith('# Movera shared contract v' + c['version'] + '\n') or tuple(map(int, c['version'].split('.'))) > (0, 18, 75), 'CONTRACT.md title'
+assert '**no-token telemetry has a total per server copy**' in md and '`TELEMETRY_ANON_ROWS_PER_MINUTE` / `TELEMETRY_ANON_BYTES_PER_MINUTE`, not divided by `WEB_COPIES`' in md, 'CONTRACT.md v0.18.75 note'
+PY
 echo "contract ok"
