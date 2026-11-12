@@ -722,12 +722,12 @@ md = open('CONTRACT.md').read()
 assert md.startswith('# Movera shared contract v' + c['version'] + '\n') or tuple(map(int, c['version'].split('.'))) > (0, 18, 77), 'CONTRACT.md title'
 assert '**at most 10 e-mail code starts per hour**' in md and 'counting every start (`sent` or `pending_provider`)' in md, 'CONTRACT.md v0.18.77 note'
 PY
-# v0.18.79 (owner 2026-11-12 ~17:30 items 4 + 5; 0.18.78 reserved for S5 money): G33 rider "Pay the driver {amount} in the car"
+# v0.18.78 (owner 2026-11-12 ~17:30 items 4 + 5): G33 rider "Pay the driver {amount} in the car"
 # text + rule; admin list pages carry an optional total; GET /admin/incidents takes driverId / riderId.
 python3 - <<'PY'
 import json, yaml
 c = json.load(open('contract.json'))
-assert tuple(map(int, c['version'].split('.'))) >= (0, 18, 79), 'version'
+assert tuple(map(int, c['version'].split('.'))) >= (0, 18, 78), 'version'
 tx = c['finish']['paymentMethods']['texts']['payDriverInCar']
 assert tx == {'sv': 'Betala föraren {amount} i bilen', 'fr': 'Payez {amount} au chauffeur', 'en': 'Pay the driver {amount} in the car'}, 'G33 texts'
 assert set(tx) == set(c['languages']['values']), 'G33 every app language'
@@ -738,9 +738,9 @@ assert 'Server: no change' in pl and 'Admin: none' in pl and 'Driver: none' in p
 al = c['adminListFilters']
 tot = al['total']
 assert tot['lists'] == ['GET /admin/' + n for n in ['trips', 'riders', 'drivers', 'fleets', 'vehicles', 'payments', 'refunds', 'payouts', 'tickets', 'incidents']], 'total lists'
-assert 'counted without cursor and limit' in tot['rule'] and 'absent = not counted' in tot['rule'] and 'never send total' in tot['rule'], 'total rule'
+assert 'counted without cursor and limit' in tot['rule'] and 'absent = not counted' in tot['rule'] and 'never send total' in tot['rule'] and 'there is no totalAtLeast' in tot['rule'], 'total rule'
 ib = al['incidentsByPerson']
-assert 'driverId (cases whose Incident.driverId is that driver)' in ib and 'riderId (cases whose Incident.riderId is that rider)' in ib and 'unknown_filter' in ib, 'incidents filters'
+assert 'driverId (cases whose Incident.driverId is that driver)' in ib and 'riderId (cases whose Incident.riderId is that rider)' in ib and 'unknown_filter' in ib and 'may add an index on incidents.driver_id and incidents.rider_id' in ib, 'incidents filters'
 spec = yaml.safe_load(open('openapi.yaml'))
 sch = spec['components']['schemas']
 for route in tot['lists']:
@@ -758,8 +758,8 @@ cc = sch['TripFinish']['properties']['cashToCollect']
 assert cc['allOf'] == [{'$ref': '#/components/schemas/Money'}] and 'payDriverInCar' in cc['description'], 'openapi TripFinish.cashToCollect'
 assert 'cashToCollect' in sch['TripFinish']['required'], 'cashToCollect still required'
 md = open('CONTRACT.md').read()
-assert md.startswith('# Movera shared contract v' + c['version'] + '\n') or tuple(map(int, c['version'].split('.'))) > (0, 18, 79), 'CONTRACT.md title'
-assert '0.18.78 reserved for S5 J3 money fixes' in md and '**G33 rider pay-in-car line**' in md and '**admin lists “50 of N”**' in md, 'CONTRACT.md v0.18.79 note'
+assert md.startswith('# Movera shared contract v' + c['version'] + '\n') or tuple(map(int, c['version'].split('.'))) > (0, 18, 78), 'CONTRACT.md title'
+assert 'supersedes the S5 J16 `totalAtLeast` idea' in md and '**G33 rider pay-in-car line**' in md and '**admin lists “50 of N”**' in md, 'CONTRACT.md v0.18.78 note'
 assert md.count('\n') <= 1500, 'CONTRACT.md over 1,500 lines'
 PY
 echo "contract ok"
