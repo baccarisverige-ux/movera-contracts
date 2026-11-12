@@ -463,4 +463,20 @@ assert 'HOUSEKEEPING_LANES, default 1' in t and 'general lanes never take them' 
 md = open('CONTRACT.md').read()
 assert 'STREAM_READ_RETRIES' in md and ': stream read failed; reconnect to catch up' in md and 'HOUSEKEEPING_LANES' in md, 'CONTRACT.md v0.18.68 wording'
 PY
+# v0.18.69: safety writes outside the write limit + telemetry's own budget (server B1.22, owner W1 Q82), wording only.
+python3 - <<'PY'
+import json
+c = json.load(open('contract.json'))
+r = c['rateLimit']
+sw = r['safetyWrites']
+for p in ['/rider/trips/{tripId}/sos', '/driver/trips/{tripId}/sos', '/rider/trips/{tripId}/ride-check', '/driver/trips/{tripId}/ride-check', '/trips/{tripId}/cancel,', '/rides/{rideId}/cancel', '/admin/trips/{tripId}/cancel']:
+    assert p in sw, 'rateLimit.safetyWrites route ' + p
+assert 'RIDE_CHECK_APP_MAX_PER_TRIP (server setting, default 30)' in sw and 'Matched on the route' in sw and 'including /trips/{tripId}/cancel-reason, still counts' in sw, 'rateLimit.safetyWrites wording'
+assert 'contract.json#telemetry.limits' in r['ownBudget'], 'rateLimit.ownBudget'
+t = c['telemetry']
+assert t['perAddressPerMinute'] == 120, 'telemetry.perAddressPerMinute'
+assert 'TELEMETRY_PER_ADDRESS_PER_MINUTE' in t['limits'] and 'reason telemetry_too_many' in t['limits'] and '1/WEB_COPIES' in t['limits'] and 'payload_too_large' in t['limits'], 'telemetry.limits wording'
+md = open('CONTRACT.md').read()
+assert 'telemetry_too_many' in md and 'RIDE_CHECK_APP_MAX_PER_TRIP' in md and '**Safety writes**' in md and 'TELEMETRY_PER_ADDRESS_PER_MINUTE' in md, 'CONTRACT.md v0.18.69 wording'
+PY
 echo "contract ok"
