@@ -499,7 +499,7 @@ PY
 python3 - <<'PY'
 import json, yaml
 c = json.load(open('contract.json'))
-assert c['version'] == '0.18.71', 'version'
+assert tuple(map(int, c['version'].split('.'))) >= (0, 18, 71), 'version'
 sl = c['chat']['autoTranslate']['sameLanguage']
 assert sl.startswith('v0.18.71') and 'Message.quickReplyId or Message.auto present' in sl and 'Typed text whose Message.lang equals to goes to the kept translation or the provider' in sl and 'chat.autoTranslate.sourceLanguage' in sl and '503 unavailable, reason coming_soon' in sl, 'chat.autoTranslate.sameLanguage v0.18.71'
 spec = yaml.safe_load(open('openapi.yaml'))
@@ -509,5 +509,33 @@ for x in (d, tm):
     assert 'Message.quickReplyId or Message.auto present' in x and 'Typed text whose Message.lang equals to' in x, 'openapi sameLanguage v0.18.71'
 md = open('CONTRACT.md').read()
 assert '**§85 same-language shortcut**' in md and 'typed text with `Message.lang` = `to` is translated like any other' in md, 'CONTRACT.md v0.18.71 wording'
+PY
+# v0.18.72 §89 (G17, live bug 2026-11-12, server 165fb9c): the driver's config and stream follow the zone he works in, wording + additive key.
+python3 - <<'PY'
+import json, yaml
+c = json.load(open('contract.json'))
+assert tuple(map(int, c['version'].split('.'))) >= (0, 18, 72), 'version'
+d = c['driverConfigZone']
+assert sorted(d) == ['app', 'asked', 'note', 'serverDefault'], 'driverConfigZone keys'
+assert d['note'].startswith('v0.18.72') and 'Driver.zoneIds[0]' in d['note'] and 'emergencyNumbers' in d['note'] and 'currency' in d['note'], 'driverConfigZone.note'
+assert 'tripStatus.driverAssigned' in d['app'] and 'GET /driver/zones' in d['app'] and 'reopens the stream with the new zoneId' in d['app'] and 'Versions are compared per zone: on a zone change the app compares against, and sends as Last-Event-ID, the last version it holds for THAT zone (none if none).' in d['app'], 'driverConfigZone.app'
+sd = d['serverDefault']
+order = [sd.index(x) for x in ('active trip', 'driver_locations.zone_id', 'Driver.zoneIds[0]', 'server default zone')]
+assert order == sorted(order) and 'not a held booked ride, not a queued next trip' in sd and '(at most one: trips_one_active_per_driver)' in sd and 'most recently updated' not in sd and 'does not move an open stream' in sd, 'driverConfigZone.serverDefault'
+assert '?zoneId= always wins' in d['asked'] and 'zone_not_found' in d['asked'] and 'config_not_published' in d['asked'], 'driverConfigZone.asked'
+assert c['tripStatus']['driverAssigned'] == ['accepted', 'driver_to_pickup', 'arrived', 'rider_onboard', 'in_trip', 'approaching_dropoff'], 'driverAssigned'
+assert 'driverConfigZone' in c['emergencyNumbers']['apps'] and 'police 197 / ambulance 190' in c['emergencyNumbers']['apps'], 'emergencyNumbers.apps v0.18.72'
+assert 'driverConfigZone' in c['pickupWaiting']['servedConfig']['note'], 'servedConfig v0.18.72'
+spec = yaml.safe_load(open('openapi.yaml'))
+for p in ('/driver/config', '/driver/config/stream'):
+    g = spec['paths'][p]['get']
+    assert 'v0.18.72 §89' in g['description'] and d['serverDefault'] in g['description'], p + ' description v0.18.72'
+    z = [x for x in g['parameters'] if x.get('name') == 'zoneId']
+    assert len(z) == 1 and z[0]['required'] is False and 'v0.18.72' in z[0]['description'], p + ' zoneId v0.18.72'
+    assert {'$ref': '#/components/parameters/ZoneIdQuery'} not in g['parameters'], p + ' still shared ZoneIdQuery'
+assert {'$ref': '#/components/parameters/ZoneIdQuery'} in spec['paths']['/rider/config']['get']['parameters'], 'rider keeps ZoneIdQuery'
+assert 'driverConfigZone' in spec['components']['schemas']['DriverAppConfig']['properties']['emergencyNumbers']['description'], 'openapi emergencyNumbers v0.18.72'
+md = open('CONTRACT.md').read()
+assert "## 89. The driver's config follows the zone he works in (v0.18.72, G17)" in md and 'contract.json#driverConfigZone' in md and '`driver_locations.zone_id`' in md and 'does not move an open stream' in md and 'Versions are compared per zone: on a zone change the app compares against, and sends as\n  `Last-Event-ID`, the last version it holds for THAT zone (none if none).' in md and '(at most one: `trips_one_active_per_driver`)' in md, 'CONTRACT.md v0.18.72 wording'
 PY
 echo "contract ok"
