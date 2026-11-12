@@ -538,4 +538,26 @@ assert 'driverConfigZone' in spec['components']['schemas']['DriverAppConfig']['p
 md = open('CONTRACT.md').read()
 assert "## 89. The driver's config follows the zone he works in (v0.18.72, G17)" in md and 'contract.json#driverConfigZone' in md and '`driver_locations.zone_id`' in md and 'does not move an open stream' in md and 'Versions are compared per zone: on a zone change the app compares against, and sends as\n  `Last-Event-ID`, the last version it holds for THAT zone (none if none).' in md and '(at most one: `trips_one_active_per_driver`)' in md, 'CONTRACT.md v0.18.72 wording'
 PY
+# v0.18.73 (wording only, server B1.14 d5400cd + B1.15 73d28e1, rider G26-back f513af55): dispatch_round restarts once, streams end with their session, rider back before pickup.
+python3 - <<'PY'
+import json, yaml
+c = json.load(open('contract.json'))
+assert tuple(map(int, c['version'].split('.'))) >= (0, 18, 73), 'version'
+r = c['alertDesk']['serverDetection']['kindDefaults']['system_health']['rule']
+assert '(all listed kinds except ride_check_no_answer and withdraw_driver_offers)' in r and 'dispatch_round since 0.18.73, server B1.14' in r and 'withdraw_driver_offers and dispatch_round)' not in r and 'parks it for good (no loop)' in r and 'solved at the next sweep' in r, 'system_health rule v0.18.73'
+se = c['realtime']['sessionEnd']
+assert se.startswith('v0.18.73') and 'STREAM_SESSION_CHECK_MS (default 30 s, at most 60 s)' in se and "': session ended; sign in again'" in se and 'session_ended or signed_in_elsewhere' in se and 'auth.signedOut' in se and 'role change or deactivation' in se and 'preview token' in se and 'never closes a stream' in se, 'realtime.sessionEnd'
+rb = c['riderBack']
+assert sorted(rb) == ['apps', 'beforePickup', 'cancelInFlight', 'note', 'onBoard', 'rideCheckOpen', 'searching'], 'riderBack keys'
+b = rb['beforePickup']
+assert b['statuses'] == ['accepted', 'driver_to_pickup', 'arrived'] and b['back'] == 'lower_sheet_or_nothing' and b['opensCancel'] is False and b['leavesScreen'] is False and b['cancelEntry'] == 'close_button', 'riderBack.beforePickup'
+assert rb['onBoard']['statuses'] == c['tripStatus']['riderOnboard'] and rb['onBoard']['back'] == 'open_trip_details' and rb['rideCheckOpen']['back'] == 'nothing' and rb['searching']['back'] == 'open_cancel_sheet', 'riderBack other screens'
+assert set(b['statuses']) <= set(c['tripStatus']['driverAssigned']) and not set(b['statuses']) & set(c['tripStatus']['riderOnboard']), 'riderBack statuses'
+spec = yaml.safe_load(open('openapi.yaml'))
+assert str(spec['info']['version']) == c['version'], 'openapi version'
+md = open('CONTRACT.md').read()
+assert md.startswith('# Movera shared contract v' + c['version'] + '\n') or tuple(map(int, c['version'].split('.'))) > (0, 18, 73), 'CONTRACT.md title'
+assert '**Streams end with their session** (v0.18.73' in md and '`: session ended; sign in again`' in md and '`contract.json#realtime.sessionEnd`' in md, 'CONTRACT.md §4 v0.18.73'
+assert '**Rider back before pickup** (v0.18.73, G26-back' in md and '`contract.json#riderBack`' in md and '**a stopped dispatch round restarts once** (B1.14' in md, 'CONTRACT.md v0.18.73 wording'
+PY
 echo "contract ok"
