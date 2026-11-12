@@ -595,4 +595,51 @@ md = open('CONTRACT.md').read()
 assert md.startswith('# Movera shared contract v' + c['version'] + '\n') or tuple(map(int, c['version'].split('.'))) > (0, 18, 75), 'CONTRACT.md title'
 assert '**no-token telemetry has a total per server copy**' in md and '`TELEMETRY_ANON_ROWS_PER_MINUTE` / `TELEMETRY_ANON_BYTES_PER_MINUTE`, not divided by `WEB_COPIES`' in md, 'CONTRACT.md v0.18.75 note'
 PY
+# v0.18.76 (G30, owner 2026-11-12 Q1–Q6): an e-mail is saved only after a code check; emailVerifiedAt; per-country approval setting (off).
+python3 - <<'PY'
+import json, yaml
+c = json.load(open('contract.json'))
+assert tuple(map(int, c['version'].split('.'))) >= (0, 18, 76), 'version'
+e = c['emailVerified']
+for k in ('field', 'writePaths', 'existing', 'verifyCurrent', 'unique', 'delivery', 'approvalSetting', 'apps', 'texts'):
+    assert k in e, 'emailVerified.' + k
+assert set(e['writePaths']) == {'codeChange', 'riderPatch', 'driverSignUp', 'provider', 'seed'}, 'emailVerified.writePaths'
+assert '400 invalid_request, reason email_needs_code' in e['writePaths']['riderPatch'] and 'never blocked' in e['writePaths']['driverSignUp'], 'write paths'
+assert 'email_verified true' in e['writePaths']['provider'] and 'Rule 21' in e['existing'], 'provider / existing'
+assert 'SAME app' in e['unique'] and 'own rider and driver accounts' in e['unique'] and 'never blocks' in e['unique'], 'unique'
+assert 'no 10-minute sign-in rule' in e['verifyCurrent'] and 'no other session ends' in e['verifyCurrent'], 'verifyCurrent'
+assert 'OFF by default' in e['approvalSetting'] and '409 invalid_transition, reason email_not_verified' in e['approvalSetting'], 'approvalSetting'
+assert 'Home sheet' in e['apps']['driver'] and 'never blocks going online' in e['apps']['driver'], 'driver Home notice'
+rm = c['driverOnboarding']['reminders']
+assert 'verify_email' in rm['fixTargets'] and rm['kinds']['email_not_verified'].startswith('v0.18.76 (G30') and 'X-Contract-Version is 0.18.76 or higher' in rm['kinds']['email_not_verified'], 'reminder email_not_verified'
+assert set(rm['texts']['email_not_verified']) == {'sv', 'fr', 'en'}, 'reminder text'
+for t in e['texts'].values():
+    assert set(t) == {'en', 'fr', 'sv'} and all(t.values()), 'texts en/fr/sv'
+for cc, d in c['driverOnboarding']['settings']['defaults'].items():
+    assert d['emailVerifiedForApproval'] is False, 'default off ' + cc
+a = c['deepFix1']['accountChange']
+assert '→ { email, emailVerifiedAt } (v0.18.76)' in a and 'any account (rider or driver) gets' not in a, 'accountChange v0.18.76'
+assert 'email_needs_code (400 invalid_request), email_not_verified (409 invalid_transition)' in c['errors']['reason'], 'error reasons'
+spec = yaml.safe_load(open('openapi.yaml'))
+assert str(spec['info']['version']) == c['version'], 'openapi version'
+sc = spec['components']['schemas']
+for n in ('Rider', 'Driver'):
+    assert sc[n]['properties']['emailVerifiedAt']['allOf'] == [{'$ref': '#/components/schemas/Timestamp'}], n + '.emailVerifiedAt'
+    assert 'emailVerifiedAt' not in sc[n].get('required', []), n + ' optional'
+assert 'email' not in sc['RiderProfileUpdate']['properties'] and 'email_needs_code' in sc['RiderProfileUpdate']['description'], 'RiderProfileUpdate'
+assert 'email_needs_code' in spec['paths']['/rider/profile']['patch']['description'], 'PATCH /rider/profile'
+assert sc['AccountEmailVerified']['required'] == ['email', 'emailVerifiedAt'], 'AccountEmailVerified'
+r = spec['paths']['/account/email/verify']['post']['responses']['200']['content']['application/json']['schema']
+assert r == {'$ref': '#/components/schemas/AccountEmailVerified'}, 'verify answer'
+assert 'email' in sc['DriverOnboardingRequest']['required'] and 'never blocked' in sc['DriverOnboardingRequest']['properties']['email']['description'], 'onboarding email'
+o = sc['OnboardingSettings']['properties']['emailVerifiedForApproval']
+assert o['type'] == 'boolean' and o['default'] is False and 'emailVerifiedForApproval' not in sc['OnboardingSettings']['required'], 'setting'
+assert 'email_not_verified' in spec['paths']['/admin/drivers/{driverId}/status']['post']['description'], 'approval check'
+assert 'email_verified true' in spec['paths']['/auth/provider']['post']['description'], 'provider'
+assert 'email_not_verified' in sc['DriverReminder']['properties']['kind']['enum'] and 'verify_email' in sc['ReminderFix']['properties']['target']['enum'], 'reminder enums'
+assert 'v0.18.76 (G30): email_not_verified' in spec['paths']['/driver/reminders']['get']['description'], 'GET /driver/reminders'
+md = open('CONTRACT.md').read()
+assert md.startswith('# Movera shared contract v' + c['version'] + '\n') or tuple(map(int, c['version'].split('.'))) > (0, 18, 76), 'CONTRACT.md title'
+assert '**an e-mail is saved only after a code check**' in md and 'email?, emailVerifiedAt? (v0.18.76), rating?' in md and 'email?, emailVerifiedAt? (v0.18.76), country?' in md, 'CONTRACT.md v0.18.76'
+PY
 echo "contract ok"
