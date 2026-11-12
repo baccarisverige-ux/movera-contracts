@@ -24,6 +24,6 @@ _op = PATHS["/auth/provider"]["post"]
 _op["description"] = (_op.get("description", "") + " v0.18.76 (G30): " + _EVW["provider"]).strip()
 S["OnboardingSettings"]["properties"]["emailVerifiedForApproval"] = {**b("v0.18.76 (G30): " + _EV["approvalSetting"]), "default": False}
 _op = PATHS["/admin/drivers/{driverId}/status"]["post"]
-_op["description"] = (_op.get("description", "") + " v0.18.76 (G30): " + _EV["approvalSetting"]).strip()
+_op["description"] = (_op.get("description", "") + " v0.18.76 (G30): " + _EV["approvalSetting"] + " " + _EV["neverActive"]).strip()
 _op = PATHS["/driver/reminders"]["get"]
 _op["description"] += " v0.18.76 (G30): email_not_verified: " + C["driverOnboarding"]["reminders"]["kinds"]["email_not_verified"]

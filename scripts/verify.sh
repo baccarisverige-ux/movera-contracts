@@ -642,4 +642,39 @@ md = open('CONTRACT.md').read()
 assert md.startswith('# Movera shared contract v' + c['version'] + '\n') or tuple(map(int, c['version'].split('.'))) > (0, 18, 76), 'CONTRACT.md title'
 assert '**an e-mail is saved only after a code check**' in md and 'email?, emailVerifiedAt? (v0.18.76), rating?' in md and 'email?, emailVerifiedAt? (v0.18.76), country?' in md, 'CONTRACT.md v0.18.76'
 PY
+# v0.18.76 owner answers 2026-11-12 ~14:10 (supervisor S1–S3 + French): failed send = pending_provider; red Home line "needed for approval"; approval check = never active before.
+python3 - <<'PY'
+import json, yaml
+c = json.load(open('contract.json'))
+e = c['emailVerified']
+dl = e['delivery']
+assert "'sent' only when the sending service accepted" in dl and 'refused the send or it failed' in dl and 'Resend without an own domain' in dl and "never 'sent' unless the provider accepted it" in dl and 'texts.codeNotSentYet' in dl, 'S1 delivery'
+a = c['deepFix1']['accountChange']
+assert 'delivery: pending_provider' not in a and "delivery 'sent' only when the sending service accepted the e-mail, else 'pending_provider', also on a refused or failed send" in a, 'S3 accountChange'
+ap = e['approvalSetting']
+assert 'NEVER active before' in ap and 'pending → suspended → active' in ap and 'Not checked when a once-active driver is made active again' in ap and 'contract.json#emailVerified.neverActive' in ap, 'approval scope'
+assert 'is not checked when a suspended driver is made active again' not in ap, 'old suspended rule gone'
+na = e['neverActive']
+assert 'server-internal column' in na and 'first_activated_at' in na and 'never cleared' in na and 'not sent in any view' in na and 'counts as never active' in na, 'neverActive'
+assert list(e).index('neverActive') == list(e).index('approvalSetting') + 1, 'neverActive order'
+rm = c['driverOnboarding']['reminders']
+k = rm['kinds']['email_not_verified']
+assert 'blocks_online' in rm['levels'] and 'due_soon' in rm['levels'], 'levels'
+assert 'blocks_online (red) with text texts.email_not_verified_approval' in k and 'OnboardingSettings.emailVerifiedForApproval is on and he was never active before' in k and 'otherwise due_soon (orange' in k, 'reminder level'
+assert 'nor a red email_not_verified line' in rm['kinds']['account_not_active'], 'account_not_active vs red e-mail line'
+t = rm['texts']['email_not_verified_approval']
+assert set(t) == {'sv', 'fr', 'en'} and t['en'].endswith('needed for approval. Tap to verify it.') and 'approbation' in t['fr'] and 'godkännande' in t['sv'], 'approval text sv/fr/en'
+assert rm['texts']['email_not_verified']['fr'] == 'Votre e-mail n’est pas vérifié. Appuyez pour le vérifier.', 'fr Appuyez'
+assert not any('Touchez' in v for tx in rm['texts'].values() if isinstance(tx, dict) for v in tx.values()), 'no Touchez'
+assert 'texts.email_not_verified_approval' in e['apps']['driver'] and 'never blocks going online' in e['apps']['driver'], 'driver app red/orange'
+assert 'first-activated column' in e['rule0'], 'rule0 server column'
+spec = yaml.safe_load(open('openapi.yaml'))
+st = spec['paths']['/admin/drivers/{driverId}/status']['post']['description']
+assert 'NEVER active before' in st and 'first_activated_at' in st, 'openapi approval scope'
+assert 'refused the send or it failed' in spec['components']['schemas']['AccountEmailChallenge']['properties']['delivery']['description'], 'openapi delivery'
+assert 'email_not_verified_approval' in spec['paths']['/driver/reminders']['get']['description'], 'openapi reminder level'
+assert 'delivery: pending_provider' not in spec['paths']['/account/email/change']['post']['description'], 'openapi accountChange'
+md = open('CONTRACT.md').read()
+assert '(also a refused or failed send)' in md and 'red “needed for approval”' in md and 'for a driver never active before, not for re-activating one' in md, 'CONTRACT.md owner answers'
+PY
 echo "contract ok"
