@@ -51,7 +51,7 @@ ph = c['adminMasking']['shapes']['phone']
 m = re.search(r'e\.g\. (\+46)(•+)(\d\d) for \+46(\d+)', ph)
 assert m, 'masked phone example'
 assert len(m.group(2)) == len(m.group(4)) - 2 and m.group(4).endswith(m.group(3)), 'masked phone example dot count'
-md = open('CONTRACT.md', encoding='utf-8').read()
+md = open('CONTRACT.md', encoding='utf-8').read() + open('CHANGELOG.md', encoding='utf-8').read()  # v0.18.74: the v0.18.60 note moved to CHANGELOG.md
 assert md.count('+46•••••••12') >= 2 and not re.search(r'\+46•{5}12', md), 'CONTRACT.md masked phone example'
 PY
 # v0.18.58 §80: counts-as-arrived distance per zone, larger at airports (owner 2026-11-10).
@@ -461,7 +461,7 @@ assert 'STREAM_READ_RETRIES (default 3)' in sc and 'STREAM_CLOSE_SPREAD_MS (defa
 t = c['fastDispatch']['timers']
 assert 'HOUSEKEEPING_LANES, default 1' in t and 'general lanes never take them' in t and 'never wait behind a clean-up' in t, 'fastDispatch.timers housekeeping lane'
 md = open('CONTRACT.md').read()
-assert 'STREAM_READ_RETRIES' in md and ': stream read failed; reconnect to catch up' in md and 'HOUSEKEEPING_LANES' in md, 'CONTRACT.md v0.18.68 wording'
+assert 'STREAM_READ_RETRIES' in md and ': stream read failed; reconnect to catch up' in md and 'HOUSEKEEPING_LANES' in open('CHANGELOG.md').read(), 'CONTRACT.md v0.18.68 wording (its note moved to CHANGELOG.md in v0.18.74)'
 PY
 # v0.18.69: safety writes outside the write limit + telemetry's own budget (server B1.22, owner W1 Q82), wording only.
 python3 - <<'PY'
