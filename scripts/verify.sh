@@ -595,4 +595,105 @@ md = open('CONTRACT.md').read()
 assert md.startswith('# Movera shared contract v' + c['version'] + '\n') or tuple(map(int, c['version'].split('.'))) > (0, 18, 75), 'CONTRACT.md title'
 assert '**no-token telemetry has a total per server copy**' in md and '`TELEMETRY_ANON_ROWS_PER_MINUTE` / `TELEMETRY_ANON_BYTES_PER_MINUTE`, not divided by `WEB_COPIES`' in md, 'CONTRACT.md v0.18.75 note'
 PY
+# v0.18.76 (G30, owner 2026-11-12 Q1–Q6): an e-mail is saved only after a code check; emailVerifiedAt; per-country approval setting (off).
+python3 - <<'PY'
+import json, yaml
+c = json.load(open('contract.json'))
+assert tuple(map(int, c['version'].split('.'))) >= (0, 18, 76), 'version'
+e = c['emailVerified']
+for k in ('field', 'writePaths', 'existing', 'verifyCurrent', 'unique', 'delivery', 'approvalSetting', 'apps', 'texts'):
+    assert k in e, 'emailVerified.' + k
+assert set(e['writePaths']) == {'codeChange', 'riderPatch', 'driverSignUp', 'provider', 'seed'}, 'emailVerified.writePaths'
+assert '400 invalid_request, reason email_needs_code' in e['writePaths']['riderPatch'] and 'never blocked' in e['writePaths']['driverSignUp'], 'write paths'
+assert 'email_verified true' in e['writePaths']['provider'] and 'Rule 21' in e['existing'], 'provider / existing'
+assert 'SAME app' in e['unique'] and 'own rider and driver accounts' in e['unique'] and 'never blocks' in e['unique'], 'unique'
+assert 'no 10-minute sign-in rule' in e['verifyCurrent'] and 'no other session ends' in e['verifyCurrent'], 'verifyCurrent'
+assert 'OFF by default' in e['approvalSetting'] and '409 invalid_transition, reason email_not_verified' in e['approvalSetting'], 'approvalSetting'
+assert 'Home sheet' in e['apps']['driver'] and 'never blocks going online' in e['apps']['driver'], 'driver Home notice'
+rm = c['driverOnboarding']['reminders']
+assert 'verify_email' in rm['fixTargets'] and rm['kinds']['email_not_verified'].startswith('v0.18.76 (G30') and 'X-Contract-Version is 0.18.76 or higher' in rm['kinds']['email_not_verified'], 'reminder email_not_verified'
+assert set(rm['texts']['email_not_verified']) == {'sv', 'fr', 'en'}, 'reminder text'
+for t in e['texts'].values():
+    assert set(t) == {'en', 'fr', 'sv'} and all(t.values()), 'texts en/fr/sv'
+for cc, d in c['driverOnboarding']['settings']['defaults'].items():
+    assert d['emailVerifiedForApproval'] is False, 'default off ' + cc
+a = c['deepFix1']['accountChange']
+assert '→ { email, emailVerifiedAt } (v0.18.76)' in a and 'any account (rider or driver) gets' not in a, 'accountChange v0.18.76'
+assert 'email_needs_code (400 invalid_request), email_not_verified (409 invalid_transition)' in c['errors']['reason'], 'error reasons'
+spec = yaml.safe_load(open('openapi.yaml'))
+assert str(spec['info']['version']) == c['version'], 'openapi version'
+sc = spec['components']['schemas']
+for n in ('Rider', 'Driver'):
+    assert sc[n]['properties']['emailVerifiedAt']['allOf'] == [{'$ref': '#/components/schemas/Timestamp'}], n + '.emailVerifiedAt'
+    assert 'emailVerifiedAt' not in sc[n].get('required', []), n + ' optional'
+assert 'email' not in sc['RiderProfileUpdate']['properties'] and 'email_needs_code' in sc['RiderProfileUpdate']['description'], 'RiderProfileUpdate'
+assert 'email_needs_code' in spec['paths']['/rider/profile']['patch']['description'], 'PATCH /rider/profile'
+assert sc['AccountEmailVerified']['required'] == ['email', 'emailVerifiedAt'], 'AccountEmailVerified'
+r = spec['paths']['/account/email/verify']['post']['responses']['200']['content']['application/json']['schema']
+assert r == {'$ref': '#/components/schemas/AccountEmailVerified'}, 'verify answer'
+assert 'email' in sc['DriverOnboardingRequest']['required'] and 'never blocked' in sc['DriverOnboardingRequest']['properties']['email']['description'], 'onboarding email'
+o = sc['OnboardingSettings']['properties']['emailVerifiedForApproval']
+assert o['type'] == 'boolean' and o['default'] is False and 'emailVerifiedForApproval' not in sc['OnboardingSettings']['required'], 'setting'
+assert 'email_not_verified' in spec['paths']['/admin/drivers/{driverId}/status']['post']['description'], 'approval check'
+assert 'email_verified true' in spec['paths']['/auth/provider']['post']['description'], 'provider'
+assert 'email_not_verified' in sc['DriverReminder']['properties']['kind']['enum'] and 'verify_email' in sc['ReminderFix']['properties']['target']['enum'], 'reminder enums'
+assert 'v0.18.76 (G30): email_not_verified' in spec['paths']['/driver/reminders']['get']['description'], 'GET /driver/reminders'
+md = open('CONTRACT.md').read()
+assert md.startswith('# Movera shared contract v' + c['version'] + '\n') or tuple(map(int, c['version'].split('.'))) > (0, 18, 76), 'CONTRACT.md title'
+assert '**an e-mail is saved only after a code check**' in md and 'email?, emailVerifiedAt? (v0.18.76), rating?' in md and 'email?, emailVerifiedAt? (v0.18.76), country?' in md, 'CONTRACT.md v0.18.76'
+PY
+# v0.18.76 owner answers 2026-11-12 ~14:10 (supervisor S1–S3 + French): failed send = pending_provider; red Home line "needed for approval"; approval check = never active before.
+python3 - <<'PY'
+import json, yaml
+c = json.load(open('contract.json'))
+e = c['emailVerified']
+dl = e['delivery']
+assert "'sent' only when the sending service accepted" in dl and 'refused the send or it failed' in dl and 'Resend without an own domain' in dl and "never 'sent' unless the provider accepted it" in dl and 'texts.codeNotSentYet' in dl, 'S1 delivery'
+a = c['deepFix1']['accountChange']
+assert 'delivery: pending_provider' not in a and "delivery 'sent' only when the sending service accepted the e-mail, else 'pending_provider', also on a refused or failed send" in a, 'S3 accountChange'
+ap = e['approvalSetting']
+assert 'NEVER active before' in ap and 'pending → suspended → active' in ap and 'Not checked when a once-active driver is made active again' in ap and 'contract.json#emailVerified.neverActive' in ap, 'approval scope'
+assert 'is not checked when a suspended driver is made active again' not in ap, 'old suspended rule gone'
+na = e['neverActive']
+assert 'server-internal column' in na and 'first_activated_at' in na and 'never cleared' in na and 'not sent in any view' in na and 'counts as never active' in na, 'neverActive'
+assert list(e).index('neverActive') == list(e).index('approvalSetting') + 1, 'neverActive order'
+rm = c['driverOnboarding']['reminders']
+k = rm['kinds']['email_not_verified']
+assert 'blocks_online' in rm['levels'] and 'due_soon' in rm['levels'], 'levels'
+assert 'blocks_online (red) with text texts.email_not_verified_approval' in k and 'OnboardingSettings.emailVerifiedForApproval is on and he was never active before' in k and 'otherwise due_soon (orange' in k, 'reminder level'
+assert 'nor a red email_not_verified line' in rm['kinds']['account_not_active'], 'account_not_active vs red e-mail line'
+t = rm['texts']['email_not_verified_approval']
+assert set(t) == {'sv', 'fr', 'en'} and t['en'].endswith('needed for approval. Tap to verify it.') and 'approbation' in t['fr'] and 'för att bli godkänd' in t['sv'] and 'godkännande' not in t['sv'], 'approval text sv/fr/en'
+assert rm['texts']['email_not_verified']['fr'] == 'Votre e-mail n’est pas vérifié. Appuyez pour le vérifier.', 'fr Appuyez'
+assert not any('Touchez' in v for tx in rm['texts'].values() if isinstance(tx, dict) for v in tx.values()), 'no Touchez'
+assert 'texts.email_not_verified_approval' in e['apps']['driver'] and 'never blocks going online' in e['apps']['driver'], 'driver app red/orange'
+assert 'first-activated column' in e['rule0'], 'rule0 server column'
+spec = yaml.safe_load(open('openapi.yaml'))
+st = spec['paths']['/admin/drivers/{driverId}/status']['post']['description']
+assert 'NEVER active before' in st and 'first_activated_at' in st, 'openapi approval scope'
+assert 'refused the send or it failed' in spec['components']['schemas']['AccountEmailChallenge']['properties']['delivery']['description'], 'openapi delivery'
+assert 'email_not_verified_approval' in spec['paths']['/driver/reminders']['get']['description'], 'openapi reminder level'
+assert 'delivery: pending_provider' not in spec['paths']['/account/email/change']['post']['description'], 'openapi accountChange'
+md = open('CONTRACT.md').read()
+assert '(also a refused or failed send)' in md and 'red “needed for approval”' in md and 'for a driver never active before, not for re-activating one' in md, 'CONTRACT.md owner answers'
+PY
+# v0.18.76 round 3 (supervisor R2-1..R2-3): once-active backfill also from audit 'from active' and trips; seed paths named;
+# account_not_active left out only when the red line is actually sent; a pending_provider start does not count toward 3/hour.
+python3 - <<'PY'
+import json, yaml
+c = json.load(open('contract.json'))
+e = c['emailVerified']
+na = e['neverActive']
+assert 'seedDriver' in na and 'seedTest' in na and 'start my own company' in na and 'active → on_hold' in na and 'by any path' in na, 'R2-1 paths'
+assert "detail.from is 'active'" in na and 'detail.to is active' in na and 'any trip carrying his driver_id' in na and 'earliest such time' in na, 'R2-1 backfill'
+assert 'only fills it (never deletes or changes other data)' in na and 'counts as never active' in na, 'R2-1 no delete'
+ana = c['driverOnboarding']['reminders']['kinds']['account_not_active']
+assert 'nor a red email_not_verified line actually sent in this answer' in ana and 'below 0.18.76 never gets that line, so it still gets account_not_active' in ana, 'R2-2'
+dl = e['delivery']
+assert "only when its answer is delivery 'sent'" in dl and "'pending_provider' start (no service, or a refused or failed send) does not count" in dl and 'never got a code' in dl, 'R2-3 delivery'
+assert 'which does not count toward the 3 starts per hour' in c['deepFix1']['accountChange'], 'R2-3 accountChange'
+spec = yaml.safe_load(open('openapi.yaml'))
+assert "detail.from is 'active'" in spec['paths']['/admin/drivers/{driverId}/status']['post']['description'], 'openapi R2-1'
+assert 'never got a code' in spec['components']['schemas']['AccountEmailChallenge']['properties']['delivery']['description'], 'openapi R2-3'
+PY
 echo "contract ok"
