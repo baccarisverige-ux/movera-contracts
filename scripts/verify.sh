@@ -457,10 +457,10 @@ python3 - <<'PY'
 import json
 c = json.load(open('contract.json'))
 sc = c['realtime']['streamClose']
-assert 'STREAM_READ_RETRIES (default 3)' in sc and 'STREAM_CLOSE_SPREAD_MS (default 30 s)' in sc and ': reconnect to catch up' in sc and 'Last-Event-ID / after' in sc and 'stayed up ≥ 30 s' in sc, 'realtime.streamClose wording'
+assert 'STREAM_READ_RETRIES (default 3)' in sc and 'STREAM_CLOSE_SPREAD_MS (default 30 s)' in sc and ': stream read failed; reconnect to catch up' in sc and 'Last-Event-ID / after' in sc and 'stayed up ≥ 30 s' in sc, 'realtime.streamClose wording'
 t = c['fastDispatch']['timers']
 assert 'HOUSEKEEPING_LANES, default 1' in t and 'general lanes never take them' in t and 'never wait behind a clean-up' in t, 'fastDispatch.timers housekeeping lane'
 md = open('CONTRACT.md').read()
-assert 'STREAM_READ_RETRIES' in md and ': reconnect to catch up' in md and 'HOUSEKEEPING_LANES' in md, 'CONTRACT.md v0.18.68 wording'
+assert 'STREAM_READ_RETRIES' in md and ': stream read failed; reconnect to catch up' in md and 'HOUSEKEEPING_LANES' in md, 'CONTRACT.md v0.18.68 wording'
 PY
 echo "contract ok"
