@@ -483,7 +483,7 @@ PY
 python3 - <<'PY'
 import json
 c = json.load(open('contract.json'))
-assert c['version'] == '0.18.70', 'version'
+assert tuple(map(int, c['version'].split('.'))) >= (0, 18, 70), 'version'
 s = c['driverHome']['setOffline']
 g = s['outageGrace']
 assert g['lateSeconds'] == 60 and g['fixCheckEverySeconds'] == 10 and sorted(g) == ['fixCheckEverySeconds', 'lateSeconds', 'note'], 'outageGrace values'
@@ -494,5 +494,20 @@ rm = c['bookLater']['driver']['reminders']
 assert 'driverHome.setOffline.outageGrace' in rm and 'reservation_lost' in rm and 'dispatchAt' in rm, 'bookLater.driver.reminders v0.18.70'
 md = open('CONTRACT.md').read()
 assert '## 88. No mass offline after an outage' in md and 'contract.json#driverHome.setOffline.outageGrace' in md and 'heardAgainAt' in md and 'not covered' in md and '`dispatchAt`' in md and 'first fix stored after it' in md and 'separate run right after it' in md, 'CONTRACT.md v0.18.70 wording'
+PY
+# v0.18.71: same-language shortcut only for quick-reply chips and automatic messages (live bug 2026-11-12, server 43186c9), wording only.
+python3 - <<'PY'
+import json, yaml
+c = json.load(open('contract.json'))
+assert c['version'] == '0.18.71', 'version'
+sl = c['chat']['autoTranslate']['sameLanguage']
+assert sl.startswith('v0.18.71') and 'Message.quickReplyId or Message.auto present' in sl and 'Typed text whose Message.lang equals to goes to the kept translation or the provider' in sl and 'chat.autoTranslate.sourceLanguage' in sl and '503 unavailable, reason coming_soon' in sl, 'chat.autoTranslate.sameLanguage v0.18.71'
+spec = yaml.safe_load(open('openapi.yaml'))
+d = ' '.join(spec['paths']['/trips/{tripId}/messages/translate']['post']['description'].split())
+tm = ' '.join(spec['components']['schemas']['TranslatedMessage']['description'].split())
+for x in (d, tm):
+    assert 'Message.quickReplyId or Message.auto present' in x and 'Typed text whose Message.lang equals to' in x, 'openapi sameLanguage v0.18.71'
+md = open('CONTRACT.md').read()
+assert '**§85 same-language shortcut**' in md and 'typed text with `Message.lang` = `to` is translated like any other' in md, 'CONTRACT.md v0.18.71 wording'
 PY
 echo "contract ok"
