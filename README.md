@@ -6,8 +6,8 @@ serve all three. This repository is the only place the contract changes.
 Each app and the server carries a byte-for-byte copy under `contracts/` and checks it
 against `CHECKSUMS`.
 
-Current version: **0.18.67** (`contract.json#version`, tag `v0.18.67`). All four consumers
-(server, admin, driver, rider) carry 0.18.54 (0.18.55 to 0.18.67 land in them after the merge).
+Current version: **0.18.68** (`contract.json#version`, tag `v0.18.68`). All four consumers
+(server, admin, driver, rider) carry 0.18.54 (0.18.55 to 0.18.68 land in them after the merge).
 
 ## What is here
 

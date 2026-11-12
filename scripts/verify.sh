@@ -452,4 +452,15 @@ c = json.load(open("contract.json"))
 r = c["alertDesk"]["serverDetection"]["kindDefaults"]["system_health"]["rule"]
 if "one alert per parked job kind" not in r or "runs once more 60 s" not in r: sys.exit("v0.18.67: system_health rule (B1.6b) missing")
 PYEOF
+# v0.18.68: stream close on failed reads (server B1.9) + housekeeping timer lane (server B1.7, G11), wording only.
+python3 - <<'PY'
+import json
+c = json.load(open('contract.json'))
+sc = c['realtime']['streamClose']
+assert 'STREAM_READ_RETRIES (default 3)' in sc and 'STREAM_CLOSE_SPREAD_MS (default 30 s)' in sc and ': reconnect to catch up' in sc and 'Last-Event-ID / after' in sc and 'stayed up ≥ 30 s' in sc, 'realtime.streamClose wording'
+t = c['fastDispatch']['timers']
+assert 'HOUSEKEEPING_LANES, default 1' in t and 'general lanes never take them' in t and 'never wait behind a clean-up' in t, 'fastDispatch.timers housekeeping lane'
+md = open('CONTRACT.md').read()
+assert 'STREAM_READ_RETRIES' in md and ': reconnect to catch up' in md and 'HOUSEKEEPING_LANES' in md, 'CONTRACT.md v0.18.68 wording'
+PY
 echo "contract ok"
