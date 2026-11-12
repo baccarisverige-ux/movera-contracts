@@ -722,4 +722,47 @@ md = open('CONTRACT.md').read()
 assert md.startswith('# Movera shared contract v' + c['version'] + '\n') or tuple(map(int, c['version'].split('.'))) > (0, 18, 77), 'CONTRACT.md title'
 assert '**at most 10 e-mail code starts per hour**' in md and 'counting every start (`sent` or `pending_provider`)' in md, 'CONTRACT.md v0.18.77 note'
 PY
+# v0.18.78 (owner 2026-11-12 ~17:30 items 4 + 5): G33 rider "Pay the driver {amount} in the car"
+# text + rule; admin list pages carry an optional total; GET /admin/incidents takes driverId / riderId.
+python3 - <<'PY'
+import json, yaml
+c = json.load(open('contract.json'))
+assert tuple(map(int, c['version'].split('.'))) >= (0, 18, 78), 'version'
+tx = c['finish']['paymentMethods']['texts']['payDriverInCar']
+assert tx == {'sv': 'Betala föraren {amount} i bilen', 'fr': 'Payez {amount} au chauffeur', 'en': 'Pay the driver {amount} in the car'}, 'G33 texts'
+assert set(tx) == set(c['languages']['values']), 'G33 every app language'
+pl = c['finish']['payInCarLine']
+assert '{amount} = TripProjection.finish.cashToCollect' in pl and 'CompletePreview.cashDue' in pl and "receipt's cashPaid" in pl, 'G33 amount source'
+assert 'Not shown when cashToCollect is 0' in pl and 'lifecycle0_18_50.l10 texts.youPay' in pl and '(status completed), never earlier, and only when cashToCollect is above 0' in pl and 'completed by the driver or by an admin' in pl, 'G33 when'
+assert 'Server: no change' in pl and 'Admin: none' in pl and 'Driver: none' in pl, 'G33 Rule 0 line'
+al = c['adminListFilters']
+tot = al['total']
+assert tot['lists'] == ['GET /admin/' + n for n in ['trips', 'riders', 'drivers', 'fleets', 'vehicles', 'payments', 'refunds', 'payouts', 'tickets', 'incidents']], 'total lists'
+assert 'counted without cursor and limit' in tot['rule'] and 'absent = not counted' in tot['rule'] and 'never send total' in tot['rule'] and 'there is no totalAtLeast' in tot['rule'], 'total rule'
+assert 'within the list\'s time budget; never a guess' in tot['rule'] and 'total is left out and the page is still served; the count never fails or slows the list' in tot['rule'], 'total Rule 33'
+assert '/rider/refunds' not in tot['rule'] and '/admin/refunds/payouts' not in tot['rule'], 'total other shapes'
+assert 'never filtered in code after the read' in tot['server'], 'total vehicles zone in SQL'
+ib = al['incidentsByPerson']
+assert 'driverId (cases whose Incident.driverId is that driver)' in ib and 'riderId (cases whose Incident.riderId is that rider)' in ib and 'unknown_filter' in ib and 'may add an index on incidents.driver_id and incidents.rider_id' in ib, 'incidents filters'
+spec = yaml.safe_load(open('openapi.yaml'))
+sch = spec['components']['schemas']
+for route in tot['lists']:
+    op = spec['paths'][route.split(' ', 1)[1]]['get']
+    page = op['responses']['200']['content']['application/json']['schema']['$ref'].split('/')[-1]
+    t = sch[page]['allOf'][1]['properties']['total']
+    assert t['type'] == 'integer' and t['minimum'] == 0, route + ' total'
+    assert 'total' not in sch[page]['allOf'][1].get('required', []), route + ' total optional'
+assert sch['Page']['required'] == ['items', 'nextCursor'] and 'total' not in sch['Page']['properties'], 'generic Page unchanged'
+names = [p.get('name') for p in spec['paths']['/admin/incidents']['get']['parameters']]
+assert 'driverId' in names and 'riderId' in names, 'openapi incidents filters'
+inc = [p for p in spec['paths']['/admin/incidents']['get']['parameters'] if p.get('name') in ('driverId', 'riderId')]
+assert all(p['required'] is False and p['schema'] == {'$ref': '#/components/schemas/Id'} for p in inc), 'incidents filters optional Id'
+cc = sch['TripFinish']['properties']['cashToCollect']
+assert cc['allOf'] == [{'$ref': '#/components/schemas/Money'}] and 'payDriverInCar' in cc['description'], 'openapi TripFinish.cashToCollect'
+assert 'cashToCollect' in sch['TripFinish']['required'], 'cashToCollect still required'
+md = open('CONTRACT.md').read()
+assert md.startswith('# Movera shared contract v' + c['version'] + '\n') or tuple(map(int, c['version'].split('.'))) > (0, 18, 78), 'CONTRACT.md title'
+assert 'supersedes the S5 J16 `totalAtLeast` idea' in md and '**G33 rider pay-in-car line**' in md and 'first page when counted exactly' in md and '**admin lists “50 of N”**' in md, 'CONTRACT.md v0.18.78 note'
+assert md.count('\n') <= 1500, 'CONTRACT.md over 1,500 lines'
+PY
 echo "contract ok"
