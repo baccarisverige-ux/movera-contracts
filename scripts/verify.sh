@@ -954,4 +954,96 @@ assert md.startswith('# Movera shared contract v' + c['version'] + '\n') or tupl
 assert '\nv0.18.83 (G34 fix plan' in md and '**busy-server fixes**' in md and '`GET /rider/trips/active` is never refused' in md and '`scheduledBefore`' in md and '`total=false`' in md, 'CONTRACT.md v0.18.83 note'
 assert md.count('\n') <= 1500, 'CONTRACT.md over 1,500 lines'
 PY
+# v0.18.84 (S5 J7 debt model; owner Sitting 3 2026-11-12 Q-M1, Q-M2, Q-M4, Q-S5-1..5 + 2026-11-13 14:22/14:32 "150 DT ... admin can change",
+# "ship OFF"): an unpaid rider fee is a negative wallet balance, read at payment (never copied into a quote or booking), max rider debt
+# per country blocks only pay-in-car bookings; the driver owes-limit per country (TN 150 DT stored, OFF everywhere), admin owing list +
+# "Driver paid Movera" correction; refund of a pay-in-car trip into the wallet first. Fixtures: fixtures/debt_model.json (reference_check.py).
+python3 - <<'PY'
+import json, yaml
+c = json.load(open('contract.json'))
+assert tuple(map(int, c['version'].split('.'))) >= (0, 18, 84), 'version'
+dm = c['debtModel']
+for part in ('negative balance', 'WalletEntry kind fee', 'per currency', 'Rider.outstanding', 'outstandingByCurrency', 'rider_fees', 'history'):
+    assert part in dm['riderWallet'], 'J7 riderWallet: ' + part
+for part in ('never copied', 'POST /quotes', 'booked', 'reschedule', 'completed', 'ended early by the rider', 'ended by the driver with the rider on board',
+             'admin complete', 'row lock', 'outstanding_fee', 'debt_paid', 'cashDue', 'not in his driverEarnings', 'once'):
+    assert part in dm['readAtPayment'], 'J7 readAtPayment: ' + part
+assert 'Quote.walletDebt' in dm['quoteInfo'] and 'not in Quote.total' in dm['quoteInfo'], 'J7 quoteInfo'
+assert 'walletFirst' in dm['walletSwitch'] and 'ignored' in dm['walletSwitch'] and 'below 0' in dm['walletSwitch'], 'J7 walletSwitch'
+for part in ('CountryRules.maxRiderDebt', 'at or above', 'pay in car', '409 conflict, reason rider_debt_above_max', 'card', 'apple_pay', 'wallet',
+             'always saved', 'country standard'):
+    assert part in dm['maxRiderDebt'], 'J7 maxRiderDebt: ' + part
+cd = c['configDefaults']
+assert cd['maxRiderDebt'] == {'SE': {'amountMinor': 30000, 'currency': 'SEK'}, 'FR': {'amountMinor': 3000, 'currency': 'EUR'},
+                              'TN': {'amountMinor': 84000, 'currency': 'TND'}}, 'Q-S5-5 max rider debt SE 300 kr / FR 30 € / TN 84 DT'
+fl = dm['dbFloor']
+assert (fl['SEK'], fl['EUR'], fl['TND']) == (-90000, -9000, -252000) and 'never −max' in fl['note'] and 'not an admin setting' in fl['note'], 'Q-S5-3 DB floor'
+for cur, cc in (('SEK', 'SE'), ('EUR', 'FR'), ('TND', 'TN')):
+    assert fl[cur] == -3 * cd['maxRiderDebt'][cc]['amountMinor'], 'floor = 3 x default max ' + cur
+for part in ('mark-paid', 'waive', 'reverse', 'adjustment', 'fee_on_running_trip', 'no longer'):
+    assert part in dm['adminCorrections'], 'J7 adminCorrections: ' + part
+for part in ('pay-in-car', 'wallet', 'transfer', 'lowers the debt', 'card'):
+    assert part in dm['refunds'], 'Q-M4 refunds: ' + part
+assert 'adding a card pays the debt' in dm['cardLater'], 'Q-M1 card later'
+for part in ('Rider.outstanding', 'outstanding_fee', 'walletFirst', 'X-Contract-Version'):
+    assert part in dm['oldApps'], 'J7 oldApps: ' + part
+t = dm['texts']
+assert t['quoteDebtLine']['en'] == '+ {amount} unpaid from an earlier trip, added when you pay', 'Q-S5-5 owner words'
+for k in ('quoteDebtLine', 'riderDebtAboveMax', 'walletFee', 'walletDebtPaid', 'owesMoveraLine', 'paidMoveraLabel'):
+    assert set(t[k]) == {'sv', 'fr', 'en'} and all(v.strip() for v in t[k].values()), 'J7 texts sv/fr/en ' + k
+assert '{amount}' in t['quoteDebtLine']['sv'] and '{amount}' in t['quoteDebtLine']['fr'] and '{owed}' in t['owesMoveraLine']['en'] and '{limit}' in t['owesMoveraLine']['en'], 'J7 text slots'
+assert 'Text batch' in dm['textsNote'], 'J7 wording goes to the text batch (Rule 45.8)'
+# Q-S5-1 (a)+(b), owner 2026-11-13 14:22 / 14:32: per-country owes-limit, TN 150 DT stored, OFF everywhere.
+do = dm['driverOwes']
+for part in ('next payout', 'below 0', 'carried', 'commission', 'rider debt he collected', 'Driver paid Movera', 'per currency'):
+    assert part in do['owed'], 'Q-S5-1 owed: ' + part
+assert cd['driverOwesLimit'] == {'SE': {'enabled': False, 'max': None}, 'FR': {'enabled': False, 'max': None},
+                                 'TN': {'enabled': False, 'max': {'amountMinor': 150000, 'currency': 'TND'}}}, 'Q-S5-1 OFF everywhere, TN 150 DT stored'
+for part in ('CountryRules.driverOwesLimit', 'country standard', 'OFF', 'nobody is blocked', '150 DT', 'owes_limit_needs_amount', 'admin-changeable'):
+    assert part in do['limit'], 'Q-S5-1 limit: ' + part
+for part in ('POST /driver/availability', '409 conflict, reason owes_movera_limit', 'more than', 'location_required', 'owed:', 'limit:', 'until he pays'):
+    assert part in do['goOnline'], 'Q-S5-1 goOnline: ' + part
+for part in ('owes_movera_over_limit', 'blocks_online', 'Home sheet', 'owed', 'limit', '0.18.84'):
+    assert part in do['homeLine'], 'Q-S5-1 homeLine: ' + part
+for part in ('GET /admin/drivers-owing', 'finance.read', 'zones', 'largest first', 'total'):
+    assert part in do['adminList'], 'Q-S5-1 adminList: ' + part
+for part in ('POST /admin/drivers/{driverId}/paid-movera', 'expectedOwed', 'reason', 'finance.edit', 'Idempotency-Key', 'audit driver.paid_movera',
+             'paid_to_movera', '409 conflict, reason owed_changed', '400 invalid_request, reason paid_above_owed', 'never'):
+    assert part in do['paidMovera'], 'Q-S5-1 paidMovera: ' + part
+assert do['reasonMax'] == 300, 'reason max'
+assert isinstance(dm['openQuestions'], list) and any('online' in q and 'Q-S5-1' in q for q in dm['openQuestions']), 'J7 open owner question listed, not built'
+# old rule texts superseded, not left contradicting
+of = c['outstandingFee']
+assert not any(r.startswith('every quote and the fare of the next trip carry outstanding_fee') for r in of['rules']), 'old quote-carries rule replaced'
+assert 'v0.18.84' in of['note'] and 'debtModel' in of['note'] and 'fee_on_running_trip' in of['adminMarkPaid']['note'] and 'v0.18.84' in of['adminMarkPaid']['note'], 'outstandingFee points at debtModel'
+assert 'v0.18.84' in c['pickupWaiting']['debtByCurrency']['note'] and 'v0.18.84' in c['walletCredit']['note'], 'J7 old notes updated'
+for r in ('rider_debt_above_max', 'owes_movera_limit', 'owed_changed', 'paid_above_owed', 'owes_limit_needs_amount'):
+    assert r in c['errors']['reason'], 'J7 Error.reason ' + r
+spec = yaml.safe_load(open('openapi.yaml'))
+S = spec['components']['schemas']; P = spec['paths']
+assert {'fee', 'debt_paid'} <= set(S['WalletEntry']['properties']['kind']['enum']), 'openapi WalletEntry kinds'
+assert 'may be below 0' in S['Wallet']['properties']['balance']['description'], 'openapi Wallet.balance negative'
+assert S['Quote']['properties']['walletDebt']['allOf'] == [{'$ref': '#/components/schemas/Money'}], 'openapi Quote.walletDebt'
+assert S['CountryRules']['properties']['maxRiderDebt']['allOf'] == [{'$ref': '#/components/schemas/Money'}], 'openapi maxRiderDebt'
+ol = S['DriverOwesLimit']
+assert set(ol['properties']) == {'enabled', 'max'} and ol['properties']['enabled']['default'] is False, 'openapi DriverOwesLimit OFF'
+assert S['CountryRules']['properties']['driverOwesLimit'] == {'$ref': '#/components/schemas/DriverOwesLimit'}, 'openapi CountryRules.driverOwesLimit'
+assert 'rider_debt_above_max' in P['/trips']['post']['responses']['409']['description'], 'openapi POST /trips 409'
+assert 'owes_movera_limit' in P['/driver/availability']['post']['description'], 'openapi go online'
+assert 'owes_movera_over_limit' in S['DriverReminder']['properties']['kind']['enum'] and {'owed', 'limit'} <= set(S['DriverReminder']['properties']), 'openapi reminder'
+g = P['/admin/drivers-owing']['get']
+assert g['x-permission'] == 'finance.read' and g['responses']['200']['content']['application/json']['schema'] == {'$ref': '#/components/schemas/OwingDriverList'}, 'openapi owing list'
+pm = P['/admin/drivers/{driverId}/paid-movera']['post']
+assert pm['x-permission'] == 'finance.edit' and pm['requestBody']['content']['application/json']['schema'] == {'$ref': '#/components/schemas/PaidMoveraCommand'}, 'openapi paid-movera'
+assert set(S['PaidMoveraCommand']['required']) == {'expectedOwed', 'amount', 'reason'} and 'owed_changed' in pm['responses']['409']['description'], 'openapi paid-movera body/409'
+assert {'driverId', 'owed', 'limit', 'overLimit'} <= set(S['OwingDriver']['properties']), 'openapi OwingDriver'
+assert 'paid_to_movera' in S['PayoutLine']['properties']['code']['enum'], 'openapi payout line'
+assert 'v0.18.84' in P['/admin/riders/{riderId}/fees/{tripId}/mark-paid']['post']['description'] and 'v0.18.84' in P['/quotes']['post']['description'], 'openapi mark-paid / quotes'
+md = open('CONTRACT.md').read()
+assert md.startswith('# Movera shared contract v' + c['version'] + '\n') or tuple(map(int, c['version'].split('.'))) > (0, 18, 84), 'CONTRACT.md title'
+assert '\nv0.18.84 (S5 J7 debt model' in md and '**an unpaid fee is a negative wallet balance, read when the trip is paid**' in md, 'CONTRACT.md v0.18.84 note'
+assert 'while the rider owes one, the `outstanding_fee` line is added after the rounding; `Quote.total` and `fare` include it' not in md, 'CONTRACT.md §3.5 step 8 rewritten'
+assert 'While it is open, every quote and the next trip carry it' not in md and 'v0.18.84 (`debtModel.readAtPayment`' in md, 'CONTRACT.md §3.7 rewritten'
+assert md.count('\n') <= 1500, 'CONTRACT.md over 1,500 lines'
+PY
 echo "contract ok"
