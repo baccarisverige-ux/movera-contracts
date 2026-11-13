@@ -841,6 +841,13 @@ for part in ('changes ONLY the driver', "The rider's price is never changed by i
              'driverAdjustments', 'kept as its own delta across every re-price', 'arrive', 'board', 'end'):
     assert part in af, 'J3 adminFare: ' + part
 assert 'moneyBase.adminFare' in c['onTrip']['adminTrip']['existing']['adjust'] and 'moneyBase.adminFare' in c['onTrip']['adminTrip']['existing']['complete'], 'J3 admin commands'
+# Q-S5-8 (owner 2026-11-13 "Admin types driver pay (Rec.)"): driverPay typed directly; the old fare is refused, never read as pay.
+for part in ("Q-S5-8", "{ expectedVersion, driverPay?, waitingSeconds?, waiveCancelFee?, reason }", "{ expectedVersion, note, driverPay? }", "delta = driverPay − the driver's pay now",
+             'driver_pay_above_max', 'driver_pay_below_zero', 'reason fare_is_driver_pay', 'never read as a driver pay'):
+    assert part in af, 'Q-S5-8 adminFare: ' + part
+assert 'OPEN' not in af and mb['openQuestions'] == [], 'Q-S5-8 answered: no open question left'
+for kk in ('adjust', 'complete'):
+    assert 'driverPay?' in c['onTrip']['adminTrip']['existing'][kk] and 'fare_is_driver_pay' in c['onTrip']['adminTrip']['existing'][kk], 'Q-S5-8 admin ' + kk
 cd = c['configDefaults']
 assert cd['tipRules']['customMax']['TN'] == {'amountMinor': 30000, 'currency': 'TND'}, 'TN-1 tip custom max 30 DT'
 assert cd['driverPayChangeMax']['TN'] == {'amountMinor': 150000, 'currency': 'TND'}, 'TN-1 driver pay change max 150 DT'
@@ -861,12 +868,14 @@ for p in ('/admin/riders/{riderId}/wallet-credit', '/admin/trips/{tripId}/driver
     assert 'version_mismatch' in d['description'] and 'v0.18.82' in d['description'], 'J3 openapi 409 ' + p
 assert '150 DT' in S['CountryRules']['properties']['driverPayChangeMax']['description'], 'TN-1 openapi driverPayChangeMax'
 for name in ('AdminAdjustCommand', 'AdminCompleteCommand'):
-    assert 'driver side only' in S[name]['properties']['fare']['description'], 'J3 openapi ' + name
+    pr = S[name]['properties']
+    assert 'driver side only' in pr['driverPay']['description'] and pr['driverPay']['allOf'] == [{'$ref': '#/components/schemas/Money'}], 'Q-S5-8 openapi driverPay ' + name
+    assert pr['fare'].get('deprecated') is True and 'fare_is_driver_pay' in pr['fare']['description'] and 'driverPay' not in S[name].get('required', []), 'Q-S5-8 openapi old fare ' + name
 assert 'debtCollected' in S['TripProjection']['properties']['commission']['description'], 'J3 openapi commission'
 assert S['KpiDay']['properties']['gross']['description'].startswith('v0.18.82'), 'J3 openapi KPI gross'
 md = open('CONTRACT.md').read()
 assert md.startswith('# Movera shared contract v' + c['version'] + '\n') or tuple(map(int, c['version'].split('.'))) > (0, 18, 82), 'CONTRACT.md title'
-assert '\nv0.18.82 (S5 J3 money fixes' in md and '**money fixes**' in md, 'CONTRACT.md v0.18.82 note'
+assert '\nv0.18.82 (S5 J3 money fixes' in md and '**money fixes**' in md and '`driverPay` on adjust / complete' in md and 'Q-S5-8, open' not in md, 'CONTRACT.md v0.18.82 note'
 assert '  //         commission = Movera\'s share of the fare: fare − debtCollected − driverEarnings − pickupPay − driverBonus' in md and '(fare − driverEarnings)' not in md, 'CONTRACT.md one commission'
 assert md.count('\n') <= 1500, 'CONTRACT.md over 1,500 lines'
 PY
