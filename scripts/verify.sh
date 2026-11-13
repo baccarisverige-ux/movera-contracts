@@ -787,4 +787,32 @@ assert md.startswith('# Movera shared contract v' + c['version'] + '\n') or tupl
 assert '**a support ticket without a zone can be assigned and auto-sorted to its country team**' in md and '\nv0.18.79 (wording only, server B1.33, owner Q93' in md, 'CONTRACT.md v0.18.79 note'
 assert md.count('\n') <= 1500, 'CONTRACT.md over 1,500 lines'
 PY
+# v0.18.81 (server B1.34, owner Q94 "A) Yes" + 2026-11-13 answers): at most maxOpenPerRider (default 3, 1-50) open booked
+# rides per rider; the next POST /trips kind scheduled -> 409 conflict, reason booked_rides_limit, the number in the message.
+python3 - <<'PY'
+import json, yaml
+c = json.load(open('contract.json'))
+assert tuple(map(int, c['version'].split('.'))) >= (0, 18, 81), 'version'
+r = c['configDefaults']['reservations']
+assert r['maxOpenPerRider'] == 3 and 'maxOpenPerRider 3' in r['note'], 'B1.34 default'
+bl = c['bookLater']
+assert 'booked_rides_limit' in bl['errors'], 'B1.34 error'
+cap = bl['riderCap']
+for part in ('409 conflict, reason booked_rides_limit', 'range 1-50', 'Live rides do not count', 'Two bookings at the same moment never pass it',
+             'not at POST /quotes', 'reschedule'):
+    assert part in cap, 'B1.34 riderCap: ' + part
+t = bl['texts']['bookedRidesLimit']
+assert t == {'sv': 'Du kan ha högst {n} bokade resor. Avboka en för att boka en ny.',
+             'fr': 'Vous pouvez avoir au maximum {n} courses programmées. Annulez-en une pour en réserver une autre.',
+             'en': 'You can have at most {n} booked rides. Cancel one to book another.'}, 'B1.34 texts'
+spec = yaml.safe_load(open('openapi.yaml'))
+m = spec['components']['schemas']['DriverReservations']['properties']['maxOpenPerRider']
+assert (m['type'], m['minimum'], m['maximum'], m['default']) == ('integer', 1, 50, 3), 'B1.34 openapi setting'
+d = spec['paths']['/trips']['post']['responses']['409']
+assert 'booked_rides_limit' in d['description'], 'B1.34 openapi 409'
+md = open('CONTRACT.md').read()
+assert md.startswith('# Movera shared contract v' + c['version'] + '\n') or tuple(map(int, c['version'].split('.'))) > (0, 18, 81), 'CONTRACT.md title'
+assert '**at most 3 open booked rides per rider**' in md and '\nv0.18.81 (server B1.34' in md and '`maxOpenPerRider` (3)' in md, 'CONTRACT.md v0.18.81 note'
+assert md.count('\n') <= 1500, 'CONTRACT.md over 1,500 lines'
+PY
 echo "contract ok"
