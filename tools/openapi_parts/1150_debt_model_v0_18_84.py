@@ -20,33 +20,37 @@ S["Rider"]["properties"]["outstandingByCurrency"]["description"] += " v0.18.84: 
 assert "walletDebt" not in S["Quote"]["properties"], "Quote.walletDebt before v0.18.84"
 S["Quote"]["properties"]["walletDebt"] = {"allOf": [ref("Money")], "description": "v0.18.84 (owner Q-M2 / Q-S5-5): " + _DM["quoteInfo"]}
 PATHS["/quotes"]["post"]["description"] += " v0.18.84 (debtModel.readAtPayment, owner Q-M2): a quote no longer carries the outstanding_fee line; Quote.walletDebt shows the debt as information. " + _DM["readAtPayment"]
-S["TripProjection"]["properties"]["debtCollected"]["description"] += " v0.18.84 (debtModel.readAtPayment): read from the wallet when the trip is paid, never copied in at booking."
-S["CreateTripRequest"]["properties"]["walletFirst"]["description"] += " v0.18.84 (owner Q-M1): " + _DM["walletSwitch"]
+S["TripProjection"]["properties"]["debtCollected"]["description"] += " v0.18.84 (debtModel.readAtPayment): read from the wallet when the trip is paid, never copied in at booking. " + _DM["changeover"]
+S["CreateTripRequest"]["properties"]["walletFirst"]["description"] += " v0.18.84 (owner Q-M1): " + _DM["walletSwitch"] + " walletApplied = max(0, min(balance, fare)): a negative balance pays nothing (supervisor M2)."
 
 # Max rider debt per country: only pay-in-car bookings are refused.
 _cr = S["CountryRules"]["properties"]
 assert "maxRiderDebt" not in _cr and "driverOwesLimit" not in _cr, "CountryRules debt settings before v0.18.84"
-_cr["maxRiderDebt"] = {"allOf": [ref("Money")], "description": "v0.18.84 (owner Q-M1, Q-S5-4, Q-S5-5): " + _DM["maxRiderDebt"]}
+_cr["maxRiderDebt"] = {"allOf": [ref("Money")], "description": "v0.18.84 (owner Q-M1, Q-S5-4, Q-S5-5): " + _DM["maxRiderDebt"] + " DB floor: " + _DM["dbFloor"]["note"]}
 _op = PATHS["/trips"]["post"]
 _op["responses"]["409"]["description"] += (" v0.18.84 (owner Q-S5-4 'Block only cash trip'): paymentMethod cash while the rider's debt in the trip's "
                                            "currency is at or above CountryRules.maxRiderDebt → conflict, reason rider_debt_above_max (contract.json#debtModel.maxRiderDebt).")
 
 # Driver owes-limit: setting, go-online refusal, Home line.
 S["DriverOwesLimit"] = obj({"enabled": dflt(b("Off by default in every country (owner Q-S5-1): nobody is blocked until the owner switches it on."), False),
-                            "max": {"oneOf": [ref("Money"), {"type": "null"}], "description": "The country's currency; required (> 0) when enabled (else 400 owes_limit_needs_amount). TN default 150000 TND (150 DT) stored, SE / FR null."}},
-                           ["enabled"], "v0.18.84 (owner Q-S5-1 'Both', 2026-11-13 14:22 / 14:32): " + _DO["limit"])
+                            "max": {"oneOf": [ref("Money"), {"type": "null"}], "description": "Admin-changeable at any time. The country's currency; required (> 0) when enabled (else 400 owes_limit_needs_amount). TN default 150000 TND (150 DT) stored, SE / FR null."}},
+                           ["enabled"], "v0.18.84 (owner Q-S5-1 'Both', 2026-11-13 14:22 / 14:32 / 14:54): at or over it the driver gets no cash trips (never refused online). " + _DO["limit"] + " " + _DO["cashOffers"])
 _cr["driverOwesLimit"] = ref("DriverOwesLimit")
-PATHS["/driver/availability"]["post"]["description"] += " v0.18.84 (owner Q-S5-1): " + _DO["goOnline"]
+_op = PATHS["/admin/trips/{tripId}/assign"]["post"]
+assert _op["responses"]["409"] == rref("Conflict"), "assign 409 changed before v0.18.84"
+_op["responses"]["409"] = err("version_mismatch / invalid_transition (with projection) or conflict. v0.18.84 (owner Q-S5-1 + 2026-11-13 14:54): "
+                              "a cash (pay-in-car) trip to a driver at or over his country's owes-limit → conflict, reason driver_owes_movera "
+                              "(contract.json#debtModel.driverOwes.cashOffers).", "ConflictError")
 _rp = S["DriverReminder"]["properties"]
 assert "owes_movera_over_limit" in _rp["kind"]["enum"] and "owed" not in _rp, "DriverReminder before v0.18.84"
-_rp["owed"] = {"allOf": [ref("Money")], "description": "v0.18.84: owes_movera_over_limit lines: what he owes Movera now."}
+_rp["owed"] = {"allOf": [ref("Money")], "description": "v0.18.84: owes_movera_over_limit lines (due_soon warning: no cash trips until he pays): what he owes Movera now."}
 _rp["limit"] = {"allOf": [ref("Money")], "description": "v0.18.84: owes_movera_over_limit lines: his country's owes-limit."}
 
 # Admin: who owes Movera, and "Driver paid Movera".
 S["OwingDriver"] = obj({"driverId": ref("Id"), "driverName": s(), "zoneId": ref("Id"), "country": ref("CountryCode"),
                         "owed": {"allOf": [ref("Money")], "description": _DO["owed"]},
                         "limit": {"oneOf": [ref("Money"), {"type": "null"}], "description": "The country's owes-limit; null = off."},
-                        "overLimit": b("owed is more than limit (false while off)."),
+                        "overLimit": b("owed is at or above limit: he gets no cash trips (false while off)."),
                         "lastPaidMoveraAt": ref("Timestamp")},
                        ["driverId", "owed", "limit", "overLimit"], "v0.18.84 (owner Q-S5-1a): one driver who owes Movera, in one currency.")
 S["OwingDriverList"] = {"allOf": [ref("Page"), {"type": "object", "properties": {"items": arr(ref("OwingDriver")), "total": i("All drivers who owe Movera in the filter.", minimum=0)}}],

@@ -804,10 +804,24 @@ for _x in _dmf['walletSwitch']:
 for _x in _dmf['driverOwed']:   # owed = −min(0, next payout now + carried rest)
     _o = -min(0, _x['unpaidSum']['amountMinor'] + _x['carried']['amountMinor'])
     if {'amountMinor': _o, 'currency': _x['unpaidSum']['currency']} != _x['expect']: bad += 1; print('DRIVER OWED', _x['id'])
-for _x in _dmf['goOnline']:   # owner Q-S5-1: more than the limit, only when switched on
+for _x in _dmf['walletApplied']:   # supervisor M2: walletApplied = max(0, min(balance, fare)); the debt only through outstanding_fee
+    _b, _f = _x['balance']['amountMinor'], _x['fare']['amountMinor']
+    _w = max(0, min(_b, _f)); _o = -min(0, _b)
+    if {'walletApplied': _w, 'outstandingFee': _o, 'cashToCollect': _f - _w + _o} != _x['expect']: bad += 1; print('DEBT WALLET APPLIED', _x['id'])
+for _x in _dmf['changeover']:   # supervisor M3: a pre-J8 trip drops its copied line at payment and reads the wallet; paid once
+    _base = _x['fareWithCopiedLine']['amountMinor'] - _x['copiedLine']['amountMinor']; _d = -min(0, _x['walletBalance']['amountMinor'])
+    _r = {'riderPays': _base + _d, 'debtPaid': _d, 'balanceAfter': _x['walletBalance']['amountMinor'] + _d}
+    if _r != _x['expect'] or _r['riderPays'] > _x['fareWithCopiedLine']['amountMinor']: bad += 1; print('DEBT CHANGEOVER', _x['id'])
+for _x in _dmf['floorFollowsMax']:   # owner 2026-11-13 15:00 'Any amount': floor = −3 × the current max, never above the lowest balance
+    _fl = min(-3 * _x['max']['amountMinor'], _x['lowestBalance']['amountMinor'])
+    _r = {'floor': _fl}
+    if 'fee' in _x: _r['saved'] = _x['lowestBalance']['amountMinor'] - _x['fee']['amountMinor'] >= _fl
+    if _r != _x['expect']: bad += 1; print('DEBT FLOOR FOLLOWS MAX', _x['id'], _r)
+for _x in _dmf['cashOffers']:   # owner Q-S5-1 + 2026-11-13 14:54: at or over the limit (only when on): no cash offers; online never refused
     _l = _x['limit']
-    _r = 'owes_movera_limit' if _l['enabled'] and _l['max'] and _x['owed']['amountMinor'] > _l['max']['amountMinor'] else 'ok'
-    if _r != _x['expect']: bad += 1; print('DRIVER GO ONLINE', _x['id'])
+    _over = bool(_l['enabled'] and _l['max'] and _x['owed']['amountMinor'] >= _l['max']['amountMinor'])
+    _r = 'no_offer' if _over and _x['paymentMethod'] == 'cash' else 'offered'
+    if _r != _x['expect'] or _x['goOnline'] != 'ok' or _x['paymentMethod'] not in c['paymentMethods']: bad += 1; print('DRIVER CASH OFFERS', _x['id'])
 for _x in _dmf['paidMovera']:
     _n, _e, _a = _x['owedNow'], _x['expectedOwed'], _x['amount']
     if _a['amountMinor'] <= 0 or _a['currency'] != _e['currency']: _r = {'error': 'invalid_request'}

@@ -2532,12 +2532,7 @@ paths:
         unchanged, as before. From the tap: no new offers of any kind, the on-trip Exclusives after minRouteDonePct (contract.json#afterTestRules,
         live and booked) included. His open offers are withdrawn at once (the withdraw_driver_offers job, as when going offline).
         An accept that still reaches the server is refused 409 conflict reason going_offline. Admin sends skip him (he is
-        on a trip). v0.18.84 (owner Q-S5-1): With the limit on, POST /driver/availability { onlineStatus: online } from a
-        driver whose owed is more than max → 409 conflict, reason owes_movera_limit, details ["owed:<minor> <CUR>", "limit:<minor>
-        <CUR>"] (projection = Driver). Checked after the account, document and driving-limit checks and before location_required
-        (that stays last, v0.18.4). He stays offline until he pays (a ''Driver paid Movera'' entry or a payout that settles
-        it) or the admin raises / switches off the limit. Only going online is checked (owner words); a driver already online
-        or on a trip is not changed by it (see openQuestions).'
+        on a trip).'
       tags:
       - Driver · Session
       x-actor:
@@ -5627,7 +5622,18 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
         '409':
-          $ref: '#/components/responses/Conflict'
+          description: 'version_mismatch / invalid_transition (with projection) or conflict. v0.18.84 (owner Q-S5-1 + 2026-11-13
+            14:54): a cash (pay-in-car) trip to a driver at or over his country''s owes-limit → conflict, reason driver_owes_movera
+            (contract.json#debtModel.driverOwes.cashOffers).'
+          headers:
+            X-Request-Id:
+              description: Echo of the request id (server-generated if absent).
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConflictError'
         '429':
           $ref: '#/components/responses/RateLimited'
         '503':
@@ -19848,7 +19854,11 @@ components:
             it settles the old trip''s fee, whose driver share was already credited then). TripProjection.debtCollected (driver
             and admin views) and Receipt.debtIncluded show it as its own line (texts.debtLine). Server migration 0045 corrects
             commission on stored trips. v0.18.84 (debtModel.readAtPayment): read from the wallet when the trip is paid, never
-            copied in at booking.'
+            copied in at booking. Supervisor M3, changeover for trips made before server J8 (old quotes, booked rides, live
+            trips that already carry a copied outstanding_fee line while migration 0103 moves the same owed fees into the
+            wallet): at payment the copied outstanding_fee line is dropped from the fare and the debt is read from the wallet
+            instead (readAtPayment), so each fee is paid once. The rider''s total is the trip''s fare without the copied line
+            plus the debt read then (the same amount or less, never more). A trip already paid before J8 is not touched.'
         moneySplit:
           $ref: '#/components/schemas/MoneySplit'
         sosAvailable:
@@ -23505,7 +23515,17 @@ components:
             cash (pay in car) while the rider''s debt in the trip''s currency is at or above it → 409 conflict, reason rider_debt_above_max,
             details ["debt:<minor> <CUR>", "max:<minor> <CUR>"]; nothing is booked. card, apple_pay and wallet bookings stay
             allowed (the debt is added to that payment, readAtPayment). It is checked only at booking: fees from trips already
-            running are always saved, even past the max, and a booked ride already made is not cancelled.'
+            running are always saved, even past the max, and a booked ride already made is not cancelled. Any amount (owner
+            2026-11-13 15:00 ''Any amount''): no upper bound in admin (> 0 in the country''s currency); the DB floor follows
+            it (dbFloor). DB floor: Q-S5-3 (owner ''Block booking at max (Rec.)'', option A) + owner 2026-11-13 15:00 (''Any
+            amount'': no admin cap; decisions/session-2026-11-06.md:1246): the server''s database keeps a safety floor per
+            currency on the wallet balance that follows the admin setting: floor = −(3 × the current max) of that currency''s
+            country (CountryRules.maxRiderDebt of the country standard), updated when the admin saves, in the same transaction
+            as the setting. When the admin lowers the max, the floor is never above the lowest balance that currency already
+            holds. It is not an admin setting itself and never −max, so a fee from a running trip is always saved. The values
+            below are the starting floors (3 × the defaults: SE −900 kr, FR −90 €, TN −252 DT). Server J8 migration 0102 needs
+            a floor that follows the setting (e.g. a per-currency floor row read by the wallet check), not a fixed CHECK constant;
+            Rule 46 (no table lock, written undo).'
         driverOwesLimit:
           $ref: '#/components/schemas/DriverOwesLimit'
       x-server-only: true
@@ -27672,9 +27692,9 @@ components:
             v0.18.64 reason: auto_translate_off (403 forbidden, contract.json#chat.autoTranslate, §85). v0.18.76 reasons:
             email_needs_code (400 invalid_request), email_not_verified (409 invalid_transition) (contract.json#emailVerified).
             v0.18.82 reason: fare_is_driver_pay (400 invalid_request, admin adjust / complete sent the old fare field; contract.json#moneyBase.adminFare).
-            v0.18.84 reasons (contract.json#debtModel): rider_debt_above_max (409 conflict, POST /trips pay in car), owes_movera_limit
-            (409 conflict, POST /driver/availability online), owed_changed (409 conflict, paid-movera), paid_above_owed and
-            owes_limit_needs_amount (400 invalid_request).'
+            v0.18.84 reasons (contract.json#debtModel): rider_debt_above_max (409 conflict, POST /trips pay in car), driver_owes_movera
+            (409 conflict, admin assign of a cash trip to a driver at or over the owes-limit), owed_changed (409 conflict,
+            paid-movera), paid_above_owed and owes_limit_needs_amount (400 invalid_request).'
         details:
           type: array
           items:
@@ -28378,13 +28398,15 @@ components:
           type: boolean
           description: 'v0.18.33: Owner Q6 (''Switch per ride, starts ON''): CreateTripRequest.walletFirst (default true when
             missing). true = the rider''s wallet balance in the trip''s currency pays first: POST /trips reserves walletApplied
-            = min(balance in that currency, fare) and TripProjection.walletApplied / cashToCollect show it from booking on;
-            it is worked out again at boarding (never more than the balance). false = this trip pays nothing from the wallet
-            (walletApplied 0). Another currency''s balance is never used (contract.json#walletCurrency). v0.18.84 (owner Q-M1):
-            Q-M1 ''when wallet is negative so can''t switch it off'': while the rider''s balance in the trip''s currency is
-            below 0, CreateTripRequest.walletFirst is ignored (read as true) and TripProjection.walletFirst is true; the rider
-            app shows the switch on and locked. RiderAppConfig.wallet.usedFirst false (a zone) does not stop the debt being
-            added at payment.'
+            = max(0, min(balance in that currency, fare)) (v0.18.84, supervisor M2: a negative balance pays nothing; the debt
+            is paid only through the outstanding_fee line read at payment, debtModel.readAtPayment) and TripProjection.walletApplied
+            / cashToCollect show it from booking on; it is worked out again at boarding (never more than the balance). false
+            = this trip pays nothing from the wallet (walletApplied 0). Another currency''s balance is never used (contract.json#walletCurrency).
+            v0.18.84 (owner Q-M1): Q-M1 ''when wallet is negative so can''t switch it off'': while the rider''s balance in
+            the trip''s currency is below 0, CreateTripRequest.walletFirst is ignored (read as true) and TripProjection.walletFirst
+            is true; the rider app shows the switch on and locked. RiderAppConfig.wallet.usedFirst false (a zone) does not
+            stop the debt being added at payment. walletApplied = max(0, min(balance, fare)): a negative balance pays nothing
+            (supervisor M2).'
           default: true
         notes:
           type: string
@@ -30707,9 +30729,10 @@ components:
         because Movera cannot approve him until it is verified; otherwise due_soon (orange, still works) with text texts.email_not_verified.
         Sent only to driver apps whose X-Contract-Version is 0.18.76 or higher (an older app would show an unknown line).
         The line itself never blocks going online: a red one is only sent to a driver who is not active yet.. owes_movera_over_limit:
-        v0.18.84 (owner Q-S5-1 ''Both'', contract.json#debtModel.driverOwes.homeLine): blocks_online while his country''s
-        CountryRules.driverOwesLimit is on and what he owes Movera is more than its max; owed and limit (Money) on the line;
-        no fix target; text texts.owes_movera_over_limit ({owed}, {limit}). Sent only to driver apps whose X-Contract-Version
+        v0.18.84 (owner Q-S5-1 ''Both'' + 2026-11-13 14:54, contract.json#debtModel.driverOwes.homeLine): due_soon (orange
+        warning) while his country''s CountryRules.driverOwesLimit is on and what he owes Movera is at or above its max —
+        he gets no cash trips until he pays (driverOwes.cashOffers); it never stops going online. owed and limit (Money) on
+        the line; no fix target; text texts.owes_movera_over_limit ({owed}, {limit}). Sent only to driver apps whose X-Contract-Version
         is 0.18.84 or higher..'
       required:
       - kind
@@ -30799,7 +30822,8 @@ components:
         owed:
           allOf:
           - $ref: '#/components/schemas/Money'
-          description: 'v0.18.84: owes_movera_over_limit lines: what he owes Movera now.'
+          description: 'v0.18.84: owes_movera_over_limit lines (due_soon warning: no cash trips until he pays): what he owes
+            Movera now.'
         limit:
           allOf:
           - $ref: '#/components/schemas/Money'
@@ -36000,12 +36024,24 @@ components:
           $ref: '#/components/schemas/Timestamp'
     DriverOwesLimit:
       type: object
-      description: 'v0.18.84 (owner Q-S5-1 ''Both'', 2026-11-13 14:22 / 14:32): CountryRules.driverOwesLimit { enabled, max
-        } of the country standard only (Pricing › Tips & limits; a zone''s own value is ignored), admin-changeable (owner
-        2026-11-13 14:22). Shipped OFF (enabled false) in every country so nobody is blocked (Q-S5-1, owner 14:32). configDefaults.driverOwesLimit:
-        SE and FR no number (max null), TN max 150 DT stored (owner 2026-11-13 14:22: the weekly cash a driver keeps that
-        he owes Movera, settled at payout), OFF until the owner switches it on in admin. Saving enabled true needs max > 0
-        in the country''s currency (else 400 invalid_request, reason owes_limit_needs_amount). Missing = OFF.'
+      description: 'v0.18.84 (owner Q-S5-1 ''Both'', 2026-11-13 14:22 / 14:32 / 14:54): at or over it the driver gets no cash
+        trips (never refused online). CountryRules.driverOwesLimit { enabled, max } of the country standard only (Pricing
+        › Tips & limits; a zone''s own value is ignored), admin-changeable (owner 2026-11-13 14:22, 14:54): the admin can
+        change the amount and switch it on or off at any time; a change applies at once. Shipped OFF (enabled false) in every
+        country so nobody loses cash trips (Q-S5-1, owner 14:32; nobody is blocked). configDefaults.driverOwesLimit: SE and
+        FR no number (max null), TN max 150 DT stored (owner 2026-11-13 14:22: the weekly cash a driver keeps that he owes
+        Movera, settled at payout), OFF until the owner switches it on in admin. Saving enabled true needs max > 0 in the
+        country''s currency (else 400 invalid_request, reason owes_limit_needs_amount). Missing = OFF. Owner 14:54 (''can
+        recive trip but cash trip''; owner 2026-11-13 14:54 (decisions/session-2026-11-06.md, same rule as the rider''s Q-S5-4)):
+        while the limit is on and his owed is at or above max, the server sends him NO offer for a trip with paymentMethod
+        cash (pay in car) — no dispatch round, Radar, Exclusive, on-trip / next-trip or booked-ride offer, and admin sends
+        (radar group) skip him; an admin assign of a cash trip to him → 409 conflict, reason driver_owes_movera (details ["owed:<minor>
+        <CUR>", "limit:<minor> <CUR>"]). card, apple_pay and wallet trips still come as before. Going online is never refused
+        by it (POST /driver/availability is unchanged). It applies at once, online or not: when he reaches the limit his open
+        cash offers are withdrawn (as when going offline); a cash trip he already accepted and the current trip finishes normally;
+        a booked pay-in-car ride he already accepted he keeps (owner 2026-11-13 15:01 ''He keeps it (Rec.)''); only NEW cash
+        offers stop. Cash offers come again at once when owed drops below max (a ''Driver paid Movera'' entry or a payout
+        that settles it) or the admin raises the amount or switches it off — until he pays.'
       required:
       - enabled
       properties:
@@ -36017,8 +36053,8 @@ components:
           oneOf:
           - $ref: '#/components/schemas/Money'
           - type: 'null'
-          description: The country's currency; required (> 0) when enabled (else 400 owes_limit_needs_amount). TN default
-            150000 TND (150 DT) stored, SE / FR null.
+          description: Admin-changeable at any time. The country's currency; required (> 0) when enabled (else 400 owes_limit_needs_amount).
+            TN default 150000 TND (150 DT) stored, SE / FR null.
     OwingDriver:
       type: object
       description: 'v0.18.84 (owner Q-S5-1a): one driver who owes Movera, in one currency.'
@@ -36039,11 +36075,12 @@ components:
         owed:
           allOf:
           - $ref: '#/components/schemas/Money'
-          description: 'What a driver owes Movera, per currency: the commission and the rider debt he collected on pay-in-car
-            trips (Q-M3), net of what Movera holds for him — owed = −min(0, his next payout worked out now (payouts.lines
-            of his unpaid entries) + the rest carried from earlier payouts below 0 (Q-M3, Q-S5-7a)). A ''Driver paid Movera''
-            entry raises that sum. It is the amount the Q-S5-1 question named (his payout below 0, carried). Driver.country''s
-            currency is the one compared with the limit; 0 when nothing is owed.'
+          description: 'Owner 2026-11-13 14:59 ''What he owes Movera (Rec.)'' (decisions/session-2026-11-06.md:1245): what
+            a driver owes Movera, per currency, = the cash he holds (the commission and the rider debt he collected on pay-in-car
+            trips, Q-M3) minus his earnings Movera holds for him, plus anything still owed from earlier weeks — owed = −min(0,
+            his next payout worked out now (payouts.lines of his unpaid entries) + the rest carried from earlier payouts below
+            0 (Q-M3, Q-S5-7a)). A ''Driver paid Movera'' entry raises that sum. Driver.country''s currency is the one compared
+            with the limit; 0 when nothing is owed.'
         limit:
           oneOf:
           - $ref: '#/components/schemas/Money'
@@ -36051,7 +36088,7 @@ components:
           description: The country's owes-limit; null = off.
         overLimit:
           type: boolean
-          description: owed is more than limit (false while off).
+          description: 'owed is at or above limit: he gets no cash trips (false while off).'
         lastPaidMoveraAt:
           $ref: '#/components/schemas/Timestamp'
     OwingDriverList:
