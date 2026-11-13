@@ -765,12 +765,12 @@ assert md.startswith('# Movera shared contract v' + c['version'] + '\n') or tupl
 assert 'supersedes the S5 J16 `totalAtLeast` idea' in md and '**G33 rider pay-in-car line**' in md and 'first page when counted exactly' in md and '**admin lists “50 of N”**' in md, 'CONTRACT.md v0.18.78 note'
 assert md.count('\n') <= 1500, 'CONTRACT.md over 1,500 lines'
 PY
-# v0.18.80 (server B1.33, owner Q93 "A) Yes"): a ticket without a zone can be assigned and auto-sorted to an admin of its
-# country team (wording only; 0.18.79 reserved for S5 J3).
+# v0.18.79 (server B1.33, owner Q93 "A) Yes"): a ticket without a zone can be assigned and auto-sorted to an admin of its
+# country team (wording only).
 python3 - <<'PY'
 import json, yaml
 c = json.load(open('contract.json'))
-assert tuple(map(int, c['version'].split('.'))) >= (0, 18, 80), 'version'
+assert tuple(map(int, c['version'].split('.'))) >= (0, 18, 79), 'version'
 sd = c['supportDesk']
 cov = "covers the ticket (its zone; a ticket without a zone: a zone in the ticket's country, or all zones — the countryTeam rule)"
 asg = sd['adminCommands']['assign']
@@ -783,8 +783,8 @@ spec = yaml.safe_load(open('openapi.yaml'))
 d = spec['paths']['/admin/tickets/{ticketId}/assign']['post']['description']
 assert cov in d and 'a ticket without a zone: an admin with a zone in its country, or all zones (contract.json#supportDesk.countryTeam); else 403 zone_out_of_scope.' in d, 'B1.33 openapi assign'
 md = open('CONTRACT.md').read()
-assert md.startswith('# Movera shared contract v' + c['version'] + '\n') or tuple(map(int, c['version'].split('.'))) > (0, 18, 80), 'CONTRACT.md title'
-assert '**a support ticket without a zone can be assigned and auto-sorted to its country team**' in md and '0.18.79 reserved (S5 J3)' in md, 'CONTRACT.md v0.18.80 note'
+assert md.startswith('# Movera shared contract v' + c['version'] + '\n') or tuple(map(int, c['version'].split('.'))) > (0, 18, 79), 'CONTRACT.md title'
+assert '**a support ticket without a zone can be assigned and auto-sorted to its country team**' in md and '\nv0.18.79 (wording only, server B1.33, owner Q93' in md, 'CONTRACT.md v0.18.79 note'
 assert md.count('\n') <= 1500, 'CONTRACT.md over 1,500 lines'
 PY
 echo "contract ok"
