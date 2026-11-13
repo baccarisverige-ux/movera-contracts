@@ -1,6 +1,6 @@
 {
   "contract": "movera",
-  "version": "0.18.81",
+  "version": "0.18.82",
   "note": "Canonical cross-app contract for Rider, Driver and Admin. Frontend-only today; a future single backend implements it. Every app ships an identical copy under contracts/ and runs contract tests against it.",
   "wire": {
     "ids": {
@@ -3744,6 +3744,10 @@
         "FR": {
           "amountMinor": 2000,
           "currency": "EUR"
+        },
+        "TN": {
+          "amountMinor": 30000,
+          "currency": "TND"
         }
       }
     },
@@ -3755,6 +3759,10 @@
       "FR": {
         "amountMinor": 10000,
         "currency": "EUR"
+      },
+      "TN": {
+        "amountMinor": 150000,
+        "currency": "TND"
       }
     },
     "headingCheck": {
@@ -4769,7 +4777,7 @@
     "shown": "Every name the server gives the admin panel about an admin (ticket assignedTo.name, ticket message adminName on admin views, alert ownerName / byName / toName, alert people, support agents, trip notes) is that admin's firstName, or absent when none is set (the panel shows 'Admin'); never the e-mail. The person's apps: supportName = firstName; without one the apps show only 'Movera Support'."
   },
   "payouts": {
-    "note": "v0.9.0 (owner real-data decision, part 3): every payout period (v0.18.13: the country's schedule, default weekly from Monday 08:00 to Monday 08:00 local time) a nightly job makes one payout per driver with earnings; an admin can also make one by hand for a driver and a date range. Same calculation both ways; a trip already in a payout is never counted again. amount = trips + waiting + pickup pay + bonus + tips + fees − cash collected; it may be negative (the driver owes Movera). An admin marks a payout paid. The admin sees the lines; the driver app shows only the total.",
+    "note": "v0.9.0 (owner real-data decision, part 3): every payout period (v0.18.13: the country's schedule, default weekly from Monday 08:00 to Monday 08:00 local time) the payout job makes one payout per driver with earnings (v0.18.82, S5 J1 / 0.14a, owner W1 Q69 'one payout job': own payout timer, one driver per transaction — the hourly payout_close timer books one payout_driver step per driver whose period ended, each in its own transaction, so one failing driver never stops the others and a re-run never pays a period twice (payouts_weekly_once); the nightly job no longer pays); an admin can also make one by hand for a driver and a date range. Same calculation both ways; a trip already in a payout is never counted again. amount = trips + waiting + pickup pay + bonus + tips + fees − cash collected; it may be negative (the driver owes Movera). An admin marks a payout paid. The admin sees the lines; the driver app shows only the total.",
     "period": "week",
     "weekStartsOn": "monday",
     "lines": [
@@ -4791,7 +4799,7 @@
       "paid"
     ],
     "schedule": {
-      "note": "v0.18.13 (owner G10-2 'Admin sets day and time'): CountryRules.payoutSchedule { frequency: weekly | every_2_weeks, day: monday..sunday, time: HH:MM } of the country standard (Settings › Payouts, per country); default weekly, Monday, 08:00, SE and FR. A period runs from one payout moment to the next in the local time of the driver's first zone; a driver without a zone uses his country's time zone (SE Europe/Stockholm, FR Europe/Paris). every_2_weeks counts from the week of 2026-01-05 (periods start on even weeks from it). A changed schedule applies to the next period; entries are never paid twice.",
+      "note": "v0.18.13 (owner G10-2 'Admin sets day and time'): CountryRules.payoutSchedule { frequency: weekly | every_2_weeks, day: monday..sunday, time: HH:MM } of the country standard (Settings › Payouts, per country); default weekly, Monday, 08:00, SE and FR. A period runs from one payout moment to the next in the local time of the driver's first zone; a driver without a zone uses his country's time zone (SE Europe/Stockholm, FR Europe/Paris, TN Africa/Tunis — v0.18.82, TN-1: before it a Tunisian driver without a zone fell back to Stockholm time). every_2_weeks counts from the week of 2026-01-05 (periods start on even weeks from it). A changed schedule applies to the next period; entries are never paid twice.",
       "default": {
         "frequency": "weekly",
         "day": "monday",
@@ -4799,7 +4807,8 @@
       },
       "countryTimeZones": {
         "SE": "Europe/Stockholm",
-        "FR": "Europe/Paris"
+        "FR": "Europe/Paris",
+        "TN": "Africa/Tunis"
       },
       "anchorWeek": "2026-01-05"
     },
@@ -4863,8 +4872,8 @@
     "maxDays": 400,
     "money": {
       "note": "v0.10.3 (owner Reports answers 2026-10-28): Reports > Money. All amounts minor units, VAT included, one row per zone and zone-local day, one currency per row; amounts of different currencies are never added.",
-      "gross": "Bookings: ride prices of completed trips plus cancel and no-show fees charged. Tips not included.",
-      "fees": "Cancel and no-show fees charged that day (also inside gross).",
+      "gross": "v0.18.82 (owner 107, S5 J3, contract.json#moneyBase.kpiMoney): the fares (without the outstanding_fee line) of every trip of the day whose payment is captured, partially_refunded or refunded — completed, ended early by the rider, ended by the driver with the rider on board — plus the cancel and no-show fees charged that day, each fee counted once. Tips not included. Before v0.18.82: Bookings: ride prices of completed trips plus cancel and no-show fees charged. Tips not included.",
+      "fees": "Cancel and no-show fees charged that day (also inside gross). v0.18.82: counted once, on the day the fee was charged; the same fee paid later with another trip (its outstanding_fee line) is not counted again.",
       "tips": "Tips given on the day's trips, a line of their own, not in gross.",
       "refunds": "Refunds of the day's trips, counted on the TRIP's day: a later refund changes that older day (its summary is re-summed).",
       "moveraEarnings": "What Movera keeps: commission (trips.commission, already net of pickup pay and driver bonuses: commission = fare - debtCollected - driverEarnings - pickupPay - driverBonus) + Movera's share of fees - refunds of the day's trips. Can be negative. v0.18.13 (audit 2026-11-02 H2): pickup pay and bonuses are no longer taken off a second time, and refunds are taken off (server migration 0047 rewrites the stored days).",
@@ -6848,8 +6857,8 @@
         "reassign": "POST /admin/trips/{tripId}/reassign { expectedVersion, reasonCode, note?, driverBonus? } (trips.intervene)",
         "assign": "POST /admin/trips/{tripId}/assign { expectedVersion, driverId, note?, driverBonus?, priority?, applyTo? } (trips.intervene)",
         "noShow": "POST /admin/trips/{tripId}/no-show { expectedVersion, note?, waiveFee? } (trips.intervene)",
-        "complete": "POST /admin/trips/{tripId}/complete { expectedVersion, note?, fare? } (trips.intervene)",
-        "adjust": "POST /admin/trips/{tripId}/adjust { expectedVersion, fare?, waitingSeconds?, waiveCancelFee?, reason? } (trips.intervene): price adjust and waiting (waitingSeconds = the pickup waiting that is charged).",
+        "complete": "POST /admin/trips/{tripId}/complete { expectedVersion, note?, fare? } (trips.intervene) v0.18.82 (owner Q-S5-7b): fare changes only the driver's pay, never the rider's price (contract.json#moneyBase.adminFare).",
+        "adjust": "POST /admin/trips/{tripId}/adjust { expectedVersion, fare?, waitingSeconds?, waiveCancelFee?, reason? } (trips.intervene): price adjust and waiting (waitingSeconds = the pickup waiting that is charged). v0.18.82 (owner Q-M7): fare changes only the driver's pay, never the rider's price (contract.json#moneyBase.adminFare).",
         "driverBonus": "POST /admin/trips/{tripId}/driver-bonus { expectedVersion, amount, priority?, note?, applyTo? } (trips.intervene)",
         "reverseNoShow": "POST /admin/trips/{tripId}/reverse-no-show (v0.18.8)",
         "pinUnlock": "POST /admin/trips/{tripId}/pin/unlock (v0.18.8)"
@@ -7048,7 +7057,7 @@
           "en": "Rider may type an amount (max {max})"
         }
       },
-      "settings": "RiderAppConfig.tipRules { cashAfterTrip (default false), cashInCarMinutes (default 5, 0–60), customAmount (default false), customMax: Money (default SE 200 kr, FR 20 €) }, Admin › Tips & limits, per zone or country standard; missing / out of range = default. cashAfterTrip false: a cash tip is only accepted while the rider is still in the car = within cashInCarMinutes after the trip ended (the finish screen); later → 409 tip_cash_after_trip_off (card / Apple Pay tips are not limited). customAmount true: besides the preset amounts the rider may type any whole amount from 1 up to customMax (above → 400 tip_above_max); false: presets only (400 tip_amount_not_allowed). customMax never unlimited: a document without one uses the country default, else 20 × the highest preset amount.",
+      "settings": "RiderAppConfig.tipRules { cashAfterTrip (default false), cashInCarMinutes (default 5, 0–60), customAmount (default false), customMax: Money (default SE 200 kr, FR 20 €, TN 30 DT — v0.18.82, owner Q-S5-6) }, Admin › Tips & limits, per zone or country standard; missing / out of range = default. cashAfterTrip false: a cash tip is only accepted while the rider is still in the car = within cashInCarMinutes after the trip ended (the finish screen); later → 409 tip_cash_after_trip_off (card / Apple Pay tips are not limited). customAmount true: besides the preset amounts the rider may type any whole amount from 1 up to customMax (above → 400 tip_above_max); false: presets only (400 tip_amount_not_allowed). customMax never unlimited: a document without one uses the country default, else 20 × the highest preset amount.",
       "settings_ranges": {
         "cashInCarMinutes": [
           0,
@@ -7169,7 +7178,7 @@
     "driverMoney": {
       "rule": "Owner G8 Q3 'One number (Recommended)': everywhere the server sends the driver's money for a trip it also sends driverTotal = driverEarnings + pickupPay + driverBonus + tip + Movera's changes (adjustments, incl. a refund taken from the driver), with earningsBreakdown [{ code: trip | pickup_pay | bonus | tip | adjustment, amount }] (only lines that are not 0, trip always). Apps show driverTotal as 'Your share' (texts.yourShare) on the offer-free screens: cash sheet (CompletePreview.driverTotal), finished screen, trip history, admin; the breakdown under it. driverEarnings keeps its old meaning (the fare part only) for older apps.",
       "where": "TripProjection.driverTotal / earningsBreakdown (driver and admin views, every trip with a driver and money), CompletePreview.driverTotal / earningsBreakdown, Receipt (not), Offer (unchanged: the offer already shows the total incl. pickup pay).",
-      "payChange": "POST /admin/trips/{tripId}/driver-pay { change: Money (non-zero, the trip currency), reason } (finance.edit, Idempotency-Key) on an ended trip with a driver → 200 TripProjection (admin): an earnings entry kind adjustment of change (paid with the next payout), trip.driverAdjustments += change, driverTotal moves; audit trip.driver_pay with before / after / reason; the driver gets a bell notice kind driver_pay_changed (texts.payChanged). Errors: driver_pay_not_ended, driver_pay_no_driver, driver_pay_below_zero (driverTotal would go below 0), currency_mismatch. Checker: the size of one change (plus or minus) is at most CountryRules.driverPayChangeMax of the trip's zone (Admin › Tips & limits, per zone or country; default SE 1000 kr, FR 100 €) → else 400 driver_pay_above_max. A refund taken from the driver never takes more than his one number on the trip (never below 0).",
+      "payChange": "POST /admin/trips/{tripId}/driver-pay { expectedVersion (v0.18.82, required: the TripProjection.version the admin last saw; stale → 409 version_mismatch with the fresh admin TripProjection, contract.json#moneyBase.versionGuard), change: Money (non-zero, the trip currency), reason } (finance.edit, Idempotency-Key) on an ended trip with a driver → 200 TripProjection (admin): an earnings entry kind adjustment of change (paid with the next payout), trip.driverAdjustments += change, driverTotal moves; audit trip.driver_pay with before / after / reason; the driver gets a bell notice kind driver_pay_changed (texts.payChanged). Errors: driver_pay_not_ended, driver_pay_no_driver, driver_pay_below_zero (driverTotal would go below 0), currency_mismatch. Checker: the size of one change (plus or minus) is at most CountryRules.driverPayChangeMax of the trip's zone (Admin › Tips & limits, per zone or country; default SE 1000 kr, FR 100 €, TN 150 DT — v0.18.82, owner Q-S5-6) → else 400 driver_pay_above_max. A refund taken from the driver never takes more than his one number on the trip (never below 0).",
       "errors": [
         "driver_pay_not_ended",
         "driver_pay_no_driver",
@@ -8192,7 +8201,7 @@
     "reasonMax": 300
   },
   "walletCredit": {
-    "note": "v0.18.29 A2 (owner G12 Q5 'Real credit + limit', Q-D 'Max 250 euro and equivalent', build-spec Q2 'One button on rider page', Q1 'One admin always'): the one way an admin gives a rider money is Add money to wallet on the rider's page. POST /admin/riders/{riderId}/wallet-credit { amount, reason } (finance.edit, Idempotency-Key, audit rider.wallet_credit). The amount is in the rider's currency: the country of the rider's latest trip (else of his last seen zone); a rider with no known country is refused 409 rider_country_unknown, an amount in another currency 400 wallet_currency_mismatch. One credit is at most CountryRules.walletCreditMax of the rider's COUNTRY (fix job 0, owner A2-1 2026-11-05 'Per country, in Pricing'): the value on the country's Standard in Pricing › Tips & limits; a zone's own value is ignored; missing or in another currency = the default below. The limit is in that country's currency and is checked only against a credit in that currency (wallet per currency, contract.json#walletPerCurrency of fix job 6): the credit goes into the rider's balance of that currency and is never converted. Above it 400 wallet_credit_too_large, details 'max <amountMinor> <currency>' (no second admin). The wallet gets a WalletEntry kind adjustment; the rider gets a bell + push kind wallet_credit (texts below) and sees it in the wallet history as 'Credit from Movera'. The balance never goes below 0 (credits are positive).",
+    "note": "v0.18.29 A2 (owner G12 Q5 'Real credit + limit', Q-D 'Max 250 euro and equivalent', build-spec Q2 'One button on rider page', Q1 'One admin always'): the one way an admin gives a rider money is Add money to wallet on the rider's page. POST /admin/riders/{riderId}/wallet-credit { expectedVersion, amount, reason } (finance.edit, Idempotency-Key, audit rider.wallet_credit; v0.18.82: expectedVersion is required, the Rider.version the admin last saw; stale → 409 version_mismatch with the fresh admin Rider view, nothing added — contract.json#moneyBase.versionGuard). The amount is in the rider's currency: the country of the rider's latest trip (else of his last seen zone); a rider with no known country is refused 409 rider_country_unknown, an amount in another currency 400 wallet_currency_mismatch. One credit is at most CountryRules.walletCreditMax of the rider's COUNTRY (fix job 0, owner A2-1 2026-11-05 'Per country, in Pricing'): the value on the country's Standard in Pricing › Tips & limits; a zone's own value is ignored; missing or in another currency = the default below. The limit is in that country's currency and is checked only against a credit in that currency (wallet per currency, contract.json#walletPerCurrency of fix job 6): the credit goes into the rider's balance of that currency and is never converted. Above it 400 wallet_credit_too_large, details 'max <amountMinor> <currency>' (no second admin). The wallet gets a WalletEntry kind adjustment; the rider gets a bell + push kind wallet_credit (texts below) and sees it in the wallet history as 'Credit from Movera'. The balance never goes below 0 (credits are positive).",
     "defaultMax": {
       "SE": {
         "amountMinor": 290000,
@@ -8233,6 +8242,18 @@
       "manual"
     ],
     "default": "automatic"
+  },
+  "moneyBase": {
+    "note": "v0.18.82 (S5 J3, owner Sitting 3 2026-11-12: items 106 and 107, Q-M7, Q-S5-6, Q-S5-7; plan handover/build-plans-2026-11-12/S5-money.md J3): the money fixes. Sweden, France and Tunisia alike; amounts in minor units of the trip's or the rider's currency (TND has 3 decimals, moneyDisplay.formats.TND). X-Api-Version stays 0.5; no migration in the contract.",
+    "versionGuard": "B2.3, owner 106 'Yes, refuse 2nd click (Rec.)' (S07 M3): POST /admin/riders/{riderId}/wallet-credit { expectedVersion, amount, reason } (expectedVersion = the Rider.version the admin last saw) and POST /admin/trips/{tripId}/driver-pay { expectedVersion, change, reason } (expectedVersion = the trip's TripProjection.version) both require expectedVersion (integer ≥ 1). A stale value → 409 version_mismatch with the fresh projection (the admin Rider view for wallet-credit, the admin TripProjection for driver-pay), as for refunds; nothing is written. A done credit raises Rider.version and a done pay change raises the trip version (checked and raised under the row lock), so a second click or a second admin with the same version is refused: the money is added once. The Idempotency-Key still answers an identical resend with the first answer. A missing expectedVersion → 400 invalid_request (the server and the admin that sends it ship in the same hour).",
+    "commission": "B2.4 (S07 M5): ONE commission for every paid trip end (completed, ended early by the rider, ended by the driver with the rider on board, admin complete): commission = fare − debtCollected − driverEarnings − pickupPay − driverBonus (finish.debt.rule). The trip (TripProjection.commission, KPI commission), the trip's earnings entry and every driver and admin screen use this same number; the apps show the server's number and never work it out themselves. Movera's later changes to the driver's pay (driver-pay, an admin fare, a refund taken from the driver) are not in commission: they are in driverAdjustments and lower moneySplit.movera. Earnings entries written before v0.18.82 keep their stored value (history, never rewritten).",
+    "kpiMoney": "B2.4 + owner 107 'Yes, count + fix old days (Rec.)' (S07 T3): GET /admin/kpis money per zone and zone-local day, one currency per row. gross = the fares (fareLines total without the outstanding_fee line) of every trip whose payment is captured, partially_refunded or refunded — completed, ended early by the rider, ended by the driver with the rider on board — plus the cancel and no-show fees charged that day; each fee is counted once, on the day it was charged (paid later with another trip it is not counted again). commission = the sum of the trips' commission (moneyBase.commission). driverEarnings, pickupPay, driverBonus and Movera's pay changes come from the earnings entries (adjustments incl. driver-pay, admin fares and refund take-backs, bonuses, pickup pay). refunds = refunds of the day's trips, counted on the trip's day and taken off moveraEarnings once. Tips stay apart. Stored days are re-summed once from the trips after the server change (summary rows only; trip data is never changed).",
+    "adminFare": "Owner Q-M7 (2026-11-12 12:33 'If admin increase fare it's only for the driver side !! The rider pay same amount when booked') and Q-S5-7b (~17:15 'driver side (Rec.)'), S07 M8/M9: a fare an admin sets by hand — POST /admin/trips/{tripId}/adjust { fare } and POST /admin/trips/{tripId}/complete { fare } — changes ONLY the driver's pay. The rider's price is never changed by it: the rider pays the booked price under its own rules (paid waiting, stops, early end) plus any earlier unpaid fee read at payment (Q-M2); TripProjection.fare, fareLines, the receipt and the rider's total stay as they would be without it. The admin's change is kept on the trip as a driver pay change (TripProjection.driverAdjustments, an earnings entry kind adjustment when the trip is paid, audit trip.adjust with before / after / reason); Movera pays it; commission is not changed by it, it lowers moneySplit.movera; the driver's pay never goes below 0 (400 driver_pay_below_zero). S07 M8: it is kept as its own delta across every re-price (arrive, paid waiting, board, stop waiting, end, early end): a re-price works out the rider's fare and the driver's share of it again and then adds the admin's delta again; it is never lost. The driver sees the new pay (driverTotal, earningsBreakdown line adjustment) on the waybill and in history; the rider sees nothing of it. OPEN (owner question Q-S5-8, not in the decisions log; server J6 waits for it): how the amount the admin types becomes the size of the driver's change.",
+    "openQuestions": [
+      "Q-S5-8 (adminFare): the admin types a fare on adjust / complete. Is the driver's change (A) the driver pay worked out for that fare minus his pay now (his usual share; Movera's commission rate), (B) the whole difference between that fare and the rider's fare, or (C) the field becomes 'Driver pay' and the admin types the driver's new pay directly? Not answered; J6 (server) and J6a (admin label) wait."
+    ],
+    "tunisia": "TN-1, owner Q-S5-6 (~17:17 'OK (Rec.)'): Tunisia defaults, all admin-changeable like SE and FR: configDefaults.tipRules.customMax.TN = 30.000 DT (30000 TND minor units; Admin › Tips & limits, RiderAppConfig.tipRules.customMax), configDefaults.driverPayChangeMax.TN = 150.000 DT (150000; Admin › Tips & limits, CountryRules.driverPayChangeMax), payouts.schedule.countryTimeZones.TN = Africa/Tunis (Settings › Payouts; a Tunisian driver without a zone is paid on Tunis time, never Stockholm). A missing or wrong-currency value reads the default.",
+    "endOnce": "S07 M14 (test only; no new bonus key — K4): a trip ends once; a second end is refused. complete, end-early, a driver cancel with the rider on board, admin complete or admin cancel on a trip that already ended → 409 invalid_transition with the projection (an identical resend with the same Idempotency-Key gets the first answer); nothing is credited again: one trip line, one pickup pay, one bonus, one fee share per trip."
   },
   "smallFixes": {
     "note": "v0.18.30 (FIX JOB 7 'Small fixes', L20-L24, owner Q8/Q9 of 2026-11-04 in Rules decisions/driver-g15.md, B-k/B-l of plan/LIVE-50x50-FIX-PLAN-2026-11-04.md). Additive; X-Api-Version stays 0.5; no migration.",

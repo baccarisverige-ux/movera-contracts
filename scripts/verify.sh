@@ -815,4 +815,59 @@ assert md.startswith('# Movera shared contract v' + c['version'] + '\n') or tupl
 assert '**at most 3 open booked rides per rider**' in md and '\nv0.18.81 (server B1.34' in md and '`maxOpenPerRider` (3)' in md, 'CONTRACT.md v0.18.81 note'
 assert md.count('\n') <= 1500, 'CONTRACT.md over 1,500 lines'
 PY
+# v0.18.82 (S5 J3 money fixes; owner Sitting 3 2026-11-12: 106, 107, Q-M7, Q-S5-6, Q-S5-7, J1 0.14a, S07 M8/M14):
+# expectedVersion on the two admin money buttons, one commission + KPI money rule, admin fare = driver side only,
+# Tunisia defaults (tip max 30 DT, driver pay change max 150 DT, payouts on Africa/Tunis), payouts on their own timer, a trip ends once.
+python3 - <<'PY'
+import json, yaml
+c = json.load(open('contract.json'))
+assert tuple(map(int, c['version'].split('.'))) >= (0, 18, 82), 'version'
+mb = c['moneyBase']
+vg = mb['versionGuard']
+for part in ('POST /admin/riders/{riderId}/wallet-credit { expectedVersion, amount, reason }', 'POST /admin/trips/{tripId}/driver-pay { expectedVersion, change, reason }',
+             'Rider.version', 'TripProjection.version', '409 version_mismatch with the fresh projection', 'missing expectedVersion → 400 invalid_request'):
+    assert part in vg, 'J3 versionGuard: ' + part
+assert '{ expectedVersion, amount, reason }' in c['walletCredit']['note'], 'J3 walletCredit note'
+assert 'driver-pay { expectedVersion (v0.18.82, required' in c['finish']['driverMoney']['payChange'] and 'TN 150 DT' in c['finish']['driverMoney']['payChange'], 'J3 payChange'
+cm = mb['commission']
+assert 'commission = fare − debtCollected − driverEarnings − pickupPay − driverBonus' in cm and 'never work it out themselves' in cm and 'earnings entry' in cm, 'J3 commission'
+k = mb['kpiMoney']
+for part in ('captured, partially_refunded or refunded', 'ended early by the rider', 'ended by the driver with the rider on board', 'without the outstanding_fee line',
+             'counted once', 'earnings entries', 'refunds', 'Stored days are re-summed once', 'trip data is never changed'):
+    assert part in k, 'J3 kpiMoney: ' + part
+assert c['kpis']['money']['gross'].startswith('v0.18.82'), 'J3 kpis.money.gross'
+af = mb['adminFare']
+for part in ('changes ONLY the driver', "The rider's price is never changed by it", 'POST /admin/trips/{tripId}/adjust', 'POST /admin/trips/{tripId}/complete',
+             'driverAdjustments', 'kept as its own delta across every re-price', 'arrive', 'board', 'end'):
+    assert part in af, 'J3 adminFare: ' + part
+assert 'moneyBase.adminFare' in c['onTrip']['adminTrip']['existing']['adjust'] and 'moneyBase.adminFare' in c['onTrip']['adminTrip']['existing']['complete'], 'J3 admin commands'
+cd = c['configDefaults']
+assert cd['tipRules']['customMax']['TN'] == {'amountMinor': 30000, 'currency': 'TND'}, 'TN-1 tip custom max 30 DT'
+assert cd['driverPayChangeMax']['TN'] == {'amountMinor': 150000, 'currency': 'TND'}, 'TN-1 driver pay change max 150 DT'
+assert c['moneyDisplay']['formats']['TND']['decimals'] == 3, 'TND 3 decimals'
+assert c['payouts']['schedule']['countryTimeZones'] == {'SE': 'Europe/Stockholm', 'FR': 'Europe/Paris', 'TN': 'Africa/Tunis'}, 'TN-1 payout time zone'
+assert 'TN Africa/Tunis' in c['payouts']['schedule']['note'] and 'TN 30 DT' in c['finish']['tips']['settings'], 'TN-1 notes'
+assert 'admin-changeable' in mb['tunisia'] and '30.000 DT' in mb['tunisia'] and '150.000 DT' in mb['tunisia'], 'TN-1 moneyBase.tunisia'
+pn = c['payouts']['note']
+assert 'own payout timer, one driver per transaction' in pn and 'nightly job makes' not in pn, 'J3 payouts.note'
+assert 'a trip ends once; a second end is refused' in mb['endOnce'] and '409 invalid_transition' in mb['endOnce'], 'M14 rule line'
+spec = yaml.safe_load(open('openapi.yaml'))
+S = spec['components']['schemas']
+for name in ('WalletCreditCommand', 'DriverPayCommand'):
+    sc = S[name]
+    assert 'expectedVersion' in sc['required'] and sc['properties']['expectedVersion']['minimum'] == 1, 'J3 openapi ' + name
+for p in ('/admin/riders/{riderId}/wallet-credit', '/admin/trips/{tripId}/driver-pay'):
+    d = spec['paths'][p]['post']['responses']['409']
+    assert 'version_mismatch' in d['description'] and 'v0.18.82' in d['description'], 'J3 openapi 409 ' + p
+assert '150 DT' in S['CountryRules']['properties']['driverPayChangeMax']['description'], 'TN-1 openapi driverPayChangeMax'
+for name in ('AdminAdjustCommand', 'AdminCompleteCommand'):
+    assert 'driver side only' in S[name]['properties']['fare']['description'], 'J3 openapi ' + name
+assert 'debtCollected' in S['TripProjection']['properties']['commission']['description'], 'J3 openapi commission'
+assert S['KpiDay']['properties']['gross']['description'].startswith('v0.18.82'), 'J3 openapi KPI gross'
+md = open('CONTRACT.md').read()
+assert md.startswith('# Movera shared contract v' + c['version'] + '\n') or tuple(map(int, c['version'].split('.'))) > (0, 18, 82), 'CONTRACT.md title'
+assert '\nv0.18.82 (S5 J3 money fixes' in md and '**money fixes**' in md, 'CONTRACT.md v0.18.82 note'
+assert '  //         commission = Movera\'s share of the fare: fare − debtCollected − driverEarnings − pickupPay − driverBonus' in md and '(fare − driverEarnings)' not in md, 'CONTRACT.md one commission'
+assert md.count('\n') <= 1500, 'CONTRACT.md over 1,500 lines'
+PY
 echo "contract ok"
