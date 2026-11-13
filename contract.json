@@ -9352,7 +9352,7 @@
     "texts": "The rider texts are unchanged (pickupWaiting.terms.texts.freeWait, onTrip.stopWaiting.texts): only the amount put into {perMin} changes."
   },
   "commissionSteps": {
-    "note": "v0.18.86 (job J5b, owner 2026-11-13 ~20:41 UTC \"Admin can set commission even by amount ! Mean commission X if driver gain is under X and can make like how much he want\", confirmed by button ~20:48 UTC \"Yes, like this (Rec.)\"; Rules decisions/session-2026-11-06.md, the commission entries; times from the Rules commit log). Owner ~21:40 UTC (button + text): \"The new step apply in same place in admin which set commission per cathegories not global !!!\" and \"Yes, warn (Rec.)\" = adminPlacement and warn below. Commission STEPS per zone and per car type: the admin adds as many steps as he wants; each step = \"trip price up to X\" (the last step = \"above\"), and each step is EITHER a % OR a fixed amount. Sweden, France and Tunisia alike. X-Api-Version stays 0.5; additive (no steps = today's commissionPct, unchanged); no migration (the steps live in the pricing document).",
+    "note": "v0.18.86 (job J5b, owner 2026-11-13 ~20:41 UTC \"Admin can set commission even by amount ! Mean commission X if driver gain is under X and can make like how much he want\", confirmed by button ~20:48 UTC \"Yes, like this (Rec.)\"; Rules decisions/session-2026-11-06.md, the commission entries; times from the Rules commit log). Owner ~21:40 UTC (button + text): \"The new step apply in same place in admin which set commission per cathegories not global !!!\" and \"Yes, warn (Rec.)\" = adminPlacement and warn below (the Rules decisions line writes ~22:00; the Rules commit log puts it at ~21:40 UTC). Owner ~23:05 UTC: \"Add calculation machine to see prices and I chose first answer\" = keep the whole-price steps with the advisory warning, and add adminCalculator below. Commission STEPS per zone and per car type: the admin adds as many steps as he wants; each step = \"trip price up to X\" (the last step = \"above\"), and each step is EITHER a % OR a fixed amount. Sweden, France and Tunisia alike. X-Api-Version stays 0.5; additive (no steps = today's commissionPct, unchanged); no migration (the steps live in the pricing document).",
     "field": "CategoryPricing.commissionSteps?: [CommissionStep] — in the zone's own pricing document and in the country standard (PricingDocument.categories[categoryId]), beside commissionPct. CommissionStep { upToMinor: integer | null, pct?: number, amountMinor?: integer }: upToMinor = \"trip price up to X\" in minor units of the document's currency (null = \"above\", only on the last step); exactly one of pct (0–60, like commissionPct) or amountMinor (a fixed commission, ≥ 0, minor units of the zone currency: SEK öre, EUR cents, TND millimes — 3 decimals). commissionPct stays required and is used only when there are no steps.",
     "pick": "The step is picked by the trip's commission base (pricing.moneySplit.commissionBase = ride part + extras − waiting − stop waiting; owner decisions 17/18), the exact amount before rounding — never by the driver's gain, the total, the app fee or the pickup fee. Steps are read in order: the first step whose upToMinor is null or ≥ the commission base (\"up to X\" includes X). A % step: Movera's commission = base − half_up(base × (1 − pct / 100)) (the driver's ride part is rounded, the commission is the rest). A fixed step: commission = min(amountMinor, base) — a fixed commission is never bigger than the commission base, so the driver's ride part is never below 0.",
     "money": "driverEarnings = max(0, min(total before outstanding_fee, driverRidePart + waiting line + stop_waiting line)) with driverRidePart = half_up(base − commission) to a whole minor unit (half_up = floor(x + 1/2), pricing.halfUp); waiting and stop waiting stay 100 % the driver's (decision 17). moneyBase.commission (v0.18.82) is unchanged: commission = fare − debtCollected − driverEarnings − pickupPay − driverBonus; the apps show the server's numbers and never work out a step themselves.",
@@ -9385,8 +9385,15 @@
       "example": "Owner's warning example (TND): [{ upToMinor: 5000, amountMinor: 500 }, { upToMinor: null, pct: 25 }] = up to 5 DT → 0.500 DT fixed, above → 25 %: base 5.000 DT → driver 4.500 DT; base 5.001 DT → driver 3.751 DT (5001 × 0.75 = 3750.75 → half-up 3751) → WARN at 5 DT. The owner's TN steps example warns at 15 DT, not at 5 DT: 5.000 → 4.000, 5.001 → 4.101 (no warning); 15.000 → 12.300 (18 %), 15.001 → 12.001 (20 %) → WARN. Any step with a higher % than the step before warns at its limit; the admin may still save.",
       "cases": "fixtures/commission_steps.json warn (steps → the list of warnings { step: i, upToMinor: L, atLimit, justAbove } in minor units)."
     },
+    "adminCalculator": {
+      "rule": "v0.18.86 (owner 2026-11-13 ~23:05 UTC \"Add calculation machine to see prices\"): a calculator inside EACH car-type card of the zone's Commission panel, beside that card's steps (adminPlacement). The admin types a trip price = the commission base (ride part + extras − waiting − stop waiting) in the zone currency (TND with 3 decimals; sent through as minor units) and sees: (1) the step used (pick; \"% commission\" when there are no steps), (2) the commission = base − driverRidePart, (3) what the driver gets = driverRidePart (waiting and stop waiting are added on top, 100 % the driver's, and are not part of this input), (4) what Movera keeps from the ride part = the same commission. This is the ride-part commission, not moneyBase.commission (which also holds the app fee, the pickup fee and the rounding).",
+      "formula": "Exactly the contract formula the server uses (pick, money, noSteps; half_up = floor(x + 1/2) to a whole minor unit, never below 0; a fixed commission capped at the base): the calculator must give the server's numbers to the minor unit.",
+      "aroundLimits": "For each limit L with a next step it also shows two rows, base L (that step) and base L + 1 minor unit (the next step), with the driver's part and the commission of each; a row pair that meets the warn rule shows texts.warnDrop. The admin can type any other price to try.",
+      "steps": "Works on the card's steps as currently edited (before saving), and on commissionPct when there are no steps. When the steps fail validation, the calculator shows the validation text instead of numbers. Admin only: no server endpoint, no new API, nothing saved; the driver and rider apps are not affected.",
+      "fixtures": "The calculator must reproduce fixtures/commission_steps.json exactly: every pick case (step, driverRidePart, commission, including commissionBase.exact) and every warn case (atLimit, justAbove). The J5b admin build must run a test that replays those fixtures through the calculator's own code."
+    },
     "apps": {
-      "admin": "The zone's Commission panel, inside each car-type card, next to that card's \"% commission\" field (adminPlacement; per zone and car type, never global): rows of [Trip price up to | % or Fixed amount | value], the last row \"Above\", \"Add step\" adds a row before it, each row can be removed; amounts typed in the zone currency (TND with 3 decimals) and sent in minor units. Shows the server's 400 commission_steps_invalid problem at the step it names (texts) and the advisory warning (warn, texts.warnDrop; saving still allowed). Test a ride shows the step used. Zone pricing and the country standard alike; Go back to Standard brings the standard's steps.",
+      "admin": "The zone's Commission panel, inside each car-type card, next to that card's \"% commission\" field (adminPlacement; per zone and car type, never global): rows of [Trip price up to | % or Fixed amount | value], the last row \"Above\", \"Add step\" adds a row before it, each row can be removed; amounts typed in the zone currency (TND with 3 decimals) and sent in minor units. Shows the server's 400 commission_steps_invalid problem at the step it names (texts) and the advisory warning (warn, texts.warnDrop; saving still allowed). The card also has the calculator (adminCalculator: price → step used, commission, driver gets, Movera keeps; rows around each limit). Test a ride shows the step used. Zone pricing and the country standard alike; Go back to Standard brings the standard's steps.",
       "server": "Validates on PUT and publish (validation); prices with the picked step everywhere driverEarnings is worked out (where); half_up; TND 3 decimals. Never refuses a warn case (warn is advisory, admin only).",
       "driver": "No calculation: the offer, waybill and trip details show the server's driverEarnings / commission (moneyBase.commission) as today; a fixed commission simply gives a different number.",
       "rider": "Not affected: the rider's price (total, app fee, pickup fee) does not depend on the commission."
@@ -9451,6 +9458,63 @@
         "sv": "Varning: en resa strax över {limit} ger föraren mindre ({justAbove}) än en resa på {limit} ({atLimit}). Du kan ändå spara.",
         "fr": "Attention : une course juste au-dessus de {limit} rapporte moins au chauffeur ({justAbove}) qu’une course à {limit} ({atLimit}). Vous pouvez quand même enregistrer.",
         "en": "Warning: a trip just above {limit} pays the driver less ({justAbove}) than a trip at {limit} ({atLimit}). You can still save."
+      },
+      "calculator": {
+        "title": {
+          "sv": "Räkna ut provision",
+          "fr": "Calculer la commission",
+          "en": "Commission calculator"
+        },
+        "priceInput": {
+          "sv": "Resans pris (utan väntetid)",
+          "fr": "Prix de la course (sans l’attente)",
+          "en": "Trip price (without waiting)"
+        },
+        "stepUsed": {
+          "sv": "Steg som används",
+          "fr": "Palier utilisé",
+          "en": "Step used"
+        },
+        "noStepsPct": {
+          "sv": "Provision i % (inga steg)",
+          "fr": "Commission en % (aucun palier)",
+          "en": "Commission % (no steps)"
+        },
+        "commission": {
+          "sv": "Provision",
+          "fr": "Commission",
+          "en": "Commission"
+        },
+        "driverGets": {
+          "sv": "Föraren får",
+          "fr": "Le chauffeur reçoit",
+          "en": "Driver gets"
+        },
+        "moveraKeeps": {
+          "sv": "Movera behåller (av resedelen)",
+          "fr": "Movera garde (sur le trajet)",
+          "en": "Movera keeps (from the ride part)"
+        },
+        "aroundLimits": {
+          "sv": "Priser runt varje gräns",
+          "fr": "Prix autour de chaque limite",
+          "en": "Prices around each limit"
+        },
+        "atLimit": {
+          "sv": "Vid {limit}",
+          "fr": "À {limit}",
+          "en": "At {limit}"
+        },
+        "justAbove": {
+          "sv": "Strax över {limit}",
+          "fr": "Juste au-dessus de {limit}",
+          "en": "Just above {limit}"
+        },
+        "waitingNote": {
+          "sv": "Väntetid läggs till och går helt till föraren.",
+          "fr": "L’attente s’ajoute et revient entièrement au chauffeur.",
+          "en": "Waiting is added on top and goes fully to the driver."
+        }
       },
       "errors": {
         "not_a_list": {

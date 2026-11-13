@@ -1118,14 +1118,14 @@ assert 'v0.18.85' in md and 'waitPerMinShown' in md, 'CONTRACT.md text'
 assert md.count('\n') <= 1500, 'CONTRACT.md over 1,500 lines'
 PY
 # v0.18.86 (J5b; owner 2026-11-13 ~20:41 UTC "Admin can set commission even by amount !" + ~20:48 "Yes, like this (Rec.)",
-# ~21:40 placement + "Yes, warn (Rec.)"; times from the Rules commit log; Rules decisions/session-2026-11-06.md): commission steps
+# ~21:40 placement + "Yes, warn (Rec.)", ~23:05 calculator; times from the Rules commit log; Rules decisions/session-2026-11-06.md): commission steps
 # per zone and car type, % or fixed, picked by the commission base; edited in each car-type card; advisory warning.
 python3 - <<'PY'
 import json, yaml
 c = json.load(open('contract.json'))
 assert tuple(map(int, c['version'].split('.'))) >= (0, 18, 86), 'version'
 cs = c['commissionSteps']
-for k in ('note', 'field', 'pick', 'money', 'where', 'noSteps', 'example', 'validation', 'adminPlacement', 'warn', 'apps', 'texts', 'textsNote'):
+for k in ('note', 'field', 'pick', 'money', 'where', 'noSteps', 'example', 'validation', 'adminPlacement', 'warn', 'adminCalculator', 'apps', 'texts', 'textsNote'):
     assert k in cs, 'commissionSteps.' + k
 assert 'Yes, like this (Rec.)' in cs['note'] and 'even by amount' in cs['note'], 'owner words'
 assert "never by the driver's gain" in cs['pick'] and 'min(amountMinor, base)' in cs['pick'], 'pick rule'
@@ -1133,6 +1133,11 @@ assert 'NOT a shipped default' in cs['example'], 'TN example is not a default'
 assert '~21:00' not in cs['note'] and '~21:05' not in cs['note'] and '20:41' in cs['note'] and '20:48' in cs['note'] and '21:40' in cs['note'], 'owner times (commit log)'
 assert 'Commission panel' in cs['adminPlacement'] and 'EACH car-type card' in cs['adminPlacement'] and 'NEVER a global' in cs['adminPlacement'], 'placement'
 assert 'Commission panel' in cs['apps']['admin'] and 'never global' in cs['apps']['admin'], 'apps.admin placement'
+AC = cs['adminCalculator']
+assert 'EACH car-type card' in AC['rule'] and 'not moneyBase.commission' in AC['rule'] and '23:05' in cs['note'], 'calculator'
+assert 'reproduce fixtures/commission_steps.json exactly' in AC['fixtures'] and 'J5b admin build must run a test' in AC['fixtures'], 'calculator fixtures'
+assert {'title', 'priceInput', 'stepUsed', 'commission', 'driverGets', 'moveraKeeps', 'aroundLimits', 'atLimit', 'justAbove'} <= set(cs['texts']['calculator']), 'calculator texts'
+for tt in cs['texts']['calculator'].values(): assert set(tt) == {'sv', 'fr', 'en'} and all(tt.values()), 'calculator texts sv/fr/en'
 W = cs['warn']
 assert 'driverRidePart(L, step i) > driverRidePart(L + 1, step i+1)' in W['rule'] and 'Yes, warn (Rec.)' in W['rule'], 'warn rule'
 assert 'STILL ALLOWS SAVING' in W['advisory'] and 'server does NOT refuse' in W['advisory'], 'warn is advisory'
