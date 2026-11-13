@@ -25602,7 +25602,15 @@ components:
             driverRidePart + waiting line + stop_waiting line)) with driverRidePart = half_up(base − commission) to a whole
             minor unit (half_up = floor(x + 1/2), pricing.halfUp); waiting and stop waiting stay 100 % the driver''s (decision
             17). moneyBase.commission (v0.18.82) is unchanged: commission = fare − debtCollected − driverEarnings − pickupPay
-            − driverBonus; the apps show the server''s numbers and never work out a step themselves.'
+            − driverBonus; the apps show the server''s numbers and never work out a step themselves. v0.18.86 (owner 2026-11-13
+            ~21:40 UTC: "same place in admin which set commission per cathegories not global"): the steps are edited in the
+            SAME admin place as today''s commission: the zone''s Commission panel, inside EACH car-type card, next to that
+            card''s "% commission" field (commissionPct). Per zone and per car type (PricingDocument.categories[categoryId].commissionSteps;
+            the country standard''s Commission panel alike), NEVER a global setting and never a separate page. The card shows
+            the % field (used when there are no steps), the step rows, "Add step", and the warn texts of that card''s steps.
+            Warning (admin only): ADVISORY ONLY: the admin editor shows the warning (texts.warnDrop) in that car-type card,
+            next to the step, and STILL ALLOWS SAVING. The server does NOT refuse it: no 400, no reason code, no problem code;
+            PUT and publish save the steps exactly as with no warning. The driver and rider apps show nothing.'
     PricingFees:
       type: object
       required:

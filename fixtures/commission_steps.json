@@ -1,5 +1,5 @@
 {
-  "note": "v0.18.86 (J5b commission steps, owner 2026-11-13 ~21:05 \"Yes, like this (Rec.)\"; contract.json#commissionSteps): reference cases read by reference_check.py; the server and the admin (Pricing editor, Test a ride) use the same cases. validate: the admin's steps → \"ok\" or the first problem (400 invalid_request, reason commission_steps_invalid, details step:<index> / problem:<code>). pick: the step picked by the exact commission base (ride part + extras − waiting − stop waiting), the driver's ride part half_up to a minor unit (never below 0) and Movera's commission = base − that part. The key commission in these cases is the commission on the ride part only; it is not moneyBase.commission, which also holds the app fee, the pickup fee and the rounding. TND has 3 decimals (millimes).",
+  "note": "v0.18.86 (J5b commission steps, owner 2026-11-13 ~20:48 UTC \"Yes, like this (Rec.)\", ~21:40 UTC \"Yes, warn (Rec.)\"; contract.json#commissionSteps): reference cases read by reference_check.py; the server and the admin (Pricing editor, Test a ride) use the same cases. validate: the admin's steps → \"ok\" or the first problem (400 invalid_request, reason commission_steps_invalid, details step:<index> / problem:<code>). pick: the step picked by the exact commission base (ride part + extras − waiting − stop waiting), the driver's ride part half_up to a minor unit (never below 0) and Movera's commission = base − that part. The key commission in these cases is the commission on the ride part only; it is not moneyBase.commission, which also holds the app fee, the pickup fee and the rounding. TND has 3 decimals (millimes). pick commissionBase.exact (optional, a decimal string) is the exact base before rounding when it is not a whole minor unit; then commission = exact base − driverRidePart, as a decimal string. warn (contract.json#commissionSteps.warn, ADVISORY: the admin warns and still saves; the server never refuses): for each limit L with a next step, a warning when the driver's ride part at base L (that step) is greater than at base L + 1 minor unit (the next step); { step, upToMinor, atLimit, justAbove } in minor units.",
   "validate": [
     {
       "id": "tn_example_ok",
@@ -766,6 +766,138 @@
         "driverRidePart": 905,
         "commission": 100
       }
+    },
+    {
+      "id": "tn_fraction_just_above_5",
+      "note": "Exact base 5000.4 millimes (not rounded first) is above 5 DT → 18 %: 5000.4 × 0.82 = 4100.328 → 4100; a server that rounds the base first would pick the 1 DT step (4000).",
+      "commissionPct": 20,
+      "steps": [
+        {
+          "upToMinor": 5000,
+          "amountMinor": 1000
+        },
+        {
+          "upToMinor": 15000,
+          "pct": 18
+        },
+        {
+          "upToMinor": null,
+          "pct": 20
+        }
+      ],
+      "commissionBase": {
+        "amountMinor": 5000,
+        "currency": "TND",
+        "exact": "5000.4"
+      },
+      "expect": {
+        "step": 1,
+        "driverRidePart": 4100,
+        "commission": "900.4"
+      }
+    }
+  ],
+  "warn": [
+    {
+      "id": "owner_warn_example",
+      "note": "Owner's example: ≤5 DT 0.500 DT fixed, above 25 %: 5.000 → 4.500, 5.001 → 3.751 → warn (the admin may still save).",
+      "currency": "TND",
+      "steps": [
+        {
+          "upToMinor": 5000,
+          "amountMinor": 500
+        },
+        {
+          "upToMinor": null,
+          "pct": 25
+        }
+      ],
+      "expect": [
+        {
+          "step": 0,
+          "upToMinor": 5000,
+          "atLimit": 4500,
+          "justAbove": 3751
+        }
+      ]
+    },
+    {
+      "id": "tn_example_warns_at_15_only",
+      "note": "Owner's TN steps: 5.000 → 4.000, 5.001 → 4.101 (no warning); 15.000 → 12.300 (18 %), 15.001 → 12.001 (20 %) → warn at 15 DT.",
+      "currency": "TND",
+      "steps": [
+        {
+          "upToMinor": 5000,
+          "amountMinor": 1000
+        },
+        {
+          "upToMinor": 15000,
+          "pct": 18
+        },
+        {
+          "upToMinor": null,
+          "pct": 20
+        }
+      ],
+      "expect": [
+        {
+          "step": 1,
+          "upToMinor": 15000,
+          "atLimit": 12300,
+          "justAbove": 12001
+        }
+      ]
+    },
+    {
+      "id": "no_drop_no_warn",
+      "note": "5.000 → 4.000, 5.001 → 4.101: the driver earns more just above → no warning.",
+      "currency": "TND",
+      "steps": [
+        {
+          "upToMinor": 5000,
+          "amountMinor": 1000
+        },
+        {
+          "upToMinor": null,
+          "pct": 18
+        }
+      ],
+      "expect": []
+    },
+    {
+      "id": "equal_is_no_warn",
+      "note": "1.000 → 0.800, 1.001 → 0.800: equal is not less → no warning.",
+      "currency": "TND",
+      "steps": [
+        {
+          "upToMinor": 1000,
+          "amountMinor": 200
+        },
+        {
+          "upToMinor": null,
+          "amountMinor": 201
+        }
+      ],
+      "expect": []
+    },
+    {
+      "id": "only_above_no_limit",
+      "note": "One \"above\" step has no limit → no warning.",
+      "currency": "TND",
+      "steps": [
+        {
+          "upToMinor": null,
+          "pct": 20
+        }
+      ],
+      "expect": []
+    },
+    {
+      "id": "no_steps",
+      "note": "No steps → nothing to warn.",
+      "currency": "TND",
+      "steps": [],
+      "expect": []
     }
   ]
 }

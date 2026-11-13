@@ -158,7 +158,7 @@ def seats(cat, inp, amt, cid):
     if cid != 'child_seat' and any(inp.get(k, 0) for k in ('babySeats', 'childSeats')): raise ValueError('seat_not_offered')
     return amt(cat['childSeatFee']) if cid == 'child_seat' and 'childSeatFee' in cat else Fr(0)
 def steps_problem(steps):
-    """v0.18.86 (J5b, owner 2026-11-13 ~21:05, contract.json#commissionSteps.validation): None when the admin's steps are valid,
+    """v0.18.86 (J5b, owner 2026-11-13 ~20:48 UTC, contract.json#commissionSteps.validation): None when the admin's steps are valid,
     else (step index or None, problem) — the first problem in step order (400 invalid_request, reason commission_steps_invalid)."""
     V = c['commissionSteps']['validation']
     if steps is None: return None   # null = no steps
@@ -189,6 +189,17 @@ def driver_ride_part(base, cat):
     st = steps[k]
     if 'pct' in st: return max(0, _hu(base * (1 - Fr(str(st['pct'])) / 100)))
     return max(0, _hu(base - min(Fr(st['amountMinor']), base)))
+def steps_warnings(steps):
+    """v0.18.86 (owner 2026-11-13 ~21:40 UTC "Yes, warn", contract.json#commissionSteps.warn; ADVISORY, the server never refuses):
+    for each limit L with a next step, warn when the driver's ride part at base L (step i) > at base L + 1 minor unit (step i+1)."""
+    out = []
+    for k, st in enumerate((steps or [])[:-1]):
+        L = st['upToMinor']
+        a = driver_ride_part(Fr(L), {'commissionPct': 0, 'commissionSteps': [{**st, 'upToMinor': None}]})
+        j = driver_ride_part(Fr(L + 1), {'commissionPct': 0, 'commissionSteps': [{**steps[k + 1], 'upToMinor': None}]})
+        if pick_step(Fr(L), steps) != k or pick_step(Fr(L + 1), steps) != k + 1: raise ValueError('warn: steps not in order')
+        if a > j: out.append({'step': k, 'upToMinor': L, 'atLimit': int(a), 'justAbove': int(j)})
+    return out
 def price(doc, inp):
     """Every line exact until rounded half-up to a minor unit; the total rounded once to priceStep; outstanding_fee after that
     (v0.18.84: only in the price of the trip being PAID, the debt read from the wallet then — never on a quote, debtModel.readAtPayment)."""
@@ -874,7 +885,10 @@ for _x in _csf['validate']:
     if _r != _x['expect'] or (_p and _p[1] not in c['commissionSteps']['validation']['problems']): bad += 1; print('COMMISSION STEPS VALIDATE', _x['id'], _r)
 for _x in _csf['pick']:
     _cat = {'commissionPct': _x['commissionPct'], 'commissionSteps': _x['steps']}
-    _b = _x['commissionBase']['amountMinor']; _d = driver_ride_part(Fr(_b), _cat)
-    _r = {'step': pick_step(Fr(_b), _x['steps']), 'driverRidePart': _d, 'commission': _b - _d}
+    _b = Fr(_x['commissionBase'].get('exact', _x['commissionBase']['amountMinor'])); _d = driver_ride_part(_b, _cat)
+    _r = {'step': pick_step(_b, _x['steps']), 'driverRidePart': _d, 'commission': _b - _d if 'exact' not in _x['commissionBase'] else str(float(_b - _d))}
     if _r != _x['expect'] or steps_problem(_x['steps']) is not None or _x['commissionBase']['currency'] not in c['currencies']: bad += 1; print('COMMISSION STEPS PICK', _x['id'], _r)
+for _x in _csf['warn']:
+    _r = steps_warnings(_x['steps'])
+    if _r != _x['expect'] or steps_problem(_x['steps']) is not None: bad += 1; print('COMMISSION STEPS WARN', _x['id'], _r)
 print('OK' if not bad else f'{bad} mismatches'); sys.exit(1 if bad else 0)

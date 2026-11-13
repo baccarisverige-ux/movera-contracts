@@ -1,5 +1,5 @@
-# Runs inside tools/gen_openapi.py in name order with its globals (rule 25 split). v0.18.86 (J5b, owner 2026-11-13 ~21:05
-# "Yes, like this (Rec.)", Rules decisions/session-2026-11-06.md): commission steps per zone and car type, each a % or a fixed
+# Runs inside tools/gen_openapi.py in name order with its globals (rule 25 split). v0.18.86 (J5b, owner 2026-11-13 ~20:48 UTC
+# "Yes, like this (Rec.)", ~21:40 "Yes, warn (Rec.)", Rules decisions/session-2026-11-06.md): commission steps per zone and car type, each a % or a fixed
 # amount, picked by the commission base (contract.json#commissionSteps). Additive: no steps = commissionPct, unchanged.
 _CS = C["commissionSteps"]
 _V = _CS["validation"]
@@ -13,7 +13,7 @@ S["CommissionStep"] = obj(OrderedDict([
     oneOf=[{"required": ["pct"], "not": {"required": ["amountMinor"]}}, {"required": ["amountMinor"], "not": {"required": ["pct"]}}])
 _cp = S["CategoryPricing"]["properties"]
 _cp["commissionSteps"] = {"oneOf": [arr(ref("CommissionStep"), maxItems=_V["maxSteps"]), {"type": "null"}],
-                          "description": "v0.18.86 (J5b, owner 2026-11-13): optional; absent, null or [] = no steps (commissionPct applies, unchanged). " + _CS["field"] + " " + _CS["money"]}
+                          "description": "v0.18.86 (J5b, owner 2026-11-13): optional; absent, null or [] = no steps (commissionPct applies, unchanged). " + _CS["field"] + " " + _CS["money"] + " " + _CS["adminPlacement"] + " Warning (admin only): " + _CS["warn"]["advisory"]}
 _cp["commissionPct"]["description"] += " v0.18.86: used only when commissionSteps is empty or absent (contract.json#commissionSteps.noSteps)."
 _why = (" v0.18.86 (J5b, contract.json#commissionSteps.validation): pricing with invalid CategoryPricing.commissionSteps → invalid_request, "
         "reason commission_steps_invalid, details [\"step:<index>\", \"problem:<code>\"] (" + ", ".join(_V["problems"]) + "); nothing is saved.")
