@@ -1,11 +1,11 @@
-# Movera API v0.18.84 — generated from contract.json (+ CONTRACT.md §7). PROPOSED; no backend exists.
+# Movera API v0.18.85 — generated from contract.json (+ CONTRACT.md §7). PROPOSED; no backend exists.
 openapi: 3.1.0
 info:
   title: Movera API
-  version: 0.18.84
+  version: 0.18.85
   description: '**Proposed contract — no backend exists yet.** One future backend serves the Rider (Flutter), Driver (Flutter)
     and Admin (React/TS) apps. Source of truth for names, enums, transitions, realtime and errors is `contract.json` + `CONTRACT.md`
-    v0.18.84 in this folder; this file must agree with them.
+    v0.18.85 in this folder; this file must agree with them.
 
 
     Wire rules: ids match `^[A-Za-z0-9_-]{1,64}$`; times are RFC 3339 UTC with `Z`; durations are integer seconds; money is
@@ -84,7 +84,7 @@ tags:
 - name: Admin · Finance
 x-contract:
   name: movera
-  version: 0.18.84
+  version: 0.18.85
   source: contract.json
 paths:
   /auth/otp/request:
@@ -23731,6 +23731,15 @@ components:
           description: 'Equals freeWaitMin (owner Q41): the no-show button appears when the free wait ends.'
         noShowFee:
           $ref: '#/components/schemas/Money'
+        perMinShown:
+          allOf:
+          - $ref: '#/components/schemas/Money'
+          description: 'v0.18.85: Money, served only (GET /rider/config, never stored in the published document): the headline
+            category''s waiting.perMin with its app fee; waiting.byCategory[categoryId].perMinShown the same per category,
+            from the zone''s live pricing document. The driver app ignores it: Unchanged: the driver app shows what the driver
+            earns. Waiting and stop waiting are 100 % the driver''s (§3.5 money split, decision 17), so his price per minute
+            is the raw waitPerMin / stopWaitPerMin; the app fee on them is Movera''s (decision 18). He never sees the rider''s
+            fee (like the no-show row shows his share, G6 fix 5).'
     RiderWaiting:
       type: object
       description: Top-level terms are the headline category's (economy, else the first).
@@ -23764,6 +23773,15 @@ components:
           description: 'v0.18.8: copied from the zone''s driver document when served (GET /rider/config).'
         stopFreeWaitMin:
           description: 'v0.18.8: copied from the zone''s driver document when served (GET /rider/config).'
+        perMinShown:
+          allOf:
+          - $ref: '#/components/schemas/Money'
+          description: 'v0.18.85: Money, served only (GET /rider/config, never stored in the published document): the headline
+            category''s waiting.perMin with its app fee; waiting.byCategory[categoryId].perMinShown the same per category,
+            from the zone''s live pricing document. The driver app ignores it: Unchanged: the driver app shows what the driver
+            earns. Waiting and stop waiting are 100 % the driver''s (§3.5 money split, decision 17), so his price per minute
+            is the raw waitPerMin / stopWaitPerMin; the app fee on them is Movera''s (decision 18). He never sees the rider''s
+            fee (like the no-show row shows his share, G6 fix 5).'
     DriverWaiting:
       allOf:
       - $ref: '#/components/schemas/RiderWaiting'
@@ -32832,6 +32850,23 @@ components:
           - $ref: '#/components/schemas/Money'
           description: 'v0.18.9: PricingDocument.categories[categoryId].stopWaitPerMin per zone (Admin › Pricing), in the
             zone''s currency; now also on TripProjection.terms.stopWaitPerMin so both apps show it.'
+        waitPerMinShown:
+          allOf:
+          - $ref: '#/components/schemas/Money'
+          description: 'v0.18.85: Money: terms.waitPerMin with the app fee (the effective price from arrive, also a waiting
+            rule''s own perMin). Absent on a trip booked before v0.18.85 (it kept no appFeePct): the apps then show waitPerMin
+            as before. shown price per minute = half-up(perMin.amountMinor × (1 + appFeePct / 100)) to a whole minor unit
+            (§3.5 step 7''s line rounding), in the trip''s / zone''s currency, with the category''s appFeePct (premium 12
+            %, every other category 10 % by default). Examples: 12,26 kr + 10 % = 13,49 kr; 16,90 kr + 12 % = 18,93 kr; 5
+            kr + 10 % = 5,50 kr; 0,50 € + 10 % = 0,55 €; 0.250 DT + 10 % = 0.275 DT.'
+        stopWaitPerMinShown:
+          allOf:
+          - $ref: '#/components/schemas/Money'
+          description: 'v0.18.85: Money: terms.stopWaitPerMin with the app fee; present only when stopWaitPerMin and the kept
+            appFeePct are. shown price per minute = half-up(perMin.amountMinor × (1 + appFeePct / 100)) to a whole minor unit
+            (§3.5 step 7''s line rounding), in the trip''s / zone''s currency, with the category''s appFeePct (premium 12
+            %, every other category 10 % by default). Examples: 12,26 kr + 10 % = 13,49 kr; 16,90 kr + 12 % = 18,93 kr; 5
+            kr + 10 % = 5,50 kr; 0,50 € + 10 % = 0,55 €; 0.250 DT + 10 % = 0.275 DT.'
     TripEta:
       type: object
       description: 'v0.18.7 (Q4): Status item 2 + Q4 (one road-route ETA for both apps): the server computes the ETA every

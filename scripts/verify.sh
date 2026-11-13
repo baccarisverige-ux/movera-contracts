@@ -1087,4 +1087,34 @@ assert '`walletApplied = max(0, min(balance in the trip\'s currency, fare))`' in
 assert 'follows the admin setting' in S['CountryRules']['properties']['maxRiderDebt']['description'] and 'max(0, min(' in S['CreateTripRequest']['properties']['walletFirst']['description'], 'M2/Q2 openapi'
 assert md.count('\n') <= 1500, 'CONTRACT.md over 1,500 lines'
 PY
+# v0.18.85 (audit A1; owner 2026-11-02 "Show price incl. fee (Recommended)", Rules decisions/driver-g6.md:96): the waiting
+# prices shown with the app fee; the fare rule, fare fixtures and moneyBase.commission unchanged.
+python3 - <<'PY'
+import json, yaml
+from fractions import Fraction
+c = json.load(open('contract.json'))
+assert tuple(map(int, c['version'].split('.'))) >= (0, 18, 85), 'version'
+w = c['waitingPriceShown']
+for k in ('note', 'rule', 'charge', 'fields', 'apps', 'money', 'texts'):
+    assert k in w, 'waitingPriceShown.' + k
+assert 'driver-g6.md:96' in w['note'] and 'Show price incl. fee' in w['note'], 'owner words'
+assert 'appFeePct' in c['bookingSnapshot']['fields'], 'snapshot keeps appFeePct'
+def shown(minor, pct):
+    x = Fraction(minor) * (1 + Fraction(pct) / 100)
+    return (x + Fraction(1, 2)).__floor__()
+# The rule's examples (SEK, EUR, TND minor units) and the SE defaults.
+assert [shown(1226, 10), shown(1690, 12), shown(500, 10), shown(50, 10), shown(250, 10)] == [1349, 1893, 550, 55, 275]
+for t in ('13,49 kr', '18,93 kr', '5,50 kr', '0,55 €', '0.275 DT'):
+    assert t in w['rule'], t
+se = c['configDefaults']['pricing']['countries']['SE']['categories']
+assert shown(se['economy']['waitPerMin'], se['economy']['appFeePct']) == 1349
+spec = yaml.safe_load(open('openapi.yaml'))['components']['schemas']
+for s_, k in (('TripTerms', 'waitPerMinShown'), ('TripTerms', 'stopWaitPerMinShown'), ('RiderWaiting', 'perMinShown'), ('CategoryWaiting', 'perMinShown')):
+    assert k in spec[s_]['properties'], s_ + '.' + k
+assert 'waitPerMinShown' not in spec['TripTerms'].get('required', []), 'additive'
+md = open('CONTRACT.md').read()
+assert md.startswith('# Movera shared contract v' + c['version']), 'CONTRACT.md heading'
+assert 'v0.18.85' in md and 'waitPerMinShown' in md, 'CONTRACT.md text'
+assert md.count('\n') <= 1500, 'CONTRACT.md over 1,500 lines'
+PY
 echo "contract ok"

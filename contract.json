@@ -1,6 +1,6 @@
 {
   "contract": "movera",
-  "version": "0.18.84",
+  "version": "0.18.85",
   "note": "Canonical cross-app contract for Rider, Driver and Admin. Frontend-only today; a future single backend implements it. Every app ships an identical copy under contracts/ and runs contract tests against it.",
   "wire": {
     "ids": {
@@ -4143,7 +4143,7 @@
     "earlyEnd": "v0.18.10 (owner G8 Q2, 2026-11-01): DriverAppConfig.cancelFees.earlyEnd { repriceOverKm (default 2, 0–50), repriceOverMin (default 8, 0–120) }, Admin › Cancellation, per zone (or the country standard). See finish.earlyEnd.driver. v0.18.33 (fix job 5, owner fix-plan Q1): repriceOverMin default 10 and the rule is BOTH (more than repriceOverKm km AND more than repriceOverMin minutes shorter), contract.json#afterTestRules.earlyEnd."
   },
   "bookingSnapshot": {
-    "note": "v0.8.0 (owner 2026-10-27): a booked trip keeps ALL its rules from booking time (POST /trips). The server keeps on the trip: the pricing document (version and scope) it was quoted with, the category's cancel fee rule (live or reservation by Trip.kind, from RiderAppConfig.cancelFees, else the built-in default), DriverAppConfig.cancelFees.driverSharePct, the category's waiting terms (free wait, per minute, no-show after, no-show fee), DriverAppConfig.waiting.driverSharePct (no-show share) and driverShareWaitPct. A later publish never changes a booked trip; fixtures/settings_flow.json#snapshot. v0.18.7: the trip also keeps the zone's waiting.cancelAfterArrivedIsNoShow and booking.maxPickupMoveMeters of booking time (TripProjection.terms shows them). v0.18.8: also the zone's waiting.farPickup / rideTypes (waitingRules), waiting.stopFreeWaitMin and pickupPin.required (Trip.pinRequired) of booking time (contract.json#arrivedWaiting).",
+    "note": "v0.8.0 (owner 2026-10-27): a booked trip keeps ALL its rules from booking time (POST /trips). The server keeps on the trip: the pricing document (version and scope) it was quoted with, the category's cancel fee rule (live or reservation by Trip.kind, from RiderAppConfig.cancelFees, else the built-in default), DriverAppConfig.cancelFees.driverSharePct, the category's waiting terms (free wait, per minute, no-show after, no-show fee), DriverAppConfig.waiting.driverSharePct (no-show share) and driverShareWaitPct. A later publish never changes a booked trip; fixtures/settings_flow.json#snapshot. v0.18.7: the trip also keeps the zone's waiting.cancelAfterArrivedIsNoShow and booking.maxPickupMoveMeters of booking time (TripProjection.terms shows them). v0.18.8: also the zone's waiting.farPickup / rideTypes (waitingRules), waiting.stopFreeWaitMin and pickupPin.required (Trip.pinRequired) of booking time (contract.json#arrivedWaiting). v0.18.85: also the category's appFeePct of booking time (waitingPriceShown).",
     "fields": [
       "pricing",
       "cancelRule",
@@ -4156,7 +4156,8 @@
       "waitingRules",
       "stopFreeWaitMin",
       "pinRequired",
-      "earlyEnd"
+      "earlyEnd",
+      "appFeePct"
     ]
   },
   "autoOffline": {
@@ -9323,5 +9324,23 @@
       }
     },
     "rule0": "Order: contract → server (migration incl. the internal first-activated column, routes, views, approval check, reminder level) → admin (badge + setting) → driver (Account row, verify mode, Home notice red / orange) → rider (labels, verify mode)."
+  },
+  "waitingPriceShown": {
+    "note": "v0.18.85 (audit A1, owner 2026-11-02 \"Show price incl. fee (Recommended)\" => apps/admin show waiting and stop-wait prices including the app fee (5,50 kr/min, 0,55 €/min) — what you see is what you pay; Rules decisions/driver-g6.md:96, question P2-Q1 of audits/deep-recheck-2026-11-02/g7-g9.md:170 option A). The fare rule does NOT change: waiting and stop waiting are extras and the app fee is added on top (§3.5 steps 4-5), so the rider pays perMin × (1 + appFeePct / 100) a minute. Before v0.18.85 the apps showed the raw perMin (12,26 kr) while the rider paid 13,486 kr a minute.",
+    "rule": "shown price per minute = half-up(perMin.amountMinor × (1 + appFeePct / 100)) to a whole minor unit (§3.5 step 7's line rounding), in the trip's / zone's currency, with the category's appFeePct (premium 12 %, every other category 10 % by default). Examples: 12,26 kr + 10 % = 13,49 kr; 16,90 kr + 12 % = 18,93 kr; 5 kr + 10 % = 5,50 kr; 0,50 € + 10 % = 0,55 €; 0.250 DT + 10 % = 0.275 DT.",
+    "charge": "Unchanged (§3.5): the rider pays exactly the shown price for each minute up to that rounding of less than half a minor unit a minute (12,26 kr: 13,486 kr charged, 13,49 kr shown); the total is still rounded once to priceStep.",
+    "fields": {
+      "TripProjection.terms.waitPerMinShown": "Money: terms.waitPerMin with the app fee (the effective price from arrive, also a waiting rule's own perMin). Absent on a trip booked before v0.18.85 (it kept no appFeePct): the apps then show waitPerMin as before.",
+      "TripProjection.terms.stopWaitPerMinShown": "Money: terms.stopWaitPerMin with the app fee; present only when stopWaitPerMin and the kept appFeePct are.",
+      "RiderAppConfig.waiting.perMinShown": "Money, served only (GET /rider/config, never stored in the published document): the headline category's waiting.perMin with its app fee; waiting.byCategory[categoryId].perMinShown the same per category, from the zone's live pricing document.",
+      "bookingSnapshot.appFeePct": "the category's appFeePct at booking time, kept on the trip so the shown price follows the pricing document the trip is charged by."
+    },
+    "apps": {
+      "rider": "Every waiting price the rider sees (the Terms sheet \"Free waiting {free} min, then {perMin} per minute\", the stop line \"Waiting at a stop: {perMin}/min\", before a trip from the served config) uses the shown field, else the raw one from an older server. The driver-arrived sheet still shows the waiting TIME only (group 6 decision 4).",
+      "driver": "Unchanged: the driver app shows what the driver earns. Waiting and stop waiting are 100 % the driver's (§3.5 money split, decision 17), so his price per minute is the raw waitPerMin / stopWaitPerMin; the app fee on them is Movera's (decision 18). He never sees the rider's fee (like the no-show row shows his share, G6 fix 5).",
+      "admin": "The trip page shows the trip's terms.waitPerMinShown (\"incl. app fee\") next to the driver's raw price; Pricing › Waiting fields and Test a ride show the price the rider sees (perMin with the category's App fee) beside the price the admin types. The admin still types the raw price (the driver's)."
+    },
+    "money": "moneyBase.commission (v0.18.82) is unchanged: commission = fare − debtCollected − driverEarnings − pickupPay − driverBonus. driverEarnings keep the whole waiting and stop_waiting lines (no commission on waiting); the app fee on the waiting stays in Movera's share. No fare line, fixture or stored amount changes.",
+    "texts": "The rider texts are unchanged (pickupWaiting.terms.texts.freeWait, onTrip.stopWaiting.texts): only the amount put into {perMin} changes."
   }
 }
