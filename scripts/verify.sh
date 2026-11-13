@@ -765,4 +765,26 @@ assert md.startswith('# Movera shared contract v' + c['version'] + '\n') or tupl
 assert 'supersedes the S5 J16 `totalAtLeast` idea' in md and '**G33 rider pay-in-car line**' in md and 'first page when counted exactly' in md and '**admin lists “50 of N”**' in md, 'CONTRACT.md v0.18.78 note'
 assert md.count('\n') <= 1500, 'CONTRACT.md over 1,500 lines'
 PY
+# v0.18.80 (server B1.33, owner Q93 "A) Yes"): a ticket without a zone can be assigned and auto-sorted to an admin of its
+# country team (wording only; 0.18.79 reserved for S5 J3).
+python3 - <<'PY'
+import json, yaml
+c = json.load(open('contract.json'))
+assert tuple(map(int, c['version'].split('.'))) >= (0, 18, 80), 'version'
+sd = c['supportDesk']
+cov = "covers the ticket (its zone; a ticket without a zone: a zone in the ticket's country, or all zones — the countryTeam rule)"
+asg = sd['adminCommands']['assign']
+assert cov + ' (else 400 invalid_request, reason assignee_not_allowed); null = nobody.' in asg and "covers the ticket's zone" not in asg, 'B1.33 assign'
+au = sd['settings']['autoSort']
+assert 'has support.reply and ' + cov + ' (else nobody).' in au and "covers the ticket's zone" not in au, 'B1.33 autoSort'
+ct = sd['countryTeam']
+assert 'see and answer it (list and one ticket), get it assigned (assign) and auto-sorted to them (settings.autoSort), Super admins too' in ct and "Q93 'A) Yes'" in ct, 'B1.33 countryTeam'
+spec = yaml.safe_load(open('openapi.yaml'))
+d = spec['paths']['/admin/tickets/{ticketId}/assign']['post']['description']
+assert cov in d and 'a ticket without a zone: an admin with a zone in its country, or all zones (contract.json#supportDesk.countryTeam); else 403 zone_out_of_scope.' in d, 'B1.33 openapi assign'
+md = open('CONTRACT.md').read()
+assert md.startswith('# Movera shared contract v' + c['version'] + '\n') or tuple(map(int, c['version'].split('.'))) > (0, 18, 80), 'CONTRACT.md title'
+assert '**a support ticket without a zone can be assigned and auto-sorted to its country team**' in md and '0.18.79 reserved (S5 J3)' in md, 'CONTRACT.md v0.18.80 note'
+assert md.count('\n') <= 1500, 'CONTRACT.md over 1,500 lines'
+PY
 echo "contract ok"
