@@ -14,7 +14,7 @@ S["CommissionStep"] = obj(OrderedDict([
 _cp = S["CategoryPricing"]["properties"]
 _cp["commissionSteps"] = {"oneOf": [arr(ref("CommissionStep"), maxItems=_V["maxSteps"]), {"type": "null"}],
                           "description": "v0.18.86 (J5b, owner 2026-11-13): optional; absent, null or [] = no steps (commissionPct applies, unchanged). " + _CS["field"] + " " + _CS["money"] + " " + _CS["adminPlacement"] + " Warning (admin only): " + _CS["warn"]["advisory"]}
-_cp["commissionPct"]["description"] += " v0.18.86: used only when commissionSteps is empty or absent (contract.json#commissionSteps.noSteps)."
+_cp["commissionPct"]["description"] += " v0.18.86: used only when commissionSteps is absent, null or [] (empty) (contract.json#commissionSteps.noSteps)."
 _why = (" v0.18.86 (J5b, contract.json#commissionSteps.validation): pricing with invalid CategoryPricing.commissionSteps → invalid_request, "
         "reason commission_steps_invalid, details [\"step:<index>\", \"problem:<code>\"] (" + ", ".join(_V["problems"]) + "); nothing is saved.")
 for _m, _p in (("put", "/admin/config/{doc}"), ("post", "/admin/config/{doc}/publish")):

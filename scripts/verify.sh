@@ -1118,7 +1118,7 @@ assert 'v0.18.85' in md and 'waitPerMinShown' in md, 'CONTRACT.md text'
 assert md.count('\n') <= 1500, 'CONTRACT.md over 1,500 lines'
 PY
 # v0.18.86 (J5b; owner 2026-11-13 ~20:41 UTC "Admin can set commission even by amount !" + ~20:48 "Yes, like this (Rec.)",
-# ~21:40 placement + "Yes, warn (Rec.)", ~23:05 calculator; times from the Rules commit log; Rules decisions/session-2026-11-06.md): commission steps
+# ~21:40 placement + "Yes, warn (Rec.)", ~22:46 calculator; times from the Rules commit log; Rules decisions/session-2026-11-06.md): commission steps
 # per zone and car type, % or fixed, picked by the commission base; edited in each car-type card; advisory warning.
 python3 - <<'PY'
 import json, yaml
@@ -1134,7 +1134,7 @@ assert '~21:00' not in cs['note'] and '~21:05' not in cs['note'] and '20:41' in 
 assert 'Commission panel' in cs['adminPlacement'] and 'EACH car-type card' in cs['adminPlacement'] and 'NEVER a global' in cs['adminPlacement'], 'placement'
 assert 'Commission panel' in cs['apps']['admin'] and 'never global' in cs['apps']['admin'], 'apps.admin placement'
 AC = cs['adminCalculator']
-assert 'EACH car-type card' in AC['rule'] and 'not moneyBase.commission' in AC['rule'] and '23:05' in cs['note'], 'calculator'
+assert 'EACH car-type card' in AC['rule'] and 'not moneyBase.commission' in AC['rule'] and '22:46' in cs['note'] and '23:05' not in json.dumps(cs, ensure_ascii=False) and '22:00' not in cs['note'], 'calculator'
 assert 'reproduce fixtures/commission_steps.json exactly' in AC['fixtures'] and 'J5b admin build must run a test' in AC['fixtures'], 'calculator fixtures'
 assert {'title', 'priceInput', 'stepUsed', 'commission', 'driverGets', 'moveraKeeps', 'aroundLimits', 'atLimit', 'justAbove'} <= set(cs['texts']['calculator']), 'calculator texts'
 for tt in cs['texts']['calculator'].values(): assert set(tt) == {'sv', 'fr', 'en'} and all(tt.values()), 'calculator texts sv/fr/en'
@@ -1159,6 +1159,7 @@ assert {x['id'] for x in fx['pick']} >= {'tn_up_to_5_fixed', 'tn_fixed_capped_by
 assert {x['expect']['problem'] for x in fx['validate'] if x['expect'] != 'ok'} == set(V['problems']), 'a case per problem'
 wx = {x['id']: x for x in fx['warn']}
 assert wx['owner_warn_example']['expect'] == [{'step': 0, 'upToMinor': 5000, 'atLimit': 4500, 'justAbove': 3751}], 'owner warn case'
+assert wx['small_pct_rise_rounds_equal']['expect'] == [] and len(wx['two_warnings_pct_to_fixed_to_pct']['expect']) == 2 and 'Any step with a higher %' not in W['example'], 'warn cases'
 assert wx['equal_is_no_warn']['expect'] == [] and 'tn_fraction_just_above_5' in {x['id'] for x in fx['pick']}, 'warn/exact cases'
 fares = {x['id']: x for x in json.load(open('fixtures/fares.json'))['cases']}
 assert fares['commission_steps_empty_is_pct']['expect'] == fares['economy_plain']['expect'], 'no steps = v0.18.85'

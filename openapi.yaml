@@ -25568,7 +25568,7 @@ components:
           minimum: 0
           maximum: 60
           description: 'Movera''s commission on the ride part and the extras except waiting (owner decisions 17, 18). v0.18.86:
-            used only when commissionSteps is empty or absent (contract.json#commissionSteps.noSteps).'
+            used only when commissionSteps is absent, null or [] (empty) (contract.json#commissionSteps.noSteps).'
         extraStopFee:
           $ref: '#/components/schemas/Money'
         stopWaitPerMin:
