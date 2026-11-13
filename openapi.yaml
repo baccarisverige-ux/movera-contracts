@@ -1,11 +1,11 @@
-# Movera API v0.18.82 — generated from contract.json (+ CONTRACT.md §7). PROPOSED; no backend exists.
+# Movera API v0.18.83 — generated from contract.json (+ CONTRACT.md §7). PROPOSED; no backend exists.
 openapi: 3.1.0
 info:
   title: Movera API
-  version: 0.18.82
+  version: 0.18.83
   description: '**Proposed contract — no backend exists yet.** One future backend serves the Rider (Flutter), Driver (Flutter)
     and Admin (React/TS) apps. Source of truth for names, enums, transitions, realtime and errors is `contract.json` + `CONTRACT.md`
-    v0.18.82 in this folder; this file must agree with them.
+    v0.18.83 in this folder; this file must agree with them.
 
 
     Wire rules: ids match `^[A-Za-z0-9_-]{1,64}$`; times are RFC 3339 UTC with `Z`; durations are integer seconds; money is
@@ -84,7 +84,7 @@ tags:
 - name: Admin · Finance
 x-contract:
   name: movera
-  version: 0.18.82
+  version: 0.18.83
   source: contract.json
 paths:
   /auth/otp/request:
@@ -1274,13 +1274,16 @@ paths:
           $ref: '#/components/responses/RateLimited'
         '503':
           $ref: '#/components/responses/Unavailable'
+      description: 'v0.18.83 (S2, owner ''Yes, 7 checks''): under overload it may answer 503 unavailable, reason server_busy,
+        Retry-After 2 at once; the app keeps the last value (contract.json#fastDispatch.shedPolls).'
   /rider/trips/active:
     get:
       operationId: getRiderActiveTrip
       summary: The rider's current non-terminal live trip, else a booked trip whose driver started driving
       description: '204 when there is none. v0.18.32 (contract.json#bookedRideSeen): a booked trip (kind scheduled) is returned
         once it reached driver_to_pickup, until it ends; a live trip wins when both are active (owner Q1, the app shows a
-        banner for the booked one).'
+        banner for the booked one). v0.18.83 (owner): never refused with server_busy by load shedding, also under overload
+        (the restore read; contract.json#fastDispatch.shedPolls.neverShed).'
       tags:
       - Rider · Booking
       x-actor:
@@ -2181,7 +2184,8 @@ paths:
       description: 'v0.18.14: GET /notifications shows title and body in the account''s current language when the notice was
         stored with every language (data.texts, taken out of the answer): set_offline, signed_in_elsewhere, phone/email changed,
         rider trip moments. Rider trip moments (riderTripPush) are now also kept in the list (bell true). A refund sends the
-        rider a notice kind refund (bell + push).'
+        rider a notice kind refund (bell + push). v0.18.83 (S2, owner ''Yes, 7 checks''): under overload it may answer 503
+        unavailable, reason server_busy, Retry-After 2 at once; the app keeps the last value (contract.json#fastDispatch.shedPolls).'
   /notifications/{notificationId}/read:
     post:
       operationId: markNotificationRead
@@ -2237,7 +2241,9 @@ paths:
         (cursor) and then appends message events. A poll that is still needed stops while the tab or app is hidden. The apps''
         realtime gate admits every kind message and call_* event in sequence order (same seen / gap / resync rules as realtime),
         not only call_* kinds. v0.18.66 §87: answered to an admin, each Message carries translations (the kept translations,
-        read-only; never a new provider call). Rider and driver answers never carry translations.'
+        read-only; never a new provider call). Rider and driver answers never carry translations. v0.18.83 (S2, owner ''Yes,
+        7 checks''): under overload it may answer 503 unavailable, reason server_busy, Retry-After 2 at once; the app keeps
+        the last value (contract.json#fastDispatch.shedPolls).'
       tags:
       - Notifications & messages
       x-actor:
@@ -4347,6 +4353,36 @@ paths:
         schema:
           type: boolean
         description: 'v0.18.9: only flagged trips.'
+      - name: total
+        in: query
+        required: false
+        schema:
+          type: boolean
+          default: true
+        description: 'v0.18.83 (P4-B): false = do not count (the page leaves total out; the rows are the same). v0.18.83 (G34
+          fix plan P4-B; owner 2026-11-13 12:24 UTC "Yes (Rec.)"; proof sup3 P4: every live event reload re-counted page 1,
+          about 2,120 Trips/Payments counts a minute): the lists in total.lists take an optional query key total (boolean,
+          default true). total=false: the server does not count and leaves total out of the page (the rows are the same).
+          The panel counts only when the list page asks: when the list page opens and when its filter (zones, country, status,
+          q or any other filter) changes. Every other first-page read (live event reloads, the alerts, the Dashboard) sends
+          total=false, and the list keeps the number it already shows. absent or total=true: counted as before (the rule above),
+          so an older panel is unchanged. A server before v0.18.83 answers total with 400 invalid_request (reason unknown_filter),
+          so the panel sends it only to a server of v0.18.83 or later. Other routes never take it.'
+      - name: scheduledBefore
+        in: query
+        required: false
+        schema:
+          $ref: '#/components/schemas/Timestamp'
+        description: 'v0.18.83 (A2): kind live always passes; kind scheduled only when scheduledAt is at or before this time.
+          v0.18.83 (G34 fix plan A2; owner 2026-11-13 12:24 UTC "Exact contract filter (Rec.)"; proof sup3 P6b: the Dashboard''s
+          waiting-trips read took 10 pages / 1,000 booked rows every 10 s and showed none of them): GET /admin/trips takes
+          an optional scheduledBefore (Timestamp). With it, a trip of kind live always passes; a trip of kind scheduled passes
+          only when its scheduledAt is at or before scheduledBefore. It only narrows, together with the other filters (status,
+          kind, zones, from / to, ...). The Dashboard''s waiting requests use one read: GET /admin/trips?status=requested&status=searching&status=offered&scheduledBefore=<now>,
+          so booked rides that are not due are never read, and a booked ride whose send is late (still requested after its
+          pickup time) stays on the Dashboard. Reservations keeps its own reads (kind=scheduled), unchanged. A malformed value
+          → 400 invalid_request; a server before v0.18.83 answers it with 400 invalid_request (reason unknown_filter), so
+          the panel sends it only to a server of v0.18.83 or later.'
       responses:
         '200':
           description: OK
@@ -4404,6 +4440,21 @@ paths:
       - $ref: '#/components/parameters/Q'
       - $ref: '#/components/parameters/RequestId'
       - $ref: '#/components/parameters/ApiVersion'
+      - name: total
+        in: query
+        required: false
+        schema:
+          type: boolean
+          default: true
+        description: 'v0.18.83 (P4-B): false = do not count (the page leaves total out; the rows are the same). v0.18.83 (G34
+          fix plan P4-B; owner 2026-11-13 12:24 UTC "Yes (Rec.)"; proof sup3 P4: every live event reload re-counted page 1,
+          about 2,120 Trips/Payments counts a minute): the lists in total.lists take an optional query key total (boolean,
+          default true). total=false: the server does not count and leaves total out of the page (the rows are the same).
+          The panel counts only when the list page asks: when the list page opens and when its filter (zones, country, status,
+          q or any other filter) changes. Every other first-page read (live event reloads, the alerts, the Dashboard) sends
+          total=false, and the list keeps the number it already shows. absent or total=true: counted as before (the rule above),
+          so an older panel is unchanged. A server before v0.18.83 answers total with 400 invalid_request (reason unknown_filter),
+          so the panel sends it only to a server of v0.18.83 or later. Other routes never take it.'
       responses:
         '200':
           description: OK
@@ -4475,6 +4526,21 @@ paths:
       - $ref: '#/components/parameters/Q'
       - $ref: '#/components/parameters/RequestId'
       - $ref: '#/components/parameters/ApiVersion'
+      - name: total
+        in: query
+        required: false
+        schema:
+          type: boolean
+          default: true
+        description: 'v0.18.83 (P4-B): false = do not count (the page leaves total out; the rows are the same). v0.18.83 (G34
+          fix plan P4-B; owner 2026-11-13 12:24 UTC "Yes (Rec.)"; proof sup3 P4: every live event reload re-counted page 1,
+          about 2,120 Trips/Payments counts a minute): the lists in total.lists take an optional query key total (boolean,
+          default true). total=false: the server does not count and leaves total out of the page (the rows are the same).
+          The panel counts only when the list page asks: when the list page opens and when its filter (zones, country, status,
+          q or any other filter) changes. Every other first-page read (live event reloads, the alerts, the Dashboard) sends
+          total=false, and the list keeps the number it already shows. absent or total=true: counted as before (the rule above),
+          so an older panel is unchanged. A server before v0.18.83 answers total with 400 invalid_request (reason unknown_filter),
+          so the panel sends it only to a server of v0.18.83 or later. Other routes never take it.'
       responses:
         '200':
           description: OK
@@ -4533,6 +4599,21 @@ paths:
       - $ref: '#/components/parameters/Q'
       - $ref: '#/components/parameters/RequestId'
       - $ref: '#/components/parameters/ApiVersion'
+      - name: total
+        in: query
+        required: false
+        schema:
+          type: boolean
+          default: true
+        description: 'v0.18.83 (P4-B): false = do not count (the page leaves total out; the rows are the same). v0.18.83 (G34
+          fix plan P4-B; owner 2026-11-13 12:24 UTC "Yes (Rec.)"; proof sup3 P4: every live event reload re-counted page 1,
+          about 2,120 Trips/Payments counts a minute): the lists in total.lists take an optional query key total (boolean,
+          default true). total=false: the server does not count and leaves total out of the page (the rows are the same).
+          The panel counts only when the list page asks: when the list page opens and when its filter (zones, country, status,
+          q or any other filter) changes. Every other first-page read (live event reloads, the alerts, the Dashboard) sends
+          total=false, and the list keeps the number it already shows. absent or total=true: counted as before (the rule above),
+          so an older panel is unchanged. A server before v0.18.83 answers total with 400 invalid_request (reason unknown_filter),
+          so the panel sends it only to a server of v0.18.83 or later. Other routes never take it.'
       responses:
         '200':
           description: OK
@@ -4599,6 +4680,21 @@ paths:
       - $ref: '#/components/parameters/Q'
       - $ref: '#/components/parameters/RequestId'
       - $ref: '#/components/parameters/ApiVersion'
+      - name: total
+        in: query
+        required: false
+        schema:
+          type: boolean
+          default: true
+        description: 'v0.18.83 (P4-B): false = do not count (the page leaves total out; the rows are the same). v0.18.83 (G34
+          fix plan P4-B; owner 2026-11-13 12:24 UTC "Yes (Rec.)"; proof sup3 P4: every live event reload re-counted page 1,
+          about 2,120 Trips/Payments counts a minute): the lists in total.lists take an optional query key total (boolean,
+          default true). total=false: the server does not count and leaves total out of the page (the rows are the same).
+          The panel counts only when the list page asks: when the list page opens and when its filter (zones, country, status,
+          q or any other filter) changes. Every other first-page read (live event reloads, the alerts, the Dashboard) sends
+          total=false, and the list keeps the number it already shows. absent or total=true: counted as before (the rule above),
+          so an older panel is unchanged. A server before v0.18.83 answers total with 400 invalid_request (reason unknown_filter),
+          so the panel sends it only to a server of v0.18.83 or later. Other routes never take it.'
       responses:
         '200':
           description: OK
@@ -4671,6 +4767,21 @@ paths:
       - $ref: '#/components/parameters/To'
       - $ref: '#/components/parameters/RequestId'
       - $ref: '#/components/parameters/ApiVersion'
+      - name: total
+        in: query
+        required: false
+        schema:
+          type: boolean
+          default: true
+        description: 'v0.18.83 (P4-B): false = do not count (the page leaves total out; the rows are the same). v0.18.83 (G34
+          fix plan P4-B; owner 2026-11-13 12:24 UTC "Yes (Rec.)"; proof sup3 P4: every live event reload re-counted page 1,
+          about 2,120 Trips/Payments counts a minute): the lists in total.lists take an optional query key total (boolean,
+          default true). total=false: the server does not count and leaves total out of the page (the rows are the same).
+          The panel counts only when the list page asks: when the list page opens and when its filter (zones, country, status,
+          q or any other filter) changes. Every other first-page read (live event reloads, the alerts, the Dashboard) sends
+          total=false, and the list keeps the number it already shows. absent or total=true: counted as before (the rule above),
+          so an older panel is unchanged. A server before v0.18.83 answers total with 400 invalid_request (reason unknown_filter),
+          so the panel sends it only to a server of v0.18.83 or later. Other routes never take it.'
       responses:
         '200':
           description: OK
@@ -4738,6 +4849,21 @@ paths:
       - $ref: '#/components/parameters/ListCountry'
       - $ref: '#/components/parameters/RequestId'
       - $ref: '#/components/parameters/ApiVersion'
+      - name: total
+        in: query
+        required: false
+        schema:
+          type: boolean
+          default: true
+        description: 'v0.18.83 (P4-B): false = do not count (the page leaves total out; the rows are the same). v0.18.83 (G34
+          fix plan P4-B; owner 2026-11-13 12:24 UTC "Yes (Rec.)"; proof sup3 P4: every live event reload re-counted page 1,
+          about 2,120 Trips/Payments counts a minute): the lists in total.lists take an optional query key total (boolean,
+          default true). total=false: the server does not count and leaves total out of the page (the rows are the same).
+          The panel counts only when the list page asks: when the list page opens and when its filter (zones, country, status,
+          q or any other filter) changes. Every other first-page read (live event reloads, the alerts, the Dashboard) sends
+          total=false, and the list keeps the number it already shows. absent or total=true: counted as before (the rule above),
+          so an older panel is unchanged. A server before v0.18.83 answers total with 400 invalid_request (reason unknown_filter),
+          so the panel sends it only to a server of v0.18.83 or later. Other routes never take it.'
       responses:
         '200':
           description: OK
@@ -4806,6 +4932,21 @@ paths:
       - $ref: '#/components/parameters/ListCountry'
       - $ref: '#/components/parameters/RequestId'
       - $ref: '#/components/parameters/ApiVersion'
+      - name: total
+        in: query
+        required: false
+        schema:
+          type: boolean
+          default: true
+        description: 'v0.18.83 (P4-B): false = do not count (the page leaves total out; the rows are the same). v0.18.83 (G34
+          fix plan P4-B; owner 2026-11-13 12:24 UTC "Yes (Rec.)"; proof sup3 P4: every live event reload re-counted page 1,
+          about 2,120 Trips/Payments counts a minute): the lists in total.lists take an optional query key total (boolean,
+          default true). total=false: the server does not count and leaves total out of the page (the rows are the same).
+          The panel counts only when the list page asks: when the list page opens and when its filter (zones, country, status,
+          q or any other filter) changes. Every other first-page read (live event reloads, the alerts, the Dashboard) sends
+          total=false, and the list keeps the number it already shows. absent or total=true: counted as before (the rule above),
+          so an older panel is unchanged. A server before v0.18.83 answers total with 400 invalid_request (reason unknown_filter),
+          so the panel sends it only to a server of v0.18.83 or later. Other routes never take it.'
       responses:
         '200':
           description: OK
@@ -4944,6 +5085,21 @@ paths:
           description: 'v0.18.15: me, none or an admin id.'
       - $ref: '#/components/parameters/RequestId'
       - $ref: '#/components/parameters/ApiVersion'
+      - name: total
+        in: query
+        required: false
+        schema:
+          type: boolean
+          default: true
+        description: 'v0.18.83 (P4-B): false = do not count (the page leaves total out; the rows are the same). v0.18.83 (G34
+          fix plan P4-B; owner 2026-11-13 12:24 UTC "Yes (Rec.)"; proof sup3 P4: every live event reload re-counted page 1,
+          about 2,120 Trips/Payments counts a minute): the lists in total.lists take an optional query key total (boolean,
+          default true). total=false: the server does not count and leaves total out of the page (the rows are the same).
+          The panel counts only when the list page asks: when the list page opens and when its filter (zones, country, status,
+          q or any other filter) changes. Every other first-page read (live event reloads, the alerts, the Dashboard) sends
+          total=false, and the list keeps the number it already shows. absent or total=true: counted as before (the rule above),
+          so an older panel is unchanged. A server before v0.18.83 answers total with 400 invalid_request (reason unknown_filter),
+          so the panel sends it only to a server of v0.18.83 or later. Other routes never take it.'
       responses:
         '200':
           description: OK
@@ -5054,6 +5210,21 @@ paths:
           with 400 invalid_request (reason unknown_filter), so the panel sends them only to a server of v0.18.78 or later.
           Rule 33: the server may add an index on incidents.driver_id and incidents.rider_id (built without locking the table,
           Rule 46) so these filters stay fast at 10,000+ drivers and riders.'
+      - name: total
+        in: query
+        required: false
+        schema:
+          type: boolean
+          default: true
+        description: 'v0.18.83 (P4-B): false = do not count (the page leaves total out; the rows are the same). v0.18.83 (G34
+          fix plan P4-B; owner 2026-11-13 12:24 UTC "Yes (Rec.)"; proof sup3 P4: every live event reload re-counted page 1,
+          about 2,120 Trips/Payments counts a minute): the lists in total.lists take an optional query key total (boolean,
+          default true). total=false: the server does not count and leaves total out of the page (the rows are the same).
+          The panel counts only when the list page asks: when the list page opens and when its filter (zones, country, status,
+          q or any other filter) changes. Every other first-page read (live event reloads, the alerts, the Dashboard) sends
+          total=false, and the list keeps the number it already shows. absent or total=true: counted as before (the rule above),
+          so an older panel is unchanged. A server before v0.18.83 answers total with 400 invalid_request (reason unknown_filter),
+          so the panel sends it only to a server of v0.18.83 or later. Other routes never take it.'
       responses:
         '200':
           description: OK
@@ -11004,7 +11175,8 @@ paths:
         documentTypes: { [type]: { owner, kind, expires, name, help? } } for every type in the country''s lists, contract
         types with the admin''s texts and the custom types, so the app renders a type it does not know from this data. v0.18.3:
         DocumentTypeInfo.name is the country''s name (documents.namesByCountry); DocumentTypeInfo.guide (R8) and validMonths
-        (R9) when the country has them.'
+        (R9) when the country has them. v0.18.83 (S2, owner ''Yes, 7 checks''): under overload it may answer 503 unavailable,
+        reason server_busy, Retry-After 2 at once; the app keeps the last value (contract.json#fastDispatch.shedPolls).'
       tags:
       - Driver · Account
       x-actor:
@@ -11058,7 +11230,9 @@ paths:
         (pending or on_hold, or suspended without ever having been active; contract.json#emailVerified.neverActive), because
         Movera cannot approve him until it is verified; otherwise due_soon (orange, still works) with text texts.email_not_verified.
         Sent only to driver apps whose X-Contract-Version is 0.18.76 or higher (an older app would show an unknown line).
-        The line itself never blocks going online: a red one is only sent to a driver who is not active yet.'
+        The line itself never blocks going online: a red one is only sent to a driver who is not active yet. v0.18.83 (S2,
+        owner ''Yes, 7 checks''): under overload it may answer 503 unavailable, reason server_busy, Retry-After 2 at once;
+        the app keeps the last value (contract.json#fastDispatch.shedPolls).'
       tags:
       - Driver · Account
       x-actor:
@@ -11955,7 +12129,8 @@ paths:
         (no money, no number, no zone name, never the word surge / majoration) shows while the driver''s position is inside
         a listed zone or less than 3 km from its rectangle, any level. The old ''+{kr} kr i {zone}'' tip is removed. v0.18.6
         (G4 self-check): the French text ''Forte majoration à proximité'' said surge; it is now ''Bonus élevé à proximité'',
-        like the Swedish and English.'
+        like the Swedish and English. v0.18.83 (S2, owner ''Yes, 7 checks''): under overload it may answer 503 unavailable,
+        reason server_busy, Retry-After 2 at once; the app keeps the last value (contract.json#fastDispatch.shedPolls).'
       tags:
       - Driver · Session
       x-actor:
@@ -17480,7 +17655,9 @@ paths:
         of joinedAt (then entryId). A driver who dropped a rider at the airport joins at once with his next position (owner
         job 9 Q5: ''Yes, join at once''). He leaves the queue when: a position of his is outside the area for more than leaveGraceMin
         minutes in a row; he goes offline or goes online again later (a new online session never keeps the old place); he
-        accepts any trip (queue or not); the area is turned off or removed. The others move up.'
+        accepts any trip (queue or not); the area is turned off or removed. The others move up. v0.18.83 (S2, owner ''Yes,
+        7 checks''): under overload it may answer 503 unavailable, reason server_busy, Retry-After 2 at once; the app keeps
+        the last value (contract.json#fastDispatch.shedPolls).'
       tags:
       - Driver · Session
       x-actor:

@@ -896,4 +896,62 @@ j3 = json.dumps(c['moneyBase'], ensure_ascii=False) + json.dumps(c['configDefaul
 assert '150 DT' not in j3 and '150.000 DT' not in j3 and '150000' not in j3, 'no 150 DT in J3 (it is the J7 cash-owed limit)'
 assert md.count('\n') <= 1500, 'CONTRACT.md over 1,500 lines'
 PY
+# v0.18.83 (G34 fix-plan texts; owner 2026-11-13 12:18-12:24 UTC: S2 "Yes, 7 checks", S3 "60 s / 30 s", R4 "32 s",
+# R3 "Yes, update rule", A2 "Exact contract filter", P4-B "Yes"): shed list of 7 repeat phone checks (GET /rider/trips/active
+# never), late-timer alarm on /healthz/jobs, Home active-trip backoff 8/16/32 s, one stream "connected" rule, list total only
+# when the list page asks (total=false), GET /admin/trips scheduledBefore.
+python3 - <<'PY'
+import json, yaml
+c = json.load(open('contract.json'))
+assert tuple(map(int, c['version'].split('.'))) >= (0, 18, 83), 'version'
+fd = c['fastDispatch']
+sp = fd['shedPolls']
+SEVEN = ['GET /driver/airport-queue', 'GET /driver/surge-map', 'GET /notifications', 'GET /driver/reminders',
+         'GET /driver/onboarding/settings', 'GET /rider/trips', 'GET /trips/{tripId}/messages']
+assert sp['routes'] == SEVEN, 'S2 exactly 7 shed polls'
+assert 'GET /rider/trips/active' not in sp['routes'] and 'GET /rider/trips/active' in sp['neverShed'], 'S2 active trip never shed'
+for r in ('POST /driver/location', 'POST /offers/{offerId}/accept', 'POST /rider/trips/{tripId}/sos', 'POST /driver/trips/{tripId}/sos'):
+    assert r in sp['neverShed'], 'S2 neverShed ' + r
+for part in ('503 unavailable, reason server_busy', 'Retry-After 2', 'route pattern', 'keeps the last value', "Yes, 7 checks"):
+    assert part in sp['rule'] + sp['note'], 'S2 rule: ' + part
+assert 'v0.18.83' in fd['shedOnly'] and 'fastDispatch.shedPolls' in fd['shedOnly'], 'S2 shedOnly points to shedPolls'
+la = fd['lateAlarm']
+assert la['tripTimers']['lateSeconds'] == 60 and la['tripTimers']['kinds'] == ['trip_eta', 'ride_check_scan', 'near_dropoff'], 'S3 trip timers 60 s'
+assert la['dispatch']['lateSeconds'] == 30 and la['dispatch']['kinds'] == ['dispatch_round', 'withdraw_driver_offers'], 'S3 dispatch 30 s'
+for part in ('/healthz/jobs', '503', 'lateSeconds', 'overdue', 'TRIP_LANES', 'default 1', '60 s / 30 s', 'never restarts'):
+    assert part in la['rule'] + la['note'], 'S3 lateAlarm: ' + part
+assert 'fastDispatch.lateAlarm' in fd['timers'], 'S3 timers points to lateAlarm'
+bs = c['bookedRideSeen']
+pb = bs['pollBackoff']
+assert pb['stepsSeconds'] == [8, 16, 32] and pb['maxSeconds'] == 32, 'R4 8/16/32 cap 32'
+for part in ('rider_trip_changed', 'at once', 'first answer', '"32 s (Rec.)"'):
+    assert part in pb['rule'] + pb['note'], 'R4 pollBackoff: ' + part
+assert 'bookedRideSeen.pollBackoff' in bs['pollFallback'] and bs['pollSeconds'] == 8, 'R4 pollFallback'
+cr = c['realtime']['connectedRule']
+for part in ('an event', '30 s', 'driver and rider', 'reconnects in 5 s', 'back off', 'Retry-After', 'never sooner', 'Yes, update rule'):
+    assert part in cr, 'R3 connectedRule: ' + part
+assert 'realtime.connectedRule' in c['realtime']['streamClose'], 'R3 streamClose points to connectedRule'
+tot = c['adminListFilters']['total']
+ask = tot['onlyWhenAsked']
+for part in ('total=false', 'opens', 'filter', 'live event', 'keeps the number', 'absent or total=true', 'unknown_filter', 'v0.18.83', '"Yes (Rec.)"'):
+    assert part in ask, 'P4-B onlyWhenAsked: ' + part
+sb = c['adminListFilters']['scheduledBefore']
+for part in ('GET /admin/trips', 'kind live', 'scheduledAt', 'at or before', 'late', 'Dashboard', '400 invalid_request', 'unknown_filter', 'Exact contract filter'):
+    assert part in sb, 'A2 scheduledBefore: ' + part
+spec = yaml.safe_load(open('openapi.yaml'))
+P = spec['paths']
+for r in SEVEN:
+    d = P[r.split(' ', 1)[1]]['get']['description']
+    assert 'v0.18.83' in d and 'server_busy' in d and 'shedPolls' in d, 'S2 openapi ' + r
+assert 'never refused with server_busy' in P['/rider/trips/active']['get']['description'], 'S2 openapi active never shed'
+for route in tot['lists']:
+    ps = [p for p in P[route.split(' ', 1)[1]]['get']['parameters'] if p.get('name') == 'total']
+    assert len(ps) == 1 and ps[0]['schema']['type'] == 'boolean' and ps[0]['schema'].get('default') is True, 'P4-B openapi total param ' + route
+ps = [p for p in P['/admin/trips']['get']['parameters'] if p.get('name') == 'scheduledBefore']
+assert len(ps) == 1 and ps[0]['schema'] == {'$ref': '#/components/schemas/Timestamp'} and 'scheduledAt' in ps[0]['description'], 'A2 openapi scheduledBefore'
+md = open('CONTRACT.md').read()
+assert md.startswith('# Movera shared contract v' + c['version'] + '\n') or tuple(map(int, c['version'].split('.'))) > (0, 18, 83), 'CONTRACT.md title'
+assert '\nv0.18.83 (G34 fix plan' in md and '**busy-server fixes**' in md and '`GET /rider/trips/active` is never refused' in md and '`scheduledBefore`' in md and '`total=false`' in md, 'CONTRACT.md v0.18.83 note'
+assert md.count('\n') <= 1500, 'CONTRACT.md over 1,500 lines'
+PY
 echo "contract ok"
