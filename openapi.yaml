@@ -36220,9 +36220,9 @@ components:
       description: 'v0.18.86 (J5b): one commission step. The step is picked by the trip''s commission base (pricing.moneySplit.commissionBase
         = ride part + extras − waiting − stop waiting; owner decisions 17/18), the exact amount before rounding — never by
         the driver''s gain, the total, the app fee or the pickup fee. Steps are read in order: the first step whose upToMinor
-        is null or ≥ the commission base ("up to X" includes X). A % step: Movera''s commission = base × pct / 100. A fixed
-        step: commission = min(amountMinor, base) — a fixed commission is never bigger than the commission base, so the driver''s
-        ride part is never below 0.'
+        is null or ≥ the commission base ("up to X" includes X). A % step: Movera''s commission = base − half_up(base × (1
+        − pct / 100)) (the driver''s ride part is rounded, the commission is the rest). A fixed step: commission = min(amountMinor,
+        base) — a fixed commission is never bigger than the commission base, so the driver''s ride part is never below 0.'
       required:
       - upToMinor
       properties:
