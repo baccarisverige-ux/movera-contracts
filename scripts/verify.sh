@@ -1117,4 +1117,63 @@ assert md.startswith('# Movera shared contract v' + c['version']), 'CONTRACT.md 
 assert 'v0.18.85' in md and 'waitPerMinShown' in md, 'CONTRACT.md text'
 assert md.count('\n') <= 1500, 'CONTRACT.md over 1,500 lines'
 PY
+# v0.18.86 (J5b; owner 2026-11-13 ~20:41 UTC "Admin can set commission even by amount !" + ~20:48 "Yes, like this (Rec.)",
+# ~21:40 placement + "Yes, warn (Rec.)", ~22:46 calculator; times from the Rules commit log; Rules decisions/session-2026-11-06.md): commission steps
+# per zone and car type, % or fixed, picked by the commission base; edited in each car-type card; advisory warning.
+python3 - <<'PY'
+import json, yaml
+c = json.load(open('contract.json'))
+assert tuple(map(int, c['version'].split('.'))) >= (0, 18, 86), 'version'
+cs = c['commissionSteps']
+for k in ('note', 'field', 'pick', 'money', 'where', 'noSteps', 'example', 'validation', 'adminPlacement', 'warn', 'adminCalculator', 'apps', 'texts', 'textsNote'):
+    assert k in cs, 'commissionSteps.' + k
+assert 'Yes, like this (Rec.)' in cs['note'] and 'even by amount' in cs['note'], 'owner words'
+assert "never by the driver's gain" in cs['pick'] and 'min(amountMinor, base)' in cs['pick'], 'pick rule'
+assert 'NOT a shipped default' in cs['example'], 'TN example is not a default'
+assert '~21:00' not in cs['note'] and '~21:05' not in cs['note'] and '20:41' in cs['note'] and '20:48' in cs['note'] and '21:40' in cs['note'], 'owner times (commit log)'
+assert 'Commission panel' in cs['adminPlacement'] and 'EACH car-type card' in cs['adminPlacement'] and 'NEVER a global' in cs['adminPlacement'], 'placement'
+assert 'Commission panel' in cs['apps']['admin'] and 'never global' in cs['apps']['admin'], 'apps.admin placement'
+AC = cs['adminCalculator']
+assert 'EACH car-type card' in AC['rule'] and 'not moneyBase.commission' in AC['rule'] and '22:46' in cs['note'] and '23:05' not in json.dumps(cs, ensure_ascii=False) and '22:00' not in cs['note'], 'calculator'
+assert 'reproduce fixtures/commission_steps.json exactly' in AC['fixtures'] and 'J5b admin build must run a test' in AC['fixtures'], 'calculator fixtures'
+assert {'title', 'priceInput', 'stepUsed', 'commission', 'driverGets', 'moveraKeeps', 'aroundLimits', 'atLimit', 'justAbove'} <= set(cs['texts']['calculator']), 'calculator texts'
+for tt in cs['texts']['calculator'].values(): assert set(tt) == {'sv', 'fr', 'en'} and all(tt.values()), 'calculator texts sv/fr/en'
+W = cs['warn']
+assert 'driverRidePart(L, step i) > driverRidePart(L + 1, step i+1)' in W['rule'] and 'Yes, warn (Rec.)' in W['rule'], 'warn rule'
+assert 'STILL ALLOWS SAVING' in W['advisory'] and 'server does NOT refuse' in W['advisory'], 'warn is advisory'
+assert '5.000 DT → driver 4.500 DT' in W['example'] and '5.001 DT → driver 3.751 DT' in W['example'], 'owner warn example'
+assert all('{limit}' in v and '{atLimit}' in v and '{justAbove}' in v for v in cs['texts']['warnDrop'].values()), 'warnDrop placeholders'
+assert 'warn' not in str(cs['validation']['problems']) and 'warn' not in str(c['errors']['reason']).lower(), 'no server warn code'
+V = cs['validation']
+assert 'commission_steps_invalid' in V['rule'] and 'commission_steps_invalid' in c['errors']['reason'], 'reason'
+for t in cs['texts'].values():
+    for tt in (t.values() if 'en' not in t else [t]):
+        assert set(tt) == {'sv', 'fr', 'en'} and all(tt.values()), 'texts sv/fr/en'
+assert set(cs['texts']['errors']) == set(V['problems']), 'one admin text per problem'
+assert "commissionSteps" in c['pricing']['moneySplit']['driverEarnings'] and 'max(0,' in c['pricing']['moneySplit']['driverEarnings'], 'driverEarnings formula'
+for cid, row in c['configDefaults']['pricing']['countries']['SE']['categories'].items():
+    ks = list(row)
+    assert row['commissionSteps'] == [] and ks.index('commissionSteps') == ks.index('commissionPct') + 1, 'defaults: [] beside commissionPct ' + cid
+fx = json.load(open('fixtures/commission_steps.json'))
+assert {x['id'] for x in fx['pick']} >= {'tn_up_to_5_fixed', 'tn_fixed_capped_by_base', 'tn_half_up_tie', 'tn_above', 'no_steps_is_commission_pct'}, 'cases'
+assert {x['expect']['problem'] for x in fx['validate'] if x['expect'] != 'ok'} == set(V['problems']), 'a case per problem'
+wx = {x['id']: x for x in fx['warn']}
+assert wx['owner_warn_example']['expect'] == [{'step': 0, 'upToMinor': 5000, 'atLimit': 4500, 'justAbove': 3751}], 'owner warn case'
+assert wx['small_pct_rise_rounds_equal']['expect'] == [] and len(wx['two_warnings_pct_to_fixed_to_pct']['expect']) == 2 and 'Any step with a higher %' not in W['example'], 'warn cases'
+assert wx['equal_is_no_warn']['expect'] == [] and 'tn_fraction_just_above_5' in {x['id'] for x in fx['pick']}, 'warn/exact cases'
+fares = {x['id']: x for x in json.load(open('fixtures/fares.json'))['cases']}
+assert fares['commission_steps_empty_is_pct']['expect'] == fares['economy_plain']['expect'], 'no steps = v0.18.85'
+spec = yaml.safe_load(open('openapi.yaml'))
+S, P = spec['components']['schemas'], spec['paths']
+st = S['CommissionStep']
+assert st['additionalProperties'] is False and st['required'] == ['upToMinor'] and len(st['oneOf']) == 2, 'CommissionStep'
+assert 'commissionSteps' in S['CategoryPricing']['properties'] and 'commissionSteps' not in S['CategoryPricing']['required'], 'additive'
+assert S['CategoryPricing']['properties']['commissionSteps']['oneOf'][0]['maxItems'] == V['maxSteps']
+for m, p in (('put', '/admin/config/{doc}'), ('post', '/admin/config/{doc}/publish')):
+    assert 'commission_steps_invalid' in P[p][m]['responses']['400']['description'], p
+md = open('CONTRACT.md').read()
+assert md.startswith('# Movera shared contract v' + c['version']), 'CONTRACT.md heading'
+assert 'v0.18.86' in md and 'commissionSteps' in md and 'commission_steps_invalid' in md, 'CONTRACT.md text'
+assert md.count('\n') <= 1500, 'CONTRACT.md over 1,500 lines'
+PY
 echo "contract ok"
