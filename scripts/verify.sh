@@ -817,7 +817,7 @@ assert md.count('\n') <= 1500, 'CONTRACT.md over 1,500 lines'
 PY
 # v0.18.82 (S5 J3 money fixes; owner Sitting 3 2026-11-12: 106, 107, Q-M7, Q-S5-6, Q-S5-7, J1 0.14a, S07 M8/M14):
 # expectedVersion on the two admin money buttons, one commission + KPI money rule, admin fare = driver side only,
-# Tunisia defaults (tip max 30 DT, driver pay change max 150 DT, payouts on Africa/Tunis), payouts on their own timer, a trip ends once.
+# Tunisia defaults (tip max 30 DT, driver pay change max 100 DT, payouts on Africa/Tunis), payouts on their own timer, a trip ends once.
 python3 - <<'PY'
 import json, yaml
 c = json.load(open('contract.json'))
@@ -828,7 +828,7 @@ for part in ('POST /admin/riders/{riderId}/wallet-credit { expectedVersion, amou
              'Rider.version', 'TripProjection.version', '409 version_mismatch with the fresh projection', 'missing expectedVersion → 400 invalid_request'):
     assert part in vg, 'J3 versionGuard: ' + part
 assert '{ expectedVersion, amount, reason }' in c['walletCredit']['note'], 'J3 walletCredit note'
-assert 'driver-pay { expectedVersion (v0.18.82, required' in c['finish']['driverMoney']['payChange'] and 'TN 150 DT' in c['finish']['driverMoney']['payChange'], 'J3 payChange'
+assert 'driver-pay { expectedVersion (v0.18.82, required' in c['finish']['driverMoney']['payChange'] and 'TN 100 DT' in c['finish']['driverMoney']['payChange'], 'J3 payChange'
 cm = mb['commission']
 assert 'commission = fare − debtCollected − driverEarnings − pickupPay − driverBonus' in cm and 'never work it out themselves' in cm and 'earnings entry' in cm, 'J3 commission'
 k = mb['kpiMoney']
@@ -850,11 +850,11 @@ for kk in ('adjust', 'complete'):
     assert 'driverPay?' in c['onTrip']['adminTrip']['existing'][kk] and 'fare_is_driver_pay' in c['onTrip']['adminTrip']['existing'][kk], 'Q-S5-8 admin ' + kk
 cd = c['configDefaults']
 assert cd['tipRules']['customMax']['TN'] == {'amountMinor': 30000, 'currency': 'TND'}, 'TN-1 tip custom max 30 DT'
-assert cd['driverPayChangeMax']['TN'] == {'amountMinor': 150000, 'currency': 'TND'}, 'TN-1 driver pay change max 150 DT'
+assert cd['driverPayChangeMax']['TN'] == {'amountMinor': 100000, 'currency': 'TND'}, 'TN-1 driver pay change max 100 DT (owner re-confirmed 2026-11-13)'
 assert c['moneyDisplay']['formats']['TND']['decimals'] == 3, 'TND 3 decimals'
 assert c['payouts']['schedule']['countryTimeZones'] == {'SE': 'Europe/Stockholm', 'FR': 'Europe/Paris', 'TN': 'Africa/Tunis'}, 'TN-1 payout time zone'
 assert 'TN Africa/Tunis' in c['payouts']['schedule']['note'] and 'TN 30 DT' in c['finish']['tips']['settings'], 'TN-1 notes'
-assert 'admin-changeable' in mb['tunisia'] and '30.000 DT' in mb['tunisia'] and '150.000 DT' in mb['tunisia'], 'TN-1 moneyBase.tunisia'
+assert 'admin-changeable' in mb['tunisia'] and '30.000 DT' in mb['tunisia'] and '100.000 DT' in mb['tunisia'] and '|new pay − current pay| ≤ max' in mb['tunisia'], 'TN-1 moneyBase.tunisia'
 pn = c['payouts']['note']
 assert 'own payout timer, one driver per transaction' in pn and 'nightly job makes' not in pn, 'J3 payouts.note'
 assert 'a trip ends once; a second end is refused' in mb['endOnce'] and '409 invalid_transition' in mb['endOnce'], 'M14 rule line'
@@ -866,7 +866,7 @@ for name in ('WalletCreditCommand', 'DriverPayCommand'):
 for p in ('/admin/riders/{riderId}/wallet-credit', '/admin/trips/{tripId}/driver-pay'):
     d = spec['paths'][p]['post']['responses']['409']
     assert 'version_mismatch' in d['description'] and 'v0.18.82' in d['description'], 'J3 openapi 409 ' + p
-assert '150 DT' in S['CountryRules']['properties']['driverPayChangeMax']['description'], 'TN-1 openapi driverPayChangeMax'
+assert 'TN 100 DT' in S['CountryRules']['properties']['driverPayChangeMax']['description'], 'TN-1 openapi driverPayChangeMax'
 for name in ('AdminAdjustCommand', 'AdminCompleteCommand'):
     pr = S[name]['properties']
     assert 'driver side only' in pr['driverPay']['description'] and pr['driverPay']['allOf'] == [{'$ref': '#/components/schemas/Money'}], 'Q-S5-8 openapi driverPay ' + name
@@ -877,6 +877,23 @@ md = open('CONTRACT.md').read()
 assert md.startswith('# Movera shared contract v' + c['version'] + '\n') or tuple(map(int, c['version'].split('.'))) > (0, 18, 82), 'CONTRACT.md title'
 assert '\nv0.18.82 (S5 J3 money fixes' in md and '**money fixes**' in md and '`driverPay` on adjust / complete' in md and 'Q-S5-8, open' not in md, 'CONTRACT.md v0.18.82 note'
 assert '  //         commission = Movera\'s share of the fare: fare − debtCollected − driverEarnings − pickupPay − driverBonus' in md and '(fare − driverEarnings)' not in md, 'CONTRACT.md one commission'
+# Third commit (owner values re-confirmed 2026-11-13 + supervisor M1-M3, S1-S4): 150 DT is the J7 cash-owed limit, never in J3.
+oa = open('openapi.yaml').read()
+assert '(fare − driverEarnings)' not in oa and 'commission = moneyBase.commission (v0.18.82)' in S['TripProjection']['description'], 'M1 openapi commission text'
+assert 'TripProjection.commission carries it' not in c['pricing']['moneySplit']['moveraShare'] and 'it is NOT TripProjection.commission' in c['pricing']['moneySplit']['moveraShare'], 'M2 moveraShare'
+assert 'Movera keeps fare − debtCollected − driverEarnings − pickupPay − driverBonus' in c['pickupPay']['moneySplit'], 'M2 pickupPay.moneySplit'
+assert 'Movera keeps `fare − debtCollected − driverEarnings − pickupPay − driverBonus`' in md and 'Movera keeps `fare − driverEarnings' not in md, 'M2 CONTRACT.md pickup pay'
+me = c['kpis']['money']['moveraEarnings']
+assert me.startswith('v0.18.82') and "− Movera's pay changes" in me and 'nets out against that refund' in me and "− Movera's pay changes" in mb['kpiMoney'], 'M3 moveraEarnings'
+assert "− Movera's pay changes" in md and '− pickup pay − driver bonuses Movera paid' not in md and 'v0.10.3 money rules' not in md, 'M3 CONTRACT.md KPIs'
+assert "'No, without tip'" in af and "'32 DT, keep change'" in af and 'the tip stays on top' in af and 'the change is kept' in af, 'owner Q1/Q3 help text'
+assert 'customMax (SE 200 kr, FR 20 €, TN 30 DT)' in md, 'S1 tips TN'
+assert 'the hourly sweep with the payout pass' not in c['fastDispatch']['timers'], 'S2 timers'
+adj = spec['paths']['/admin/trips/{tripId}/adjust']['post']
+assert adj['summary'] == "Change the driver's pay / waiting / waive cancel fee" and 'paymentStatus/fare change' not in adj['description'] and S['AdminAdjustCommand']['description'].startswith('Driver pay'), 'S3 adjust wording'
+assert 'v0.18.82 reason: fare_is_driver_pay' in c['errors']['reason'] and 'fare_is_driver_pay' in S['Error']['properties']['reason']['description'], 'S4 Error.reason'
+j3 = json.dumps(c['moneyBase'], ensure_ascii=False) + json.dumps(c['configDefaults']['driverPayChangeMax'], ensure_ascii=False) + c['finish']['driverMoney']['payChange'] + md.split('\n')[2]
+assert '150 DT' not in j3 and '150.000 DT' not in j3 and '150000' not in j3, 'no 150 DT in J3 (it is the J7 cash-owed limit)'
 assert md.count('\n') <= 1500, 'CONTRACT.md over 1,500 lines'
 PY
 echo "contract ok"

@@ -5663,13 +5663,14 @@ paths:
   /admin/trips/{tripId}/adjust:
     post:
       operationId: adminAdjustTrip
-      summary: Adjust fare / waiting / waive cancel fee
-      description: 'Not a lifecycle transition (status unchanged; paymentStatus/fare change and emit payment_updated / trip_projection).
-        v0.7.2 (owner 2026-10-28, one admin is enough): 200 / 201 at once for every admin with the permission, written in
-        the audit. v0.18.9: POST /admin/trips/{tripId}/adjust { expectedVersion, fare?, waitingSeconds?, waiveCancelFee?,
-        reason? } (trips.intervene): price adjust and waiting (waitingSeconds = the pickup waiting that is charged). v0.18.82
-        (owner Q-M7, Q-S5-8): { expectedVersion, driverPay?, waitingSeconds?, waiveCancelFee?, reason } — driverPay = the
-        driver''s new pay, typed directly; the rider''s price never changes; fare is refused (400 fare_is_driver_pay) (contract.json#moneyBase.adminFare).'
+      summary: Change the driver's pay / waiting / waive cancel fee
+      description: 'Not a lifecycle transition (status unchanged; paymentStatus / the driver''s pay change (v0.18.82: never
+        the rider''s price) and emit payment_updated / trip_projection). v0.7.2 (owner 2026-10-28, one admin is enough): 200
+        / 201 at once for every admin with the permission, written in the audit. v0.18.9: POST /admin/trips/{tripId}/adjust
+        { expectedVersion, fare?, waitingSeconds?, waiveCancelFee?, reason? } (trips.intervene): price adjust and waiting
+        (waitingSeconds = the pickup waiting that is charged). v0.18.82 (owner Q-M7, Q-S5-8): { expectedVersion, driverPay?,
+        waitingSeconds?, waiveCancelFee?, reason } — driverPay = the driver''s new pay, typed directly; the rider''s price
+        never changes; fare is refused (400 fare_is_driver_pay) (contract.json#moneyBase.adminFare).'
       tags:
       - Admin · Trips
       x-actor:
@@ -14954,9 +14955,9 @@ paths:
         += change, driverTotal moves; audit trip.driver_pay with before / after / reason; the driver gets a bell notice kind
         driver_pay_changed (texts.payChanged). Errors: driver_pay_not_ended, driver_pay_no_driver, driver_pay_below_zero (driverTotal
         would go below 0), currency_mismatch. Checker: the size of one change (plus or minus) is at most CountryRules.driverPayChangeMax
-        of the trip''s zone (Admin › Tips & limits, per zone or country; default SE 1000 kr, FR 100 €, TN 150 DT — v0.18.82,
-        owner Q-S5-6) → else 400 driver_pay_above_max. A refund taken from the driver never takes more than his one number
-        on the trip (never below 0).'
+        of the trip''s zone (Admin › Tips & limits, per zone or country; default SE 1000 kr, FR 100 €, TN 100 DT — v0.18.82,
+        owner Q-S5-6 confirmed 2026-11-13) → else 400 driver_pay_above_max. A refund taken from the driver never takes more
+        than his one number on the trip (never below 0).'
       tags:
       - Admin · Trips
       x-actor:
@@ -19237,8 +19238,8 @@ components:
     TripProjection:
       type: object
       description: 'Authoritative trip state. Field visibility depends on the actor (e.g. driverEarnings/commission are not
-        shown to riders). v0.5.1: fare and fareLines follow contract.json#pricing (CONTRACT.md §3.5); commission is Movera''s
-        share of the fare (fare − driverEarnings).'
+        shown to riders). v0.5.1: fare and fareLines follow contract.json#pricing (CONTRACT.md §3.5); commission = moneyBase.commission
+        (v0.18.82): fare − debtCollected − driverEarnings − pickupPay − driverBonus.'
       required:
       - tripId
       - status
@@ -22599,10 +22600,14 @@ components:
             fee was charged; the same fee paid later with another trip (its outstanding_fee line) is not counted again.'
         moveraEarnings:
           type: integer
-          description: 'What Movera keeps: commission (trips.commission, already net of pickup pay and driver bonuses: commission
-            = fare - debtCollected - driverEarnings - pickupPay - driverBonus) + Movera''s share of fees - refunds of the
-            day''s trips. Can be negative. v0.18.13 (audit 2026-11-02 H2): pickup pay and bonuses are no longer taken off
-            a second time, and refunds are taken off (server migration 0047 rewrites the stored days).'
+          description: 'v0.18.82 (owner 107, contract.json#moneyBase.kpiMoney): commission (moneyBase.commission) + Movera''s
+            share of fees − Movera''s pay changes (earnings entries kind adjustment: driver-pay changes and an admin''s driverPay
+            delta, which Movera pays and which are not in commission; a refund taken from the driver is a negative change,
+            so it nets out against that refund) − refunds of the day''s trips. Can be negative. Before v0.18.82: What Movera
+            keeps: commission (trips.commission, already net of pickup pay and driver bonuses: commission = fare - debtCollected
+            - driverEarnings - pickupPay - driverBonus) + Movera''s share of fees - refunds of the day''s trips. Can be negative.
+            v0.18.13 (audit 2026-11-02 H2): pickup pay and bonuses are no longer taken off a second time, and refunds are
+            taken off (server migration 0047 rewrites the stored days).'
     KpiReport:
       type: object
       description: 'v0.9.0: GET /admin/kpis.'
@@ -23019,7 +23024,8 @@ components:
           allOf:
           - $ref: '#/components/schemas/Money'
           description: 'v0.18.10 checker: the largest single change of a driver''s pay on a trip (POST /admin/trips/{tripId}/driver-pay).
-            Default SE 1000 kr, FR 100 €. v0.18.82 (owner Q-S5-6): TN 150 DT (150000 TND minor units).'
+            Default SE 1000 kr, FR 100 €. v0.18.82 (owner Q-S5-6, confirmed 2026-11-13): TN 100 DT (100000 TND minor units).
+            It limits the CHANGE: |new pay − current pay| ≤ max; the pay never goes below 0.'
         payoutSchedule:
           allOf:
           - $ref: '#/components/schemas/PayoutSchedule'
@@ -27324,7 +27330,8 @@ components:
             (409 conflict, contract.json#auth.signOutOnTrip). v0.18.56 reasons: message_too_long, unknown_quick_reply, translate_target_not_allowed
             (400 invalid_request), translation_off (403 forbidden), coming_soon (503 unavailable) (contract.json#chat, §78).
             v0.18.64 reason: auto_translate_off (403 forbidden, contract.json#chat.autoTranslate, §85). v0.18.76 reasons:
-            email_needs_code (400 invalid_request), email_not_verified (409 invalid_transition) (contract.json#emailVerified).'
+            email_needs_code (400 invalid_request), email_not_verified (409 invalid_transition) (contract.json#emailVerified).
+            v0.18.82 reason: fare_is_driver_pay (400 invalid_request, admin adjust / complete sent the old fare field; contract.json#moneyBase.adminFare).'
         details:
           type: array
           items:
@@ -28837,22 +28844,25 @@ components:
             trip changes ONLY the driver''s pay, which the admin types directly: POST /admin/trips/{tripId}/adjust { expectedVersion,
             driverPay?, waitingSeconds?, waiveCancelFee?, reason } and POST /admin/trips/{tripId}/complete { expectedVersion,
             note, driverPay? } (driverPay: Money in the trip currency, ≥ 0 = the driver''s new pay for this trip, his one
-            number driverTotal without the tip; the admin field is ''Driver pay''). The server turns it into a delta = driverPay
-            − the driver''s pay now (driverTotal − tip at that moment; for complete, the pay the normal completion works out).
-            The delta is checked like a driver-pay change: its size at most CountryRules.driverPayChangeMax (else 400 driver_pay_above_max)
-            and the pay never below 0 (400 driver_pay_below_zero); delta 0 changes nothing. The rider''s price is never changed
-            by it: the rider pays the booked price under its own rules (paid waiting, stops, early end) plus any earlier unpaid
-            fee read at payment (Q-M2); TripProjection.fare, fareLines, the receipt and the rider''s total stay as they would
-            be without it. The delta is kept on the trip as a driver pay change (TripProjection.driverAdjustments, an earnings
-            entry kind adjustment when the trip is paid, audit trip.adjust / trip.complete with before / after / reason);
-            Movera pays it; commission is not changed by it, it lowers moneySplit.movera. S07 M8: it is kept as its own delta
-            across every re-price (arrive, paid waiting, board, stop waiting, end, early end): a re-price works out the rider''s
-            fare and the driver''s share of it again and then adds the admin''s delta again; it is never lost (so the final
-            pay = the re-priced pay + the delta). The driver sees the new pay (driverTotal, earningsBreakdown line adjustment)
-            on the waybill and in history; the rider sees nothing of it. Old field: fare on adjust / complete (a rider price
-            in admins before v0.18.82) is refused: 400 invalid_request, reason fare_is_driver_pay (''Type the driver''s pay
-            (driverPay); the rider''s price cannot be changed.''), nothing written — never read as a driver pay, so an older
-            admin can never pay a wrong amount by mistake.'
+            number driverTotal without the tip — owner 2026-11-13 ''No, without tip'': the tip stays on top; the admin field
+            is ''Driver pay''). The server turns it into a delta = driverPay − the driver''s pay now (driverTotal − tip at
+            that moment; for complete, the pay the normal completion works out). The delta is checked like a driver-pay change:
+            its size at most CountryRules.driverPayChangeMax (else 400 driver_pay_above_max) and the pay never below 0 (400
+            driver_pay_below_zero); delta 0 changes nothing. The rider''s price is never changed by it: the rider pays the
+            booked price under its own rules (paid waiting, stops, early end) plus any earlier unpaid fee read at payment
+            (Q-M2); TripProjection.fare, fareLines, the receipt and the rider''s total stay as they would be without it. The
+            delta is kept on the trip as a driver pay change (TripProjection.driverAdjustments, an earnings entry kind adjustment
+            when the trip is paid, audit trip.adjust / trip.complete with before / after / reason); Movera pays it; commission
+            is not changed by it, it lowers moneySplit.movera. S07 M8: it is kept as its own delta across every re-price (arrive,
+            paid waiting, board, stop waiting, end, early end): a re-price works out the rider''s fare and the driver''s share
+            of it again and then adds the admin''s delta again; it is never lost (so the final pay = the re-priced pay + the
+            delta; owner 2026-11-13 ''32 DT, keep change'': e.g. pay 30 DT, the admin types 32 DT (+2 DT), paid waiting later
+            adds 3 DT → 35 DT). The admin field shows the driver''s current pay and its help text says: the tip stays on top,
+            and waiting or stops added later are added to this pay (the change is kept). The driver sees the new pay (driverTotal,
+            earningsBreakdown line adjustment) on the waybill and in history; the rider sees nothing of it. Old field: fare
+            on adjust / complete (a rider price in admins before v0.18.82) is refused: 400 invalid_request, reason fare_is_driver_pay
+            (''Type the driver''s pay (driverPay); the rider''s price cannot be changed.''), nothing written — never read
+            as a driver pay, so an older admin can never pay a wrong amount by mistake.'
     AdminRefundCommand:
       type: object
       description: 'v0.7.2: runs at once for every admin with the permission (one admin is enough, owner 2026-10-28).'
@@ -28875,7 +28885,8 @@ components:
           maxLength: 1000
     AdminAdjustCommand:
       type: object
-      description: Fare / waiting / cancel-fee correction; runs at once (v0.7.2, one admin is enough).
+      description: Driver pay (v0.18.82 driverPay; the rider's price never changes) / waiting / cancel-fee correction; runs
+        at once (v0.7.2, one admin is enough).
       required:
       - expectedVersion
       - reason
@@ -28909,22 +28920,25 @@ components:
             trip changes ONLY the driver''s pay, which the admin types directly: POST /admin/trips/{tripId}/adjust { expectedVersion,
             driverPay?, waitingSeconds?, waiveCancelFee?, reason } and POST /admin/trips/{tripId}/complete { expectedVersion,
             note, driverPay? } (driverPay: Money in the trip currency, ≥ 0 = the driver''s new pay for this trip, his one
-            number driverTotal without the tip; the admin field is ''Driver pay''). The server turns it into a delta = driverPay
-            − the driver''s pay now (driverTotal − tip at that moment; for complete, the pay the normal completion works out).
-            The delta is checked like a driver-pay change: its size at most CountryRules.driverPayChangeMax (else 400 driver_pay_above_max)
-            and the pay never below 0 (400 driver_pay_below_zero); delta 0 changes nothing. The rider''s price is never changed
-            by it: the rider pays the booked price under its own rules (paid waiting, stops, early end) plus any earlier unpaid
-            fee read at payment (Q-M2); TripProjection.fare, fareLines, the receipt and the rider''s total stay as they would
-            be without it. The delta is kept on the trip as a driver pay change (TripProjection.driverAdjustments, an earnings
-            entry kind adjustment when the trip is paid, audit trip.adjust / trip.complete with before / after / reason);
-            Movera pays it; commission is not changed by it, it lowers moneySplit.movera. S07 M8: it is kept as its own delta
-            across every re-price (arrive, paid waiting, board, stop waiting, end, early end): a re-price works out the rider''s
-            fare and the driver''s share of it again and then adds the admin''s delta again; it is never lost (so the final
-            pay = the re-priced pay + the delta). The driver sees the new pay (driverTotal, earningsBreakdown line adjustment)
-            on the waybill and in history; the rider sees nothing of it. Old field: fare on adjust / complete (a rider price
-            in admins before v0.18.82) is refused: 400 invalid_request, reason fare_is_driver_pay (''Type the driver''s pay
-            (driverPay); the rider''s price cannot be changed.''), nothing written — never read as a driver pay, so an older
-            admin can never pay a wrong amount by mistake.'
+            number driverTotal without the tip — owner 2026-11-13 ''No, without tip'': the tip stays on top; the admin field
+            is ''Driver pay''). The server turns it into a delta = driverPay − the driver''s pay now (driverTotal − tip at
+            that moment; for complete, the pay the normal completion works out). The delta is checked like a driver-pay change:
+            its size at most CountryRules.driverPayChangeMax (else 400 driver_pay_above_max) and the pay never below 0 (400
+            driver_pay_below_zero); delta 0 changes nothing. The rider''s price is never changed by it: the rider pays the
+            booked price under its own rules (paid waiting, stops, early end) plus any earlier unpaid fee read at payment
+            (Q-M2); TripProjection.fare, fareLines, the receipt and the rider''s total stay as they would be without it. The
+            delta is kept on the trip as a driver pay change (TripProjection.driverAdjustments, an earnings entry kind adjustment
+            when the trip is paid, audit trip.adjust / trip.complete with before / after / reason); Movera pays it; commission
+            is not changed by it, it lowers moneySplit.movera. S07 M8: it is kept as its own delta across every re-price (arrive,
+            paid waiting, board, stop waiting, end, early end): a re-price works out the rider''s fare and the driver''s share
+            of it again and then adds the admin''s delta again; it is never lost (so the final pay = the re-priced pay + the
+            delta; owner 2026-11-13 ''32 DT, keep change'': e.g. pay 30 DT, the admin types 32 DT (+2 DT), paid waiting later
+            adds 3 DT → 35 DT). The admin field shows the driver''s current pay and its help text says: the tip stays on top,
+            and waiting or stops added later are added to this pay (the change is kept). The driver sees the new pay (driverTotal,
+            earningsBreakdown line adjustment) on the waybill and in history; the rider sees nothing of it. Old field: fare
+            on adjust / complete (a rider price in admins before v0.18.82) is refused: 400 invalid_request, reason fare_is_driver_pay
+            (''Type the driver''s pay (driverPay); the rider''s price cannot be changed.''), nothing written — never read
+            as a driver pay, so an older admin can never pay a wrong amount by mistake.'
     DriverStatusCommand:
       type: object
       required:
