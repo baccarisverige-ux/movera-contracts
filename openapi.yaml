@@ -19858,7 +19858,8 @@ components:
             trips that already carry a copied outstanding_fee line while migration 0103 moves the same owed fees into the
             wallet): at payment the copied outstanding_fee line is dropped from the fare and the debt is read from the wallet
             instead (readAtPayment), so each fee is paid once. The rider''s total is the trip''s fare without the copied line
-            plus the debt read then (the same amount or less, never more). A trip already paid before J8 is not touched.'
+            plus the whole debt read then (it may be more than the copied line when a fee came later); the copied amount is
+            never charged on top. A trip already paid before J8 is not touched.'
         moneySplit:
           $ref: '#/components/schemas/MoneySplit'
         sosAvailable:
@@ -23519,13 +23520,15 @@ components:
             2026-11-13 15:00 ''Any amount''): no upper bound in admin (> 0 in the country''s currency); the DB floor follows
             it (dbFloor). DB floor: Q-S5-3 (owner ''Block booking at max (Rec.)'', option A) + owner 2026-11-13 15:00 (''Any
             amount'': no admin cap; decisions/session-2026-11-06.md:1246): the server''s database keeps a safety floor per
-            currency on the wallet balance that follows the admin setting: floor = −(3 × the current max) of that currency''s
-            country (CountryRules.maxRiderDebt of the country standard), updated when the admin saves, in the same transaction
-            as the setting. When the admin lowers the max, the floor is never above the lowest balance that currency already
-            holds. It is not an admin setting itself and never −max, so a fee from a running trip is always saved. The values
-            below are the starting floors (3 × the defaults: SE −900 kr, FR −90 €, TN −252 DT). Server J8 migration 0102 needs
-            a floor that follows the setting (e.g. a per-currency floor row read by the wallet check), not a fixed CHECK constant;
-            Rule 46 (no table lock, written undo).'
+            currency on the wallet balance that follows the admin setting, so a fee from a running trip is always saved. The
+            floor only ever moves DOWN (wider): floor = min(the current floor, −(3 × the current max), −(max + 4 × the largest
+            cancel or no-show fee the country''s settings can produce)) — room for the fees of every ride a rider may still
+            have open (up to 3 booked rides + 1 live trip, B1.34) on top of a debt just under the max. It is recomputed when
+            Max rider debt or a cancel / no-show fee setting is saved, in the same transaction as that setting; an admin save
+            never raises it (lowering the max or a fee leaves it where it is), so it can never land on or above a balance.
+            It is not an admin setting itself and never −max. The values below are the starting floors (3 × the defaults:
+            SE −900 kr, FR −90 €, TN −252 DT). Server J8 migration 0102 needs this following floor (see migrations), not a
+            fixed CHECK constant; Rule 46 (no table lock, written undo).'
         driverOwesLimit:
           $ref: '#/components/schemas/DriverOwesLimit'
       x-server-only: true

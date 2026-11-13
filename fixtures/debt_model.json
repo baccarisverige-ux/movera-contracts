@@ -617,67 +617,152 @@
         "debtPaid": 2000,
         "balanceAfter": 0
       }
+    },
+    {
+      "id": "wallet_debt_bigger_than_copied_line",
+      "fareWithCopiedLine": {
+        "amountMinor": 55800,
+        "currency": "SEK"
+      },
+      "copiedLine": {
+        "amountMinor": 24000,
+        "currency": "SEK"
+      },
+      "walletBalance": {
+        "amountMinor": -30500,
+        "currency": "SEK"
+      },
+      "expect": {
+        "riderPays": 62300,
+        "debtPaid": 30500,
+        "balanceAfter": 0
+      }
     }
   ],
   "floorFollowsMax": [
     {
       "id": "se_default",
+      "currentFloor": -90000,
       "max": {
         "amountMinor": 30000,
         "currency": "SEK"
       },
-      "lowestBalance": {
-        "amountMinor": -24000,
+      "largestFee": {
+        "amountMinor": 6500,
         "currency": "SEK"
       },
+      "balance": {
+        "amountMinor": -29900,
+        "currency": "SEK"
+      },
+      "feesOnOpenRides": 4,
       "expect": {
-        "floor": -90000
+        "floor": -90000,
+        "saved": true
+      }
+    },
+    {
+      "id": "se_max_20kr_rider_19kr_noshow_65kr",
+      "currentFloor": -90000,
+      "max": {
+        "amountMinor": 2000,
+        "currency": "SEK"
+      },
+      "largestFee": {
+        "amountMinor": 6500,
+        "currency": "SEK"
+      },
+      "balance": {
+        "amountMinor": -1900,
+        "currency": "SEK"
+      },
+      "feesOnOpenRides": 1,
+      "expect": {
+        "floor": -90000,
+        "saved": true
       }
     },
     {
       "id": "se_raised_any_amount",
+      "currentFloor": -90000,
       "max": {
         "amountMinor": 200000,
         "currency": "SEK"
       },
-      "lowestBalance": {
-        "amountMinor": -24000,
+      "largestFee": {
+        "amountMinor": 6500,
         "currency": "SEK"
       },
+      "balance": {
+        "amountMinor": -199900,
+        "currency": "SEK"
+      },
+      "feesOnOpenRides": 4,
       "expect": {
-        "floor": -600000
+        "floor": -600000,
+        "saved": true
       }
     },
     {
-      "id": "tn_lowered_never_above_lowest",
+      "id": "se_fee_raised_moves_floor_down",
+      "currentFloor": -90000,
+      "max": {
+        "amountMinor": 30000,
+        "currency": "SEK"
+      },
+      "largestFee": {
+        "amountMinor": 50000,
+        "currency": "SEK"
+      },
+      "balance": {
+        "amountMinor": -29900,
+        "currency": "SEK"
+      },
+      "feesOnOpenRides": 4,
+      "expect": {
+        "floor": -230000,
+        "saved": true
+      }
+    },
+    {
+      "id": "tn_max_lowered_floor_stays",
+      "currentFloor": -252000,
       "max": {
         "amountMinor": 10000,
         "currency": "TND"
       },
-      "lowestBalance": {
+      "largestFee": {
+        "amountMinor": 20000,
+        "currency": "TND"
+      },
+      "balance": {
         "amountMinor": -84000,
         "currency": "TND"
       },
+      "feesOnOpenRides": 4,
       "expect": {
-        "floor": -84000
+        "floor": -252000,
+        "saved": true
       }
     },
     {
-      "id": "fr_fee_at_max_saved",
+      "id": "fr_small_max_large_fee",
+      "currentFloor": -9000,
       "max": {
-        "amountMinor": 3000,
+        "amountMinor": 500,
         "currency": "EUR"
       },
-      "lowestBalance": {
-        "amountMinor": -3000,
+      "largestFee": {
+        "amountMinor": 4000,
         "currency": "EUR"
       },
-      "fee": {
-        "amountMinor": 1500,
+      "balance": {
+        "amountMinor": -400,
         "currency": "EUR"
       },
+      "feesOnOpenRides": 4,
       "expect": {
-        "floor": -9000,
+        "floor": -16500,
         "saved": true
       }
     }

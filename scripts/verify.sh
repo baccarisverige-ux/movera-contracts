@@ -1034,8 +1034,19 @@ ch = dm['changeover']
 for part in ('before server J8', 'copied outstanding_fee line', 'dropped', 'read from the wallet', 'paid once', '0103'):
     assert part in ch, 'M3 changeover: ' + part
 assert 'maxRiderDebtCap' not in dm and 'max_rider_debt_too_high' not in json.dumps(c, ensure_ascii=False), 'Q2 Any amount: no admin cap'
-for part in ('follows the admin setting', '3 × the current max', 'when the admin saves', 'same transaction', '0102', 'never above the lowest', 'always saved', '15:00'):
+for part in ('follows the admin setting', '3 × the current max', 'same transaction', '0102', 'always saved', '15:00'):
     assert part in fl['note'], 'Q2 floor follows the setting: ' + part
+# Supervisor round 2 (R2-1..R2-4, audits/impact/contracts-0.18.84-s5j7-supervisor.md): the floor only moves down, with room for 4 fees.
+for part in ('only ever moves DOWN', 'max + 4 × the largest cancel or no-show fee', 'when Max rider debt or a cancel / no-show fee setting is saved', 'never raises it'):
+    assert part in fl['note'], 'R2-1 floor headroom: ' + part
+assert 'never above the lowest' not in fl['note'], 'R2-2 the floor is never set ON a balance'
+ffm = json.load(open('fixtures/debt_model.json'))['floorFollowsMax']
+assert all('saved' in x['expect'] for x in ffm) and not any(x['id'] == 'tn_lowered_never_above_lowest' for x in ffm), 'R2-2 every floor case checks the fee is saved'
+assert any(x['id'] == 'se_max_20kr_rider_19kr_noshow_65kr' and x['expect']['saved'] is True for x in ffm), 'R2-2 the 20 kr / -19 kr / 65 kr case'
+assert 'never more' not in dm['changeover'] and 'the copied amount is never charged on top' in dm['changeover'], 'R2-3 changeover: no false cap'
+assert any(x['id'] == 'wallet_debt_bigger_than_copied_line' for x in json.load(open('fixtures/debt_model.json'))['changeover']), 'R2-3 fixture'
+mg = dm['migrations']
+assert 'dbFloor CHECK added' not in mg and 'floor table' in mg and 'only moves down' in mg and 'locks the floor row' in mg, 'R2-4 migrations 0102 matches the floor'
 assert 'no upper bound' in dm['maxRiderDebt'] and '15:00' in dm['maxRiderDebt'], 'Q2 maxRiderDebt any amount'
 assert 'he keeps' in co and '15:01' in co and 'pending owner Q3' not in co, 'Q3 owner decision: accepted booked cash rides stay'
 # old rule texts superseded, not left contradicting

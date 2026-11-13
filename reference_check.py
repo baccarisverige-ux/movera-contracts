@@ -811,12 +811,12 @@ for _x in _dmf['walletApplied']:   # supervisor M2: walletApplied = max(0, min(b
 for _x in _dmf['changeover']:   # supervisor M3: a pre-J8 trip drops its copied line at payment and reads the wallet; paid once
     _base = _x['fareWithCopiedLine']['amountMinor'] - _x['copiedLine']['amountMinor']; _d = -min(0, _x['walletBalance']['amountMinor'])
     _r = {'riderPays': _base + _d, 'debtPaid': _d, 'balanceAfter': _x['walletBalance']['amountMinor'] + _d}
-    if _r != _x['expect'] or _r['riderPays'] > _x['fareWithCopiedLine']['amountMinor']: bad += 1; print('DEBT CHANGEOVER', _x['id'])
-for _x in _dmf['floorFollowsMax']:   # owner 2026-11-13 15:00 'Any amount': floor = −3 × the current max, never above the lowest balance
-    _fl = min(-3 * _x['max']['amountMinor'], _x['lowestBalance']['amountMinor'])
-    _r = {'floor': _fl}
-    if 'fee' in _x: _r['saved'] = _x['lowestBalance']['amountMinor'] - _x['fee']['amountMinor'] >= _fl
-    if _r != _x['expect']: bad += 1; print('DEBT FLOOR FOLLOWS MAX', _x['id'], _r)
+    if _r != _x['expect'] or _r['riderPays'] != _base + _d: bad += 1; print('DEBT CHANGEOVER', _x['id'])   # R2-3: whole debt, the copied amount never on top
+for _x in _dmf['floorFollowsMax']:   # owner 15:00 + supervisor R2-1/R2-2: the floor only moves down, room for 4 fees; every case: the fee is saved
+    _mx, _fee = _x['max']['amountMinor'], _x['largestFee']['amountMinor']
+    _fl = min(_x['currentFloor'], -3 * _mx, -(_mx + 4 * _fee))
+    _sv = _x['balance']['amountMinor'] - _x['feesOnOpenRides'] * _fee >= _fl and _fl <= _x['currentFloor']
+    if {'floor': _fl, 'saved': _sv} != _x['expect'] or not _sv: bad += 1; print('DEBT FLOOR FOLLOWS MAX', _x['id'], _fl, _sv)
 for _x in _dmf['cashOffers']:   # owner Q-S5-1 + 2026-11-13 14:54: at or over the limit (only when on): no cash offers; online never refused
     _l = _x['limit']
     _over = bool(_l['enabled'] and _l['max'] and _x['owed']['amountMinor'] >= _l['max']['amountMinor'])
