@@ -1,0 +1,771 @@
+{
+  "note": "v0.18.86 (J5b commission steps, owner 2026-11-13 ~21:05 \"Yes, like this (Rec.)\"; contract.json#commissionSteps): reference cases read by reference_check.py; the server and the admin (Pricing editor, Test a ride) use the same cases. validate: the admin's steps → \"ok\" or the first problem (400 invalid_request, reason commission_steps_invalid, details step:<index> / problem:<code>). pick: the step picked by the exact commission base (ride part + extras − waiting − stop waiting), the driver's ride part half_up to a minor unit (never below 0) and Movera's commission = base − that part. TND has 3 decimals (millimes).",
+  "validate": [
+    {
+      "id": "tn_example_ok",
+      "steps": [
+        {
+          "upToMinor": 5000,
+          "amountMinor": 1000
+        },
+        {
+          "upToMinor": 15000,
+          "pct": 18
+        },
+        {
+          "upToMinor": null,
+          "pct": 20
+        }
+      ],
+      "expect": "ok"
+    },
+    {
+      "id": "empty_ok",
+      "steps": [],
+      "expect": "ok"
+    },
+    {
+      "id": "null_ok",
+      "steps": null,
+      "expect": "ok"
+    },
+    {
+      "id": "one_above_ok",
+      "steps": [
+        {
+          "upToMinor": null,
+          "pct": 15
+        }
+      ],
+      "expect": "ok"
+    },
+    {
+      "id": "not_a_list",
+      "steps": {
+        "upToMinor": null,
+        "pct": 15
+      },
+      "expect": {
+        "step": null,
+        "problem": "not_a_list"
+      }
+    },
+    {
+      "id": "too_many",
+      "steps": [
+        {
+          "upToMinor": 100,
+          "pct": 10
+        },
+        {
+          "upToMinor": 200,
+          "pct": 10
+        },
+        {
+          "upToMinor": 300,
+          "pct": 10
+        },
+        {
+          "upToMinor": 400,
+          "pct": 10
+        },
+        {
+          "upToMinor": 500,
+          "pct": 10
+        },
+        {
+          "upToMinor": 600,
+          "pct": 10
+        },
+        {
+          "upToMinor": 700,
+          "pct": 10
+        },
+        {
+          "upToMinor": 800,
+          "pct": 10
+        },
+        {
+          "upToMinor": 900,
+          "pct": 10
+        },
+        {
+          "upToMinor": 1000,
+          "pct": 10
+        },
+        {
+          "upToMinor": 1100,
+          "pct": 10
+        },
+        {
+          "upToMinor": 1200,
+          "pct": 10
+        },
+        {
+          "upToMinor": 1300,
+          "pct": 10
+        },
+        {
+          "upToMinor": 1400,
+          "pct": 10
+        },
+        {
+          "upToMinor": 1500,
+          "pct": 10
+        },
+        {
+          "upToMinor": 1600,
+          "pct": 10
+        },
+        {
+          "upToMinor": 1700,
+          "pct": 10
+        },
+        {
+          "upToMinor": 1800,
+          "pct": 10
+        },
+        {
+          "upToMinor": 1900,
+          "pct": 10
+        },
+        {
+          "upToMinor": 2000,
+          "pct": 10
+        },
+        {
+          "upToMinor": 2100,
+          "pct": 10
+        },
+        {
+          "upToMinor": 2200,
+          "pct": 10
+        },
+        {
+          "upToMinor": 2300,
+          "pct": 10
+        },
+        {
+          "upToMinor": 2400,
+          "pct": 10
+        },
+        {
+          "upToMinor": 2500,
+          "pct": 10
+        },
+        {
+          "upToMinor": 2600,
+          "pct": 10
+        },
+        {
+          "upToMinor": 2700,
+          "pct": 10
+        },
+        {
+          "upToMinor": 2800,
+          "pct": 10
+        },
+        {
+          "upToMinor": 2900,
+          "pct": 10
+        },
+        {
+          "upToMinor": 3000,
+          "pct": 10
+        },
+        {
+          "upToMinor": 3100,
+          "pct": 10
+        },
+        {
+          "upToMinor": 3200,
+          "pct": 10
+        },
+        {
+          "upToMinor": 3300,
+          "pct": 10
+        },
+        {
+          "upToMinor": 3400,
+          "pct": 10
+        },
+        {
+          "upToMinor": 3500,
+          "pct": 10
+        },
+        {
+          "upToMinor": 3600,
+          "pct": 10
+        },
+        {
+          "upToMinor": 3700,
+          "pct": 10
+        },
+        {
+          "upToMinor": 3800,
+          "pct": 10
+        },
+        {
+          "upToMinor": 3900,
+          "pct": 10
+        },
+        {
+          "upToMinor": 4000,
+          "pct": 10
+        },
+        {
+          "upToMinor": 4100,
+          "pct": 10
+        },
+        {
+          "upToMinor": 4200,
+          "pct": 10
+        },
+        {
+          "upToMinor": 4300,
+          "pct": 10
+        },
+        {
+          "upToMinor": 4400,
+          "pct": 10
+        },
+        {
+          "upToMinor": 4500,
+          "pct": 10
+        },
+        {
+          "upToMinor": 4600,
+          "pct": 10
+        },
+        {
+          "upToMinor": 4700,
+          "pct": 10
+        },
+        {
+          "upToMinor": 4800,
+          "pct": 10
+        },
+        {
+          "upToMinor": 4900,
+          "pct": 10
+        },
+        {
+          "upToMinor": 5000,
+          "pct": 10
+        },
+        {
+          "upToMinor": null,
+          "pct": 10
+        }
+      ],
+      "expect": {
+        "step": null,
+        "problem": "too_many_steps"
+      }
+    },
+    {
+      "id": "both_pct_and_amount",
+      "steps": [
+        {
+          "upToMinor": null,
+          "pct": 10,
+          "amountMinor": 100
+        }
+      ],
+      "expect": {
+        "step": 0,
+        "problem": "pct_or_amount"
+      }
+    },
+    {
+      "id": "neither",
+      "steps": [
+        {
+          "upToMinor": 5000
+        },
+        {
+          "upToMinor": null,
+          "pct": 20
+        }
+      ],
+      "expect": {
+        "step": 0,
+        "problem": "pct_or_amount"
+      }
+    },
+    {
+      "id": "up_to_missing",
+      "steps": [
+        {
+          "pct": 20
+        }
+      ],
+      "expect": {
+        "step": 0,
+        "problem": "up_to_missing"
+      }
+    },
+    {
+      "id": "pct_over_60",
+      "steps": [
+        {
+          "upToMinor": null,
+          "pct": 61
+        }
+      ],
+      "expect": {
+        "step": 0,
+        "problem": "pct_out_of_range"
+      }
+    },
+    {
+      "id": "pct_negative",
+      "steps": [
+        {
+          "upToMinor": null,
+          "pct": -1
+        }
+      ],
+      "expect": {
+        "step": 0,
+        "problem": "pct_out_of_range"
+      }
+    },
+    {
+      "id": "amount_negative",
+      "steps": [
+        {
+          "upToMinor": 5000,
+          "amountMinor": -1
+        },
+        {
+          "upToMinor": null,
+          "pct": 20
+        }
+      ],
+      "expect": {
+        "step": 0,
+        "problem": "amount_out_of_range"
+      }
+    },
+    {
+      "id": "amount_not_whole",
+      "steps": [
+        {
+          "upToMinor": 5000,
+          "amountMinor": 1000.5
+        },
+        {
+          "upToMinor": null,
+          "pct": 20
+        }
+      ],
+      "expect": {
+        "step": 0,
+        "problem": "amount_out_of_range"
+      }
+    },
+    {
+      "id": "above_not_last",
+      "steps": [
+        {
+          "upToMinor": null,
+          "pct": 20
+        },
+        {
+          "upToMinor": null,
+          "pct": 18
+        }
+      ],
+      "expect": {
+        "step": 0,
+        "problem": "above_not_last"
+      }
+    },
+    {
+      "id": "last_not_above",
+      "steps": [
+        {
+          "upToMinor": 5000,
+          "amountMinor": 1000
+        },
+        {
+          "upToMinor": 15000,
+          "pct": 18
+        }
+      ],
+      "expect": {
+        "step": 1,
+        "problem": "last_not_above"
+      }
+    },
+    {
+      "id": "up_to_zero",
+      "steps": [
+        {
+          "upToMinor": 0,
+          "amountMinor": 0
+        },
+        {
+          "upToMinor": null,
+          "pct": 20
+        }
+      ],
+      "expect": {
+        "step": 0,
+        "problem": "up_to_out_of_range"
+      }
+    },
+    {
+      "id": "up_to_equal",
+      "steps": [
+        {
+          "upToMinor": 5000,
+          "amountMinor": 1000
+        },
+        {
+          "upToMinor": 5000,
+          "pct": 18
+        },
+        {
+          "upToMinor": null,
+          "pct": 20
+        }
+      ],
+      "expect": {
+        "step": 1,
+        "problem": "up_to_not_increasing"
+      }
+    },
+    {
+      "id": "up_to_down",
+      "steps": [
+        {
+          "upToMinor": 15000,
+          "pct": 18
+        },
+        {
+          "upToMinor": 5000,
+          "amountMinor": 1000
+        },
+        {
+          "upToMinor": null,
+          "pct": 20
+        }
+      ],
+      "expect": {
+        "step": 1,
+        "problem": "up_to_not_increasing"
+      }
+    }
+  ],
+  "pick": [
+    {
+      "id": "tn_up_to_5_fixed",
+      "note": "Owner's TN example: 4.000 DT base is up to 5 DT → 1 DT fixed.",
+      "commissionPct": 20,
+      "steps": [
+        {
+          "upToMinor": 5000,
+          "amountMinor": 1000
+        },
+        {
+          "upToMinor": 15000,
+          "pct": 18
+        },
+        {
+          "upToMinor": null,
+          "pct": 20
+        }
+      ],
+      "commissionBase": {
+        "amountMinor": 4000,
+        "currency": "TND"
+      },
+      "expect": {
+        "step": 0,
+        "driverRidePart": 3000,
+        "commission": 1000
+      }
+    },
+    {
+      "id": "tn_exactly_5_is_up_to",
+      "note": "\"Up to 5 DT\" includes 5.000 DT.",
+      "commissionPct": 20,
+      "steps": [
+        {
+          "upToMinor": 5000,
+          "amountMinor": 1000
+        },
+        {
+          "upToMinor": 15000,
+          "pct": 18
+        },
+        {
+          "upToMinor": null,
+          "pct": 20
+        }
+      ],
+      "commissionBase": {
+        "amountMinor": 5000,
+        "currency": "TND"
+      },
+      "expect": {
+        "step": 0,
+        "driverRidePart": 4000,
+        "commission": 1000
+      }
+    },
+    {
+      "id": "tn_fixed_capped_by_base",
+      "note": "0.800 DT base: the fixed 1 DT is capped at the base; the driver's ride part is 0, never below.",
+      "commissionPct": 20,
+      "steps": [
+        {
+          "upToMinor": 5000,
+          "amountMinor": 1000
+        },
+        {
+          "upToMinor": 15000,
+          "pct": 18
+        },
+        {
+          "upToMinor": null,
+          "pct": 20
+        }
+      ],
+      "commissionBase": {
+        "amountMinor": 800,
+        "currency": "TND"
+      },
+      "expect": {
+        "step": 0,
+        "driverRidePart": 0,
+        "commission": 800
+      }
+    },
+    {
+      "id": "tn_just_above_5",
+      "note": "5.001 DT → 18 %: 5001 × 0.82 = 4100.82 → 4101.",
+      "commissionPct": 20,
+      "steps": [
+        {
+          "upToMinor": 5000,
+          "amountMinor": 1000
+        },
+        {
+          "upToMinor": 15000,
+          "pct": 18
+        },
+        {
+          "upToMinor": null,
+          "pct": 20
+        }
+      ],
+      "commissionBase": {
+        "amountMinor": 5001,
+        "currency": "TND"
+      },
+      "expect": {
+        "step": 1,
+        "driverRidePart": 4101,
+        "commission": 900
+      }
+    },
+    {
+      "id": "tn_half_up_tie",
+      "note": "6.025 DT → 18 %: 6025 × 0.82 = 4940.5 → half-up 4941 (3 decimals).",
+      "commissionPct": 20,
+      "steps": [
+        {
+          "upToMinor": 5000,
+          "amountMinor": 1000
+        },
+        {
+          "upToMinor": 15000,
+          "pct": 18
+        },
+        {
+          "upToMinor": null,
+          "pct": 20
+        }
+      ],
+      "commissionBase": {
+        "amountMinor": 6025,
+        "currency": "TND"
+      },
+      "expect": {
+        "step": 1,
+        "driverRidePart": 4941,
+        "commission": 1084
+      }
+    },
+    {
+      "id": "tn_exactly_15",
+      "note": "15.000 DT is still up to 15 DT → 18 %.",
+      "commissionPct": 20,
+      "steps": [
+        {
+          "upToMinor": 5000,
+          "amountMinor": 1000
+        },
+        {
+          "upToMinor": 15000,
+          "pct": 18
+        },
+        {
+          "upToMinor": null,
+          "pct": 20
+        }
+      ],
+      "commissionBase": {
+        "amountMinor": 15000,
+        "currency": "TND"
+      },
+      "expect": {
+        "step": 1,
+        "driverRidePart": 12300,
+        "commission": 2700
+      }
+    },
+    {
+      "id": "tn_above",
+      "note": "15.001 DT → above → 20 %: 12000.8 → 12001.",
+      "commissionPct": 20,
+      "steps": [
+        {
+          "upToMinor": 5000,
+          "amountMinor": 1000
+        },
+        {
+          "upToMinor": 15000,
+          "pct": 18
+        },
+        {
+          "upToMinor": null,
+          "pct": 20
+        }
+      ],
+      "commissionBase": {
+        "amountMinor": 15001,
+        "currency": "TND"
+      },
+      "expect": {
+        "step": 2,
+        "driverRidePart": 12001,
+        "commission": 3000
+      }
+    },
+    {
+      "id": "tn_zero_base",
+      "note": "A 0 base (only waiting) → no commission and no driver ride part.",
+      "commissionPct": 20,
+      "steps": [
+        {
+          "upToMinor": 5000,
+          "amountMinor": 1000
+        },
+        {
+          "upToMinor": 15000,
+          "pct": 18
+        },
+        {
+          "upToMinor": null,
+          "pct": 20
+        }
+      ],
+      "commissionBase": {
+        "amountMinor": 0,
+        "currency": "TND"
+      },
+      "expect": {
+        "step": 0,
+        "driverRidePart": 0,
+        "commission": 0
+      }
+    },
+    {
+      "id": "no_steps_is_commission_pct",
+      "note": "No steps = commissionPct exactly as before v0.18.86 (fares.json economy_plain).",
+      "commissionPct": 20,
+      "steps": [],
+      "commissionBase": {
+        "amountMinor": 19700,
+        "currency": "SEK"
+      },
+      "expect": {
+        "step": null,
+        "driverRidePart": 15760,
+        "commission": 3940
+      }
+    },
+    {
+      "id": "one_above_step_fixed",
+      "note": "One step \"above\" with a fixed 25 kr: every trip pays 25 kr commission.",
+      "commissionPct": 20,
+      "steps": [
+        {
+          "upToMinor": null,
+          "amountMinor": 2500
+        }
+      ],
+      "commissionBase": {
+        "amountMinor": 19700,
+        "currency": "SEK"
+      },
+      "expect": {
+        "step": 0,
+        "driverRidePart": 17200,
+        "commission": 2500
+      }
+    },
+    {
+      "id": "eur_pct_then_fixed",
+      "note": "France: 15.05 € base is above 15 € → fixed 3 €.",
+      "commissionPct": 20,
+      "steps": [
+        {
+          "upToMinor": 1500,
+          "pct": 10
+        },
+        {
+          "upToMinor": null,
+          "amountMinor": 300
+        }
+      ],
+      "commissionBase": {
+        "amountMinor": 1505,
+        "currency": "EUR"
+      },
+      "expect": {
+        "step": 1,
+        "driverRidePart": 1205,
+        "commission": 300
+      }
+    },
+    {
+      "id": "eur_low_pct",
+      "note": "10.05 € → 10 %: 904.5 → half-up 905.",
+      "commissionPct": 20,
+      "steps": [
+        {
+          "upToMinor": 1500,
+          "pct": 10
+        },
+        {
+          "upToMinor": null,
+          "amountMinor": 300
+        }
+      ],
+      "commissionBase": {
+        "amountMinor": 1005,
+        "currency": "EUR"
+      },
+      "expect": {
+        "step": 0,
+        "driverRidePart": 905,
+        "commission": 100
+      }
+    }
+  ]
+}

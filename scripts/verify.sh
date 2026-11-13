@@ -1117,4 +1117,44 @@ assert md.startswith('# Movera shared contract v' + c['version']), 'CONTRACT.md 
 assert 'v0.18.85' in md and 'waitPerMinShown' in md, 'CONTRACT.md text'
 assert md.count('\n') <= 1500, 'CONTRACT.md over 1,500 lines'
 PY
+# v0.18.86 (J5b; owner 2026-11-13 ~21:00 "Admin can set commission even by amount !" + ~21:05 "Yes, like this (Rec.)",
+# Rules decisions/session-2026-11-06.md): commission steps per zone and car type, % or fixed, picked by the commission base.
+python3 - <<'PY'
+import json, yaml
+c = json.load(open('contract.json'))
+assert tuple(map(int, c['version'].split('.'))) >= (0, 18, 86), 'version'
+cs = c['commissionSteps']
+for k in ('note', 'field', 'pick', 'money', 'where', 'noSteps', 'example', 'validation', 'apps', 'texts', 'textsNote'):
+    assert k in cs, 'commissionSteps.' + k
+assert 'Yes, like this (Rec.)' in cs['note'] and 'even by amount' in cs['note'], 'owner words'
+assert "never by the driver's gain" in cs['pick'] and 'min(amountMinor, base)' in cs['pick'], 'pick rule'
+assert 'NOT a shipped default' in cs['example'], 'TN example is not a default'
+V = cs['validation']
+assert 'commission_steps_invalid' in V['rule'] and 'commission_steps_invalid' in c['errors']['reason'], 'reason'
+for t in cs['texts'].values():
+    for tt in (t.values() if 'en' not in t else [t]):
+        assert set(tt) == {'sv', 'fr', 'en'} and all(tt.values()), 'texts sv/fr/en'
+assert set(cs['texts']['errors']) == set(V['problems']), 'one admin text per problem'
+assert "commissionSteps" in c['pricing']['moneySplit']['driverEarnings'] and 'max(0,' in c['pricing']['moneySplit']['driverEarnings'], 'driverEarnings formula'
+for cid, row in c['configDefaults']['pricing']['countries']['SE']['categories'].items():
+    ks = list(row)
+    assert row['commissionSteps'] == [] and ks.index('commissionSteps') == ks.index('commissionPct') + 1, 'defaults: [] beside commissionPct ' + cid
+fx = json.load(open('fixtures/commission_steps.json'))
+assert {x['id'] for x in fx['pick']} >= {'tn_up_to_5_fixed', 'tn_fixed_capped_by_base', 'tn_half_up_tie', 'tn_above', 'no_steps_is_commission_pct'}, 'cases'
+assert {x['expect']['problem'] for x in fx['validate'] if x['expect'] != 'ok'} == set(V['problems']), 'a case per problem'
+fares = {x['id']: x for x in json.load(open('fixtures/fares.json'))['cases']}
+assert fares['commission_steps_empty_is_pct']['expect'] == fares['economy_plain']['expect'], 'no steps = v0.18.85'
+spec = yaml.safe_load(open('openapi.yaml'))
+S, P = spec['components']['schemas'], spec['paths']
+st = S['CommissionStep']
+assert st['additionalProperties'] is False and st['required'] == ['upToMinor'] and len(st['oneOf']) == 2, 'CommissionStep'
+assert 'commissionSteps' in S['CategoryPricing']['properties'] and 'commissionSteps' not in S['CategoryPricing']['required'], 'additive'
+assert S['CategoryPricing']['properties']['commissionSteps']['oneOf'][0]['maxItems'] == V['maxSteps']
+for m, p in (('put', '/admin/config/{doc}'), ('post', '/admin/config/{doc}/publish')):
+    assert 'commission_steps_invalid' in P[p][m]['responses']['400']['description'], p
+md = open('CONTRACT.md').read()
+assert md.startswith('# Movera shared contract v' + c['version']), 'CONTRACT.md heading'
+assert 'v0.18.86' in md and 'commissionSteps' in md and 'commission_steps_invalid' in md, 'CONTRACT.md text'
+assert md.count('\n') <= 1500, 'CONTRACT.md over 1,500 lines'
+PY
 echo "contract ok"
