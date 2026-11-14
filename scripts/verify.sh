@@ -1281,4 +1281,30 @@ t = open('CONTRACT.md', encoding='utf-8').read()
 assert '## 90. Prices the apps show' in t and '`fare + pickupPay`' not in t and 'Offer.driverTotal' in t, 'CONTRACT.md §90 / §3.2'
 assert t.count('\n') <= 1500, 'CONTRACT.md over 1,500 lines'
 PY
+# v0.18.90 BQ-M21 (owner 2026-11-13 23:42 UTC "Movera commission is how much movera keep", Rules decisions/session-2026-11-06.md:1263):
+# on a reassigned trip the lost driver's payment is taken off moneySplit.movera / the admin view's moveraKeepsNow.
+python3 - <<'PY'
+import json, yaml
+c = json.load(open('contract.json'))
+mb = c['moneyBase']
+ld = mb['lostDriverPaid']
+assert 'session-2026-11-06.md:1263' in ld['note'] and 'REASSIGNED' in ld['note'], 'lostDriverPaid note'
+assert '/reassign and /cancel' in ld['rule'] and 'however many times' in ld['rule'] and 'riderPaid − driverTotal − debtCollected − lostDriverPaid' in ld['rule'], 'lostDriverPaid rule'
+assert 'never sent to him' in ld['driverView'] and 'hideDriverMoney' in ld['driverView'] and 'Open point' in ld['driverView'], 'driver view keeps his own trip'
+assert 'Not taken off twice' in ld['kpi'] and 'never reads moneySplit' in ld['kpi'] and 'payoutSummary' in ld['kpi'], 'KPI once'
+assert '20,00 kr' in ld['example'] and '2.000 DT' in ld['example'], 'SEK + TND example'
+cr = mb['commissionRow']
+assert '− lostDriverPaid' in cr['number'] and cr['numberBefore0_18_90'].startswith('Replaced in v0.18.90'), 'commissionRow.number'
+assert 'v0.18.90' in cr['admin'] and 'v0.18.90 driver view' in cr['driver'] and cr['driverBefore0_18_90'].startswith('Replaced'), 'commissionRow admin / driver'
+assert 'GREATEST(0, LEAST(entries, entries − inside))' in mb['bonusOutsideCommission']['server'] and 'logs a warning' in mb['bonusOutsideCommission']['server'], 'M19 clamp stated'
+fd = c['finish']['debt']
+assert 'driverTotal + movera + debtCollected + lostDriverPaid = riderPaid always' in fd['moneySplit'] and fd['moneySplitBefore0_18_90'].startswith('Replaced'), 'moneySplit sum'
+assert set(fd['texts']['lostDriverLine']) == {'sv', 'fr', 'en'}, 'lostDriverLine sv/fr/en'
+S = yaml.safe_load(open('openapi.yaml'))['components']['schemas']
+assert 'lostDriverPaid' in S['MoneySplit']['properties'] and 'lostDriverPaid' not in S['MoneySplit']['required'], 'MoneySplit.lostDriverPaid additive'
+assert '− lostDriverPaid' in S['TripProjection']['properties']['moveraKeepsNow']['description'], 'moveraKeepsNow description'
+t = open('CONTRACT.md', encoding='utf-8').read()
+assert t.startswith('# Movera shared contract v0.18.90') and '\nv0.18.90 (BQ-M21' in t and 'lostDriverPaid? }' in t, 'CONTRACT.md v0.18.90'
+assert t.count('\n') <= 1500, 'CONTRACT.md over 1,500 lines'
+PY
 echo "contract ok"
