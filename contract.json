@@ -1,6 +1,6 @@
 {
   "contract": "movera",
-  "version": "0.18.95",
+  "version": "0.18.96",
   "note": "Canonical cross-app contract for Rider, Driver and Admin. Frontend-only today; a future single backend implements it. Every app ships an identical copy under contracts/ and runs contract tests against it.",
   "wire": {
     "ids": {
@@ -9712,6 +9712,16 @@
         }
       },
       "replaced": "Replaced the same day (kept, Rule 21) by owner 2026-11-14 \"It's very simple ! U show how much driver get and how much movera get thats all no details\": two lines, no details."
+    },
+    "bookedRide": {
+      "note": "v0.18.96 (BQ-M23; owner 2026-11-12 ~16:05 UTC, Rules decisions/session-2026-11-06.md:1164: \"on the offer when come he see only how much he get\"; owner rules: the driver sees only what he gets, apps never work money out, whole amounts keep their decimals): a booked ride in the driver's lists (GET /driver/reservations, DriverReservation) is not an Offer, so v0.18.89 gave it no driverTotal and the Booked rides card showed DriverReservation.earnings (the trip's pay without Movera's bonus and pickup pay). Additive; no migration; no admin setting (display of a server number).",
+      "driverTotal": "DriverReservation.driverTotal: Money, driver view only, on every item of GET /driver/reservations (scope open and scope accepted): what the driver gets for this booked ride = driverEarnings + pickupPay + driverBonus of the trip as it stands now (Movera's bonus the admin added is inside; no tip, no later pay change), in the trip's currency — the same formula as Offer.driverTotal (whose driverEarnings already holds the bonus). A rider change the driver is asked to keep (reservation.changeAsk) sends the new number. DriverReservation.earnings stays as before (the trip's driverEarnings line without Movera's bonus and pickup pay) and is not shown. Absent only from a server before v0.18.96: the app shows '—' (never earnings plus anything, never a number worked out on the phone). Whole amounts keep their decimals (moneyDisplay.wholeAmounts: 65,00 kr, 65.000 DT). It is never sent to the rider: rider views have no DriverReservation and the rider's trip read never carries driverTotal (priceDisplay.offer, finish.driverMoney).",
+      "apps": {
+        "server": "Sends driverTotal on every DriverReservation item (open and accepted), = driver_earnings + pickup_pay + driver_bonus of the trip; one number, in minor units of the trip's currency.",
+        "driver": "The Booked rides list, its ride sheet, the Home booked-ride popup, the 'ride changed' notice and the 'Keep it at the new time?' question show ONLY DriverReservation.driverTotal; '—' without it; the app never adds, subtracts or parses amounts.",
+        "rider": "No change: the rider app never gets DriverReservation or a driverTotal.",
+        "admin": "No change: the admin reads booked rides from the admin trip read (TripProjection admin view), not from DriverReservation."
+      }
     }
   },
   "autoArrive": {

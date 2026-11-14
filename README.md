@@ -6,7 +6,7 @@ serve all three. This repository is the only place the contract changes.
 Each app and the server carries a byte-for-byte copy under `contracts/` and checks it
 against `CHECKSUMS`.
 
-Current version: **0.18.95** (`contract.json#version`, tag `v0.18.95`; BQ-M26 paid payout summary frozen; after v0.18.94 A5). The server and driver carry
+Current version: **0.18.96** (`contract.json#version`, tag `v0.18.96`; after v0.18.95 BQ-M26 and v0.18.94 A5; BQ-M23 Booked rides `DriverReservation.driverTotal`). The server and driver carry
 0.18.72; admin and rider carry 0.18.66 (later versions land in them after the merge).
 
 ## What is here
