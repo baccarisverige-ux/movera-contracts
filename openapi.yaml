@@ -1,11 +1,11 @@
-# Movera API v0.18.93 — generated from contract.json (+ CONTRACT.md §7). PROPOSED; no backend exists.
+# Movera API v0.18.94 — generated from contract.json (+ CONTRACT.md §7). PROPOSED; no backend exists.
 openapi: 3.1.0
 info:
   title: Movera API
-  version: 0.18.93
+  version: 0.18.94
   description: '**Proposed contract — no backend exists yet.** One future backend serves the Rider (Flutter), Driver (Flutter)
     and Admin (React/TS) apps. Source of truth for names, enums, transitions, realtime and errors is `contract.json` + `CONTRACT.md`
-    v0.18.93 in this folder; this file must agree with them.
+    v0.18.94 in this folder; this file must agree with them.
 
 
     Wire rules: ids match `^[A-Za-z0-9_-]{1,64}$`; times are RFC 3339 UTC with `Z`; durations are integer seconds; money is
@@ -84,7 +84,7 @@ tags:
 - name: Admin · Finance
 x-contract:
   name: movera
-  version: 0.18.93
+  version: 0.18.94
   source: contract.json
 paths:
   /auth/otp/request:
@@ -3506,7 +3506,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PayoutPage'
+                $ref: '#/components/schemas/DriverPayoutPage'
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
@@ -36548,3 +36548,33 @@ components:
         moveraGets:
           $ref: '#/components/schemas/Money'
       additionalProperties: false
+    DriverPayoutPage:
+      allOf:
+      - $ref: '#/components/schemas/PayoutPage'
+      - type: object
+        properties:
+          nextPayoutAt:
+            allOf:
+            - $ref: '#/components/schemas/Timestamp'
+            description: 'v0.18.94: nextPayoutAt = the end of the driver''s payout period that holds now (payouts.schedule:
+              the country standard''s CountryRules.payoutSchedule, default weekly Monday 08:00; the time zone of his first
+              zone, else his country''s countryTimeZones, else Europe/Stockholm; every_2_weeks counted from anchorWeek) —
+              the moment the payout job makes his next payout. A changed schedule shows at the next read (it applies to the
+              next period). Left out (absent, never null) when his payouts are paused (payoutHold: no scheduled payout is
+              made while held; the app is not told the reason) or the server cannot work it out; the app then shows its old
+              ''payout date is not available'' line. payoutMode manual does not change it: the run is still made at that moment
+              and waits for the admin''s approval (shown as pending).'
+          nextPayoutLocal:
+            type: string
+            pattern: ^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$
+            description: 'v0.18.94: nextPayoutAt as wall-clock time in nextPayoutTimeZone. Driver app, Wallet: ''Next payout:
+              Mon 08:00'' — weekday short name and HH:MM of nextPayoutLocal in the app language (sv ''Nästa utbetalning: mån
+              08:00'', fr ''Prochain versement : lun. 08:00'', en ''Next payout: Mon 08:00'') with the date under it; it shows
+              the payout zone''s time, not the phone''s.'
+          nextPayoutTimeZone:
+            type: string
+            description: 'v0.18.94: the IANA time zone of the driver''s payouts (his first zone, else his country).'
+      description: 'v0.18.94: Page<Payout> of GET /driver/payouts with the driver''s next payout moment. DriverPayoutPage.nextPayoutAt
+        (Timestamp, UTC) + DriverPayoutPage.nextPayoutLocal (string ''YYYY-MM-DDTHH:MM'', the same moment as wall-clock time
+        in the payout''s time zone) + DriverPayoutPage.nextPayoutTimeZone (IANA name) on GET /driver/payouts only (every page,
+        also when items is empty). The admin GET /admin/payouts never sends them.'

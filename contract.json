@@ -1,6 +1,6 @@
 {
   "contract": "movera",
-  "version": "0.18.93",
+  "version": "0.18.94",
   "note": "Canonical cross-app contract for Rider, Driver and Admin. Frontend-only today; a future single backend implements it. Every app ships an identical copy under contracts/ and runs contract tests against it.",
   "wire": {
     "ids": {
@@ -4914,7 +4914,19 @@
         "FR": "Europe/Paris",
         "TN": "Africa/Tunis"
       },
-      "anchorWeek": "2026-01-05"
+      "anchorWeek": "2026-01-05",
+      "nextPayout": {
+        "note": "v0.18.94 job A5 / BQ-M13 (owner G10-2 'Admin sets day and time (Recommended)' ... 'driver app shows next payout', Rules decisions/driver-g10.md:6; audits/answered-vs-built-2026-11-14-A-driver.md row A5): the driver app shows when his next payout is made, from the server; the app never works the schedule out.",
+        "fields": "DriverPayoutPage.nextPayoutAt (Timestamp, UTC) + DriverPayoutPage.nextPayoutLocal (string 'YYYY-MM-DDTHH:MM', the same moment as wall-clock time in the payout's time zone) + DriverPayoutPage.nextPayoutTimeZone (IANA name) on GET /driver/payouts only (every page, also when items is empty). The admin GET /admin/payouts never sends them.",
+        "rule": "nextPayoutAt = the end of the driver's payout period that holds now (payouts.schedule: the country standard's CountryRules.payoutSchedule, default weekly Monday 08:00; the time zone of his first zone, else his country's countryTimeZones, else Europe/Stockholm; every_2_weeks counted from anchorWeek) — the moment the payout job makes his next payout. A changed schedule shows at the next read (it applies to the next period). Left out (absent, never null) when his payouts are paused (payoutHold: no scheduled payout is made while held; the app is not told the reason) or the server cannot work it out; the app then shows its old 'payout date is not available' line. payoutMode manual does not change it: the run is still made at that moment and waits for the admin's approval (shown as pending).",
+        "display": "Driver app, Wallet: 'Next payout: Mon 08:00' — weekday short name and HH:MM of nextPayoutLocal in the app language (sv 'Nästa utbetalning: mån 08:00', fr 'Prochain versement : lun. 08:00', en 'Next payout: Mon 08:00') with the date under it; it shows the payout zone's time, not the phone's.",
+        "examples": {
+          "SE": "weekly monday 08:00, now 2026-11-14T17:00:00Z (Saturday), zone Europe/Stockholm → nextPayoutAt 2026-11-16T07:00:00Z, nextPayoutLocal 2026-11-16T08:00",
+          "FR": "every_2_weeks friday 18:30, now 2026-11-14T17:00:00Z, zone Europe/Paris → nextPayoutAt 2026-11-27T17:30:00Z, nextPayoutLocal 2026-11-27T18:30",
+          "TN": "weekly monday 08:00, now 2026-11-14T17:00:00Z, driver without a zone, country TN → Africa/Tunis: nextPayoutAt 2026-11-16T07:00:00Z, nextPayoutLocal 2026-11-16T08:00"
+        },
+        "apps": "Rule 0: contract (this) → server (GET /driver/payouts sends the 3 fields, src/admin/payouts.ts) → admin (no change: the setting exists, Settings › Payouts per country frequency / day / time, CountryRules.payoutSchedule) → driver app (Wallet line 'Next payout') → rider app (not affected: riders have no payouts)."
+      }
     },
     "currency": "v0.18.13 (audit M1): one payout is in ONE currency: the unpaid entries of a driver's period are paid per currency (a driver with kr and € entries gets two payouts); amounts of different currencies are never added.",
     "summary": "v0.18.89: see priceDisplay.payoutSummary (owner 2026-11-14 \"It's very simple ! U show how much driver get and how much movera get thats all no details\").",
