@@ -1,11 +1,11 @@
-# Movera API v0.18.99 — generated from contract.json (+ CONTRACT.md §7). PROPOSED; no backend exists.
+# Movera API v0.18.102 — generated from contract.json (+ CONTRACT.md §7). PROPOSED; no backend exists.
 openapi: 3.1.0
 info:
   title: Movera API
-  version: 0.18.99
+  version: 0.18.102
   description: '**Proposed contract — no backend exists yet.** One future backend serves the Rider (Flutter), Driver (Flutter)
     and Admin (React/TS) apps. Source of truth for names, enums, transitions, realtime and errors is `contract.json` + `CONTRACT.md`
-    v0.18.99 in this folder; this file must agree with them.
+    v0.18.102 in this folder; this file must agree with them.
 
 
     Wire rules: ids match `^[A-Za-z0-9_-]{1,64}$`; times are RFC 3339 UTC with `Z`; durations are integer seconds; money is
@@ -84,7 +84,7 @@ tags:
 - name: Admin · Finance
 x-contract:
   name: movera
-  version: 0.18.99
+  version: 0.18.102
   source: contract.json
 paths:
   /auth/otp/request:
@@ -16861,7 +16861,22 @@ paths:
         pending; the answer is { country, periodEnd, approved, total: Money[] (one per currency) }. A pending_approval payout
         cannot be marked paid (409 run_not_approved). The driver app shows pending_approval as pending (GET /driver/payouts
         never returns pending_approval). Changing the mode changes only later runs. One admin is enough (Q1); a single driver
-        can still be held (payoutHold).'
+        can still be held (payoutHold). v0.18.102 BQ-V38 (owner item 105 / Q-M8 2026-11-12 ''Refresh, approve again (Rec.)'',
+        Rules decisions/session-2026-11-06.md:1119: if the numbers changed while the admin looked, Approve refreshes the card
+        and asks for Approve again; Movera never pays a total the admin did not see; Q-M8 :1107 ''refuse approval if the total
+        changed''): POST /admin/payouts/runs/approve carries what the admin saw: { country, periodEnd, reason, expectedCount,
+        expectedTotal }. expectedCount = how many payouts of the run he saw (integer >= 1); expectedTotal = the run''s Payout.amount
+        summed per currency, one Money per currency (kr, € and DT are never added; minor units, TND 3 decimals). Under the
+        payouts'' row lock the server reads the run it would approve (every pending_approval payout of that country and period
+        inside the admin''s zones) and compares: the same number of payouts and, per currency, the same total (the same set
+        of currencies, none missing, none extra). Any difference (a payout joined or left the run, an amount changed, e.g.
+        a carried rest) = 409 conflict, reason run_changed, projection = the fresh PayoutRunCard { country, periodEnd, count,
+        total: Money[] }; nothing is approved and nothing is written to the audit. The admin shows why (the fresh count and
+        total), reloads the run and the admin approves again with the fresh numbers. expectedCount or expectedTotal missing
+        (an admin older than v0.18.102) = 400 invalid_request, reason expected_total_required: a run is never approved blind.
+        A match approves as before (answer PayoutRunApproved, total = what he saw; audit payout.run_approve also keeps expectedCount
+        and expectedTotal). A second click after a success still gets 409 nothing_to_approve. The other checks keep their
+        order: reason_required, nothing_to_approve, zone_out_of_scope, then this guard.'
       tags:
       - Admin · Finance
       x-actor:
@@ -35194,6 +35209,8 @@ components:
       - country
       - periodEnd
       - reason
+      - expectedCount
+      - expectedTotal
       properties:
         country:
           type: string
@@ -35205,6 +35222,17 @@ components:
           minLength: 1
           maxLength: 300
           description: 'v0.18.29 (owner A2-3): why the run is approved; kept in the audit.'
+        expectedCount:
+          type: integer
+          minimum: 1
+          description: 'v0.18.102 (payoutMode.approveGuard): how many payouts of the run the admin saw.'
+        expectedTotal:
+          type: array
+          items:
+            $ref: '#/components/schemas/Money'
+          minItems: 1
+          description: 'v0.18.102 (payoutMode.approveGuard): the run''s Payout.amount summed per currency as the admin saw
+            it, one Money per currency.'
     PayoutRunApproved:
       type: object
       required:
@@ -36675,3 +36703,25 @@ components:
         (Timestamp, UTC) + DriverPayoutPage.nextPayoutLocal (string ''YYYY-MM-DDTHH:MM'', the same moment as wall-clock time
         in the payout''s time zone) + DriverPayoutPage.nextPayoutTimeZone (IANA name) on GET /driver/payouts only (every page,
         also when items is empty). The admin GET /admin/payouts never sends them.'
+    PayoutRunCard:
+      type: object
+      description: 'v0.18.102: PayoutRunCard { country, periodEnd, count, total: Money[] } — the server''s numbers of the
+        run at that moment (count = the payouts the admin would approve; total = their Payout.amount per currency). The admin
+        shows count and total exactly as the server sent them. Sent as Error.projection with 409 conflict, reason run_changed.'
+      required:
+      - country
+      - periodEnd
+      - count
+      - total
+      properties:
+        country:
+          type: string
+        periodEnd:
+          $ref: '#/components/schemas/Timestamp'
+        count:
+          type: integer
+          minimum: 0
+        total:
+          type: array
+          items:
+            $ref: '#/components/schemas/Money'
