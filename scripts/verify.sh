@@ -1305,7 +1305,7 @@ S = yaml.safe_load(open('openapi.yaml'))['components']['schemas']
 assert 'lostDriverPaid' in S['MoneySplit']['properties'] and 'lostDriverPaid' not in S['MoneySplit']['required'], 'MoneySplit.lostDriverPaid additive'
 assert '− lostDriverPaid' in S['TripProjection']['properties']['moveraKeepsNow']['description'], 'moveraKeepsNow description'
 t = open('CONTRACT.md', encoding='utf-8').read()
-assert t.startswith('# Movera shared contract v0.18.90') and '\nv0.18.90 (BQ-M21' in t and 'lostDriverPaid? }' in t, 'CONTRACT.md v0.18.90'
+assert t.startswith('# Movera shared contract v' + c['version']) and '\nv0.18.90 (BQ-M21' in t and 'lostDriverPaid? }' in t, 'CONTRACT.md v0.18.90'
 pd = c['priceDisplay']
 assert 'cash the driver holds' in pd['owedToMovera'] and 'plus a cash tip' in pd['owedToMovera'] and 'fare − walletApplied' in pd['owedToMovera'] and pd['owedToMoveraBefore0_18_90'].startswith('Replaced in v0.18.90'), 'owedToMovera cash held (P89 must-fix 1)'
 assert "'counted as cash the driver already holds'" in pd['owedToMovera'] and 'counted as cash the driver already holds' in S['TripTip']['properties']['driverShare']['description'], 'owedToMovera matches TripTip.driverShare'
@@ -1313,5 +1313,32 @@ aw = json.load(open('fixtures/arrived_waiting.json'))
 assert [x['text'] for x in aw['termsMoney']] == ['12,26 kr', '65,00 kr', '0,50 €', '8,10 €', '8,00 €', '12,26 kr', '5.000 DT'] and 'N4' in aw['termsMoneyNote'], 'termsMoney fixture follows moneyDisplay (P89 N4)'
 assert '`TripFinish.owedToMovera` = cash the driver holds' in t, 'CONTRACT.md §90 owedToMovera'
 assert t.count('\n') <= 1500, 'CONTRACT.md over 1,500 lines'
+PY
+# v0.18.91 job A7 (owner 2026-11-02 "taken from the driver's NEXT payout (driver sees why)", Rules decisions/driver-g8.md:95-98;
+# Q-M4 decisions/session-2026-11-06.md:1102) + job C8 (owner "Anything admin can adjust becomes an admin setting"):
+# the driver gets a bell + push when a refund is taken from his earnings; the cash-tip time in the car is an admin setting.
+python3 - <<'PY'
+import json, yaml
+c = json.load(open('contract.json'))
+assert tuple(map(int, c['version'].split('.'))) >= (0, 18, 91), 'version 0.18.91 or later'
+dn = c['finish']['refund']['driverNotice']
+assert dn['kind'] == 'driver_refund_taken' and dn['deepLink'] == 'movera-driver://trips/{tripId}', 'driverNotice kind / link'
+assert 'driver-g8.md:95-98' in dn['note'] and 'audience driver' in dn['rule'] and 'share taken from him' in dn['rule'], 'driverNotice note / rule'
+assert 'noticeLanguage' in dn['rule'] and 'wholeAmounts' in dn['rule'] and 'No notice' in dn['rule'], 'driverNotice language / money / when'
+for k in ('title', 'body'):
+    assert set(dn[k]) == {'sv', 'fr', 'en'}, k + ' sv/fr/en'
+for lang in ('sv', 'fr', 'en'):
+    assert '{amount}' in dn['body'][lang] and '{reason}' in dn['body'][lang], 'body placeholders ' + lang
+assert set(dn['examples']) == {'SEK', 'EUR', 'TND'} and '65,00 kr' in dn['examples']['SEK'] and '5.000 DT' in dn['examples']['TND'], 'examples keep decimals'
+assert 'data { tripId, refundId, amount, reason }' in dn['rule'], 'driverNotice data'
+assert 'driver app' in dn['apps'] and 'rider app' in dn['apps'] and 'admin' in dn['apps'], 'driverNotice Rule 0 parts'
+ta = c['finish']['tips']['cashInCarAdmin']
+assert 'Anything admin can adjust' in ta and 'cashInCarMinutes' in ta and 'per zone or the country standard' in ta and '0–60' in ta and 'default 5' in ta, 'tips.cashInCarAdmin'
+assert c['finish']['tips']['settings_ranges']['cashInCarMinutes'] == [0, 60] and c['configDefaults']['tipRules']['cashInCarMinutes'] == 5, 'tip window range / default'
+t = open('CONTRACT.md', encoding='utf-8').read()
+assert t.startswith('# Movera shared contract v' + c['version']) and '\nv0.18.91 (jobs A7 + C8' in t and 'driver_refund_taken' in t, 'CONTRACT.md v0.18.91'
+assert t.count('\n') <= 1500, 'CONTRACT.md over 1,500 lines'
+spec = yaml.safe_load(open('openapi.yaml'))
+assert spec['info']['version'] == c['version'], 'openapi version'
 PY
 echo "contract ok"
