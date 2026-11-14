@@ -1,11 +1,11 @@
-# Movera API v0.18.87 — generated from contract.json (+ CONTRACT.md §7). PROPOSED; no backend exists.
+# Movera API v0.18.88 — generated from contract.json (+ CONTRACT.md §7). PROPOSED; no backend exists.
 openapi: 3.1.0
 info:
   title: Movera API
-  version: 0.18.87
+  version: 0.18.88
   description: '**Proposed contract — no backend exists yet.** One future backend serves the Rider (Flutter), Driver (Flutter)
     and Admin (React/TS) apps. Source of truth for names, enums, transitions, realtime and errors is `contract.json` + `CONTRACT.md`
-    v0.18.87 in this folder; this file must agree with them.
+    v0.18.88 in this folder; this file must agree with them.
 
 
     Wire rules: ids match `^[A-Za-z0-9_-]{1,64}$`; times are RFC 3339 UTC with `Z`; durations are integer seconds; money is
@@ -84,7 +84,7 @@ tags:
 - name: Admin · Finance
 x-contract:
   name: movera
-  version: 0.18.87
+  version: 0.18.88
   source: contract.json
 paths:
   /auth/otp/request:
@@ -25638,9 +25638,12 @@ components:
             card''s "% commission" field (commissionPct). Per zone and per car type (PricingDocument.categories[categoryId].commissionSteps;
             the country standard''s Commission panel alike), NEVER a global setting and never a separate page. The card shows
             the % field (used when there are no steps), the step rows, "Add step", and the warn texts of that card''s steps.
-            Warning (admin only): ADVISORY ONLY: the admin editor shows the warning (texts.warnDrop) in that car-type card,
-            next to the step, and STILL ALLOWS SAVING. The server does NOT refuse it: no 400, no reason code, no problem code;
-            PUT and publish save the steps exactly as with no warning. The driver and rider apps show nothing.'
+            v0.18.88 (owner 2026-11-14 "Yes add app fee in same card"): each car-type card also has an editable "App fee %"
+            next to its "% commission": the SAME value as Pricing › Limits › App fee (PricingDocument.categories[categoryId].appFeePct,
+            0–50 %), so both places always show one number; no new field, no server change. Warning (admin only): ADVISORY
+            ONLY: the admin editor shows the warning (texts.warnDrop) in that car-type card, next to the step, and STILL ALLOWS
+            SAVING. The server does NOT refuse it: no 400, no reason code, no problem code; PUT and publish save the steps
+            exactly as with no warning. The driver and rider apps show nothing.'
     PricingFees:
       type: object
       required:
