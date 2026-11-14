@@ -19953,9 +19953,10 @@ components:
             and history rows are not shown (never TripProjection.commission as a fallback, never worked out on the phone);
             on a paid trip the waybill row is hidden too when it is absent; only before the paid end does the waybill show
             TripProjection.commission (nothing changed yet). v0.18.92: TripProjection.moveraKeepsNow on the ADMIN view is
-            also sent on an ended trip with no paid ride = Movera''s share of the fee charged on that end (0 when free) −
-            lostDriverPaid (commissionRow.admin (2)); the driver view keeps it only on a paid end (unchanged: absent → the
-            driver''s rows are hidden), and the driver''s stream never gets the admin number.'
+            sent on every trip with a commission — paid (moneySplit.movera), ended with no paid ride (Movera''s fee share,
+            0 when free, − lostDriverPaid) and still under way (commission − lostDriverPaid) — so the admin ''Movera commission''
+            row is always this one number (commissionRow.admin). The driver view keeps it only on a paid end (unchanged: absent
+            → the driver''s rows are hidden), and the driver''s stream never gets the admin number.'
         cashToCollect:
           allOf:
           - $ref: '#/components/schemas/Money'
@@ -19977,9 +19978,9 @@ components:
             moneySplit.lostDriverPaid. Never on the driver or rider view nor on their realtime streams (the stored event is
             the admin projection: the server takes it out for both). Additive; older admins ignore it. v0.18.92: moneySplit
             (''Who gets what'') is sent only on a paid trip end (completed, the rider''s early end, the driver''s end on board,
-            admin complete — the same paid end as moveraKeepsNow and the KPI money, moneyBase.kpiMoney); an unpaid or cancelled
-            trip has no moneySplit (the rider paid nothing, so there is no riderPaid to split). Its lost-driver payment is
-            TripProjection.lostDriverPaid, and its admin ''Movera commission'' row is commissionRow.admin (2) / (3).'
+            admin complete — the same paid end as the KPI money, moneyBase.kpiMoney); an unpaid or cancelled trip has no moneySplit
+            (the rider paid nothing, so there is no riderPaid to split). Its lost-driver payment is TripProjection.lostDriverPaid,
+            and its admin ''Movera commission'' row is the admin view''s moveraKeepsNow (commissionRow.admin (2) / (3)).'
     DriverSilentAlert:
       type: object
       description: 'v0.7.0: documents the server''s alert of 2026-10-26: no position for 30 min with the rider on board; the

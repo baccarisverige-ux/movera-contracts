@@ -1317,13 +1317,13 @@ assert t.count('\n') <= 1500, 'CONTRACT.md over 1,500 lines'
 assert tuple(map(int, c['version'].split('.'))) >= (0, 18, 92), 'version'
 assert '\nv0.18.92 (GM 2026-11-14' in t and '`TripProjection.lostDriverPaid`' in t, 'CONTRACT.md v0.18.92 note'
 cr2 = c['moneyBase']['commissionRow']; ld2 = c['moneyBase']['lostDriverPaid']
-assert 'commission − TripProjection.lostDriverPaid' in cr2['admin'] and 'Never TripProjection.commission there' in cr2['admin'] and cr2['adminBefore0_18_92'].startswith('Replaced in v0.18.92'), 'commissionRow.admin unpaid rows (G1)'
+assert 'commission − TripProjection.lostDriverPaid' in cr2['admin'] and 'ONE server number' in cr2['admin'] and 'the admin never adds or subtracts' in cr2['admin'] and 'keep no quoted pay' in cr2['admin'] and cr2['adminBefore0_18_92'].startswith('Replaced in v0.18.92'), 'commissionRow.admin unpaid rows (G1)'
 assert 'ADMIN view only' in ld2['tripField'] and 'paid or not' in ld2['tripField'] and 'equals moneySplit.lostDriverPaid' in ld2['tripField'], 'lostDriverPaid.tripField'
 assert 'only on a paid trip end' in ld2['unpaid'] and ld2['appsBefore0_18_92'].startswith('Replaced in v0.18.92'), 'lostDriverPaid.unpaid / apps'
 assert 'lostDriverPaid' in S['TripProjection']['properties'] and 'lostDriverPaid' not in S['TripProjection'].get('required', []), 'TripProjection.lostDriverPaid additive'
 ps2 = c['priceDisplay']['payoutSummary']
 assert "the payout's OWN entries" in ps2['rule'] and 'The two views may differ' in ps2['rule'] and ps2['ruleBefore0_18_92'].startswith('Replaced in v0.18.92'), 'payoutSummary own entries / views (MF1, MF2)'
-assert 'migration 0108' in ps2['index0_18_92'] and 'ADMIN view' in cr2['fieldAdmin0_18_92'], 'payout index / admin moveraKeepsNow on an unpaid end'
+assert 'migration 0108' in ps2['index0_18_92'] and 'ADMIN view' in cr2['fieldAdmin0_18_92'] and 'still under way' in cr2['fieldAdmin0_18_92'], 'payout index / admin moveraKeepsNow on an unpaid end'
 assert "the payout's OWN entries" in S['PayoutSummary']['description'] and cr2['fieldAdmin0_18_92'] in S['TripProjection']['properties']['moveraKeepsNow']['description'], 'openapi follows'
 assert '**Payout.summary = the payout\'s own entries**' in t, 'CONTRACT.md v0.18.92 payout line'
 PY
