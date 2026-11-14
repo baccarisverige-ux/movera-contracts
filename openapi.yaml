@@ -1,11 +1,11 @@
-# Movera API v0.18.95 — generated from contract.json (+ CONTRACT.md §7). PROPOSED; no backend exists.
+# Movera API v0.18.96 — generated from contract.json (+ CONTRACT.md §7). PROPOSED; no backend exists.
 openapi: 3.1.0
 info:
   title: Movera API
-  version: 0.18.95
+  version: 0.18.96
   description: '**Proposed contract — no backend exists yet.** One future backend serves the Rider (Flutter), Driver (Flutter)
     and Admin (React/TS) apps. Source of truth for names, enums, transitions, realtime and errors is `contract.json` + `CONTRACT.md`
-    v0.18.95 in this folder; this file must agree with them.
+    v0.18.96 in this folder; this file must agree with them.
 
 
     Wire rules: ids match `^[A-Za-z0-9_-]{1,64}$`; times are RFC 3339 UTC with `Z`; durations are integer seconds; money is
@@ -84,7 +84,7 @@ tags:
 - name: Admin · Finance
 x-contract:
   name: movera
-  version: 0.18.95
+  version: 0.18.96
   source: contract.json
 paths:
   /auth/otp/request:
@@ -34826,7 +34826,10 @@ components:
           type: integer
           minimum: 0
         earnings:
-          $ref: '#/components/schemas/Money'
+          allOf:
+          - $ref: '#/components/schemas/Money'
+          description: 'v0.18.96: the trip''s driverEarnings line, without Movera''s bonus and pickup pay; not shown to the
+            driver (he sees driverTotal).'
         status:
           $ref: '#/components/schemas/TripStatus'
         mustBeOnlineAt:
@@ -34845,6 +34848,23 @@ components:
           - $ref: '#/components/schemas/ReservationInfo'
           description: 'v0.18.19 (live test HIGH 2): the same reservation as the trip read, so the list knows changeAsk (Keep
             it at the new time?) and leaveAt.'
+        driverTotal:
+          allOf:
+          - $ref: '#/components/schemas/Money'
+          description: 'v0.18.96: DriverReservation.driverTotal: Money, driver view only, on every item of GET /driver/reservations
+            (scope open and scope accepted): what the driver gets for this booked ride = driverEarnings + pickupPay + driverBonus
+            of the trip as it stands now, plus Movera''s driver-pay change on a held ride (driverAdjustments, J6: an admin
+            may change the pay of an accepted booked ride; capped so the pay never shows below 0; same as TripProjection.driverTotal,
+            finish.driverMoney.rule ''one number''); no tip (none before the trip). Movera''s bonus the admin added is inside.
+            In the trip''s currency. An open ride (not yet accepted) has no change, so there it equals Offer.driverTotal (whose
+            driverEarnings already holds the bonus). A rider change the driver is asked to keep (reservation.changeAsk) sends
+            the new number. DriverReservation.earnings stays as before (the trip''s driverEarnings line without Movera''s
+            bonus and pickup pay) and is not shown. Absent only from a server before v0.18.96: the app shows ''—'' (never
+            earnings plus anything, never a number worked out on the phone). Whole amounts keep their decimals (moneyDisplay.wholeAmounts:
+            65,00 kr, 65.000 DT). It is never sent to the rider: rider views have no DriverReservation and the rider''s trip
+            read never carries driverTotal (priceDisplay.offer, finish.driverMoney). The Booked rides list, its ride sheet,
+            the Home booked-ride popup, the ''ride changed'' notice and the ''Keep it at the new time?'' question show ONLY
+            DriverReservation.driverTotal; ''—'' without it; the app never adds, subtracts or parses amounts.'
     DriverReservationPage:
       type: object
       description: v0.18.17.

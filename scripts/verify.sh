@@ -1402,6 +1402,31 @@ t = open('CONTRACT.md', encoding='utf-8').read()
 assert t.startswith('# Movera shared contract v' + c['version']) and '\nv0.18.93 (job C9' in t and '## 91. Auto arrived' in t, 'CONTRACT.md v0.18.93'
 assert t.count('\n') <= 1500, 'CONTRACT.md over 1,500 lines'
 PY
+# v0.18.96 (BQ-M23; owner s06:1164 "only how much he get"): a booked ride in the driver's lists carries driverTotal.
+python3 - <<'PY'
+import json, yaml
+c = json.load(open('contract.json'))
+assert tuple(map(int, c['version'].split('.'))) >= (0, 18, 96), 'version 0.18.96 or later'
+br = c['priceDisplay']['bookedRide']
+assert 'session-2026-11-06.md:1164' in br['note'] and 'BQ-M23' in br['note'], 'bookedRide owner note'
+dt = br['driverTotal']
+assert 'driverEarnings + pickupPay + driverBonus' in dt and 'Offer.driverTotal' in dt and 'driver view only' in dt, 'driverTotal rule'
+assert 'driverAdjustments' in dt and 'TripProjection.driverTotal' in dt and 'never shows below 0' in dt and 'no tip' in dt and 'no later pay change' not in dt, 'driverTotal includes the J6 driver-pay change (M23 MF1)'
+assert 'driver_adjustments' in br['apps']['server'] and 'driverTotalOf' in br['apps']['server'], 'server: same driverTotalOf'
+assert 'never sent to the rider' in dt and "'—'" in dt and 'never' in br['apps']['driver'], 'privacy + no phone maths'
+for k in ('driver', 'rider', 'admin', 'server'):
+    assert k in br['apps'], 'apps ' + k
+spec = yaml.safe_load(open('openapi.yaml'))
+S = spec['components']['schemas']
+assert spec['info']['version'] == c['version'], 'openapi version'
+r = S['DriverReservation']
+assert r['properties']['driverTotal']['allOf'] == [{'$ref': '#/components/schemas/Money'}], 'DriverReservation.driverTotal is Money'
+assert 'driverTotal' not in r['required'], 'additive (optional)'
+assert 'v0.18.96' in r['properties']['driverTotal']['description'] and 'v0.18.96' in r['properties']['earnings']['description'], 'descriptions'
+t = open('CONTRACT.md', encoding='utf-8').read()
+assert t.startswith('# Movera shared contract v' + c['version']) and '\nv0.18.96 (BQ-M23' in t, 'CONTRACT.md v0.18.96'
+assert t.count('\n') <= 1500, 'CONTRACT.md over 1,500 lines'
+PY
 echo "contract ok"
 # v0.18.94 job A5 / BQ-M13 (owner G10-2 "Admin sets day and time (Recommended)" ... "driver app shows next payout",
 # Rules decisions/driver-g10.md:6): GET /driver/payouts sends the driver's next payout moment.
