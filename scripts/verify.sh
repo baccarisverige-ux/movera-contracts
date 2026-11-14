@@ -1326,6 +1326,12 @@ assert "the payout's OWN entries" in ps2['rule'] and 'The two views may differ' 
 assert 'migration 0108' in ps2['index0_18_92'] and 'ADMIN view' in cr2['fieldAdmin0_18_92'] and 'still under way' in cr2['fieldAdmin0_18_92'], 'payout index / admin moveraKeepsNow on an unpaid end'
 assert "the payout's OWN entries" in S['PayoutSummary']['description'] and cr2['fieldAdmin0_18_92'] in S['TripProjection']['properties']['moveraKeepsNow']['description'], 'openapi follows'
 assert '**Payout.summary = the payout\'s own entries**' in t, 'CONTRACT.md v0.18.92 payout line'
+# v0.18.95 (server BQ-M26; M24 supervisor N1): a paid payout's summary is frozen when it is marked paid.
+assert tuple(map(int, c['version'].split('.'))) >= (0, 18, 95), 'version'
+fz = c['priceDisplay']['payoutSummary']['frozenWhenPaid']
+assert fz.startswith('v0.18.95') and 'marks the payout paid' in fz and 'never moves a paid payout' in fz and 'stays live' in fz and 'freeze at deploy' in fz and 'migration 0109' in fz, 'payoutSummary.frozenWhenPaid'
+assert '\nv0.18.95 (server BQ-M26' in t and '**a paid payout\'s summary is frozen**' in t and 'payoutSummary.frozenWhenPaid' in t, 'CONTRACT.md v0.18.95 note'
+assert fz in S['PayoutSummary']['description'], 'openapi PayoutSummary follows frozenWhenPaid'
 PY
 # v0.18.91 job A7 (owner 2026-11-02 "taken from the driver's NEXT payout (driver sees why)", Rules decisions/driver-g8.md:95-98;
 # Q-M4 decisions/session-2026-11-06.md:1102) + job C8 (owner "Anything admin can adjust becomes an admin setting"):
