@@ -1251,10 +1251,12 @@ assert 'never works pickup pay out' in pd['offer']['pickupPay'] and 'walletAppli
 assert 'driverEarnings + pickupPay + driverBonus' in pd['routeChange'] and 'feeNow' in pd['cancelPreview']['shape'] and 'cancel_fee.dart' in pd['cancelPreview']['apps'], 'routeChange / cancelPreview'
 assert '− finish.driverTotal' in pd['owedToMovera'] and 'cash_balance.dart' in pd['owedToMovera'], 'owedToMovera'
 ps = pd['payoutSummary']
-assert 'Q-M8' in ps['owner'] and 'session-2026-11-06.md:1107' in ps['owner'] and 'earnings − owedToMovera' in ps['rule'], 'payoutSummary'
-assert ps['display'].startswith('Three separate lines') and ps['texts']['earnings']['sv'] == 'Intäkter', 'payout 3 lines texts'
+assert 'thats all no details' in ps['owner'] and 'all trips' in ps['rule'] and 'commissionRow' in ps['rule'] and 'never do' in ps['rule'], 'payoutSummary 2 lines'
+assert ps['display'].startswith('Exactly two lines') and 'No other detail' in ps['display'], 'payout card no details'
+assert ps['texts'] == {'driverGets': {'sv': 'Föraren får', 'fr': 'Le chauffeur reçoit', 'en': 'Driver gets'}, 'moveraGets': {'sv': 'Movera får', 'fr': 'Movera reçoit', 'en': 'Movera gets'}}, 'payout texts'
+assert 'Three separate lines' in pd['payoutSummaryBefore0_18_89']['display'] and 'Earnings / Owed to Movera / Paid out' in c['payouts']['noteBefore0_18_89'], 'old 3-line text kept (Rule 21)'
 pn = c['payouts']['note']
-assert 'v0.18.89' in pn and 'Earnings / Owed to Movera / Paid out' in pn and 'is replaced' in pn, 'payouts.note 3 lines'
+assert 'v0.18.89' in pn and 'Driver gets /' in pn and 'Movera gets' in pn and 'Owed to Movera' not in pn and 'is replaced' in pn, 'payouts.note 2 lines'
 tm = c['arrivedWaiting']['termsTexts']['money']
 assert 'follows the currency, not the' in tm and "'65,00 kr'" in tm and "'5.000 DT'" in tm and 'driver-g6.md:96' in tm and "'13,49 kr'" in tm, 'termsTexts.money'
 assert c['arrivedWaiting']['termsTexts']['moneyBefore0_18_89'].startswith('Replaced in v0.18.89'), 'old termsTexts.money kept'
@@ -1266,7 +1268,7 @@ S = yaml.safe_load(open('openapi.yaml'))['components']['schemas']
 for sch, f in (('Offer', 'driverTotal'), ('Offer', 'cashToCollect'), ('TripRouteChange', 'driverTotal'), ('TripProjection', 'cancelPreview'),
                ('TripProjection', 'cashToCollect'), ('TripFinish', 'owedToMovera'), ('Payout', 'summary')):
     assert f in S[sch]['properties'] and f not in S[sch].get('required', []), sch + '.' + f + ' additive'
-assert S['CancelPreview']['required'] == ['feeNow', 'kind'] and S['PayoutSummary']['required'] == ['earnings', 'owedToMovera', 'paidOut'], 'new schemas'
+assert S['CancelPreview']['required'] == ['feeNow', 'kind'] and S['PayoutSummary']['required'] == ['driverGets', 'moveraGets'], 'new schemas'
 assert 'only the total' not in S['Payout']['properties']['lines']['description'], 'Payout.lines 3 lines'
 t = open('CONTRACT.md', encoding='utf-8').read()
 assert '## 90. Prices the apps show' in t and '`fare + pickupPay`' not in t and 'Offer.driverTotal' in t, 'CONTRACT.md §90 / §3.2'

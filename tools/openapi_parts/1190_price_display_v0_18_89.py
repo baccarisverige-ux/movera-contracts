@@ -19,11 +19,11 @@ S["CancelPreview"] = obj({"feeNow": ref("Money"), "kind": s(enum=["cancel", "no_
 S["TripProjection"]["properties"]["cancelPreview"] = {"allOf": [ref("CancelPreview")], "description": _V + "rider and admin views (contract.json#priceDisplay.cancelPreview)."}
 S["TripFinish"]["properties"]["owedToMovera"] = {"allOf": [ref("Money")], "description": _V + _PD["owedToMovera"]}
 _PS = _PD["payoutSummary"]
-S["PayoutSummary"] = obj({"earnings": ref("Money"), "owedToMovera": ref("Money"), "paidOut": ref("Money")},
-                         ["earnings", "owedToMovera", "paidOut"],
+S["PayoutSummary"] = obj({"driverGets": ref("Money"), "moveraGets": ref("Money")},
+                         ["driverGets", "moveraGets"],
                          _V + _PS["owner"] + " " + _PS["shape"] + " " + _PS["rule"] + " " + _PS["display"], addl=False)
 S["Payout"]["properties"]["summary"] = {"allOf": [ref("PayoutSummary")], "description": _V + "driver and admin views: the 3 lines (contract.json#priceDisplay.payoutSummary)."}
 _L = S["Payout"]["properties"]["lines"]
 assert _L["description"].endswith("The driver app shows only the total."), "Payout.lines text changed before v0.18.89"
 _L["description"] = _L["description"][: -len("The driver app shows only the total.")] + (
-    "v0.18.89 (Q-M8): the driver app and the admin show the 3 lines of Payout.summary (Earnings / Owed to Movera / Paid out); these lines stay the admin's detail.")
+    "v0.18.89 (owner 2026-11-14 \"no details\"): the payout card in the driver app and the admin shows only the 2 lines of Payout.summary (Driver gets / Movera gets), not these lines.")

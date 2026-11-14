@@ -22842,9 +22842,9 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/PayoutLine'
-          description: 'v0.9.0, admin only (GET /admin/payouts): the lines behind the amount. v0.18.89 (Q-M8): the driver
-            app and the admin show the 3 lines of Payout.summary (Earnings / Owed to Movera / Paid out); these lines stay
-            the admin''s detail.'
+          description: 'v0.9.0, admin only (GET /admin/payouts): the lines behind the amount. v0.18.89 (owner 2026-11-14 "no
+            details"): the payout card in the driver app and the admin shows only the 2 lines of Payout.summary (Driver gets
+            / Movera gets), not these lines.'
         paidBy:
           allOf:
           - $ref: '#/components/schemas/Id'
@@ -36386,29 +36386,24 @@ components:
       additionalProperties: false
     PayoutSummary:
       type: object
-      description: 'v0.18.89: Q-M8 (owner 2026-11-12 12:45 UTC "3 lines apart (Rec.)", Rules decisions/session-2026-11-06.md:1107):
-        "driver earning it''s only how much driver earn without movera commission ... how much driver own to movera is not
-        included in driver earning so make everything clear in everywhere" — example Earnings 1,000 kr / Owed to Movera −150
-        kr / Paid out 850 kr. Payout.summary { earnings: Money, owedToMovera: Money, paidOut: Money }, same currency as Payout.amount;
-        driver (GET /driver/payouts) and admin (GET /admin/payouts, the payout page, the payout run card) views. earnings
-        = the driver''s money in the payout that Movera pays him, without Movera''s commission: the sum over the payout''s
-        trips of max(0, −owedToMovera) plus each entry of his money that is not inside a trip''s driverTotal (cancel / no-show
-        shares, tips, a later bonus), each once; owedToMovera = what he owes Movera in the payout, ≥ 0: the sum over the payout''s
-        trips of max(0, owedToMovera) + the rest carried from earlier payouts below 0 (Q-M3) − his "Driver paid Movera" entries
-        (paid_to_movera), never below 0; paidOut = Payout.amount = earnings − owedToMovera (may be negative: the rest carries
-        to the next payout, Q-M3). The three always add up; the server works them out, the apps never do. Three separate lines,
-        in this order, everywhere a payout is shown: "Earnings 1 000,00 kr" / "Owed to Movera −150,00 kr" (shown with a minus;
-        "0,00 kr" when nothing is owed) / "Paid out 850,00 kr". Payout.lines stay the admin''s detail under them. Absent (an
-        older server) → the driver app shows Paid out (amount) only.'
+      description: 'v0.18.89: owner 2026-11-14 "It''s very simple ! U show how much driver get and how much movera get thats
+        all no details" (replaces the 3-line reading of Q-M8, Rules decisions/session-2026-11-06.md:1107, for the payout card).
+        Payout.summary { driverGets: Money, moveraGets: Money }, same currency as Payout.amount; driver (GET /driver/payouts)
+        and admin (GET /admin/payouts, the payout page, the payout run card) views. driverGets = his earnings for the payout''s
+        period, all trips (pay in car and in app alike): the sum of each trip''s finish.driverTotal plus each entry of his
+        money that is not inside a trip''s driverTotal (cancel / no-show shares, tips, a later bonus), each once. moveraGets
+        = Movera''s commission for the period: the sum of what Movera keeps now on each of the period''s trips (TripProjection.moveraKeepsNow
+        / moneySplit.movera, moneyBase.commissionRow; owner 2026-11-13 "Movera commission is how much movera keep") plus Movera''s
+        share of the period''s fees. The server works both out; the apps never do (no adding of lines, no subtracting). Exactly
+        two lines on every payout card, in the driver app and in the admin: "Driver gets 1 000,00 kr" / "Movera gets 150,00
+        kr". No other detail line on the card (no Payout.lines, no cash collected, no owed, no paid-out line). Absent (an
+        older server) → the card shows Payout.amount only.'
       required:
-      - earnings
-      - owedToMovera
-      - paidOut
+      - driverGets
+      - moveraGets
       properties:
-        earnings:
+        driverGets:
           $ref: '#/components/schemas/Money'
-        owedToMovera:
-          $ref: '#/components/schemas/Money'
-        paidOut:
+        moveraGets:
           $ref: '#/components/schemas/Money'
       additionalProperties: false
