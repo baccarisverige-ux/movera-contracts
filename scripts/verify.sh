@@ -1411,6 +1411,8 @@ br = c['priceDisplay']['bookedRide']
 assert 'session-2026-11-06.md:1164' in br['note'] and 'BQ-M23' in br['note'], 'bookedRide owner note'
 dt = br['driverTotal']
 assert 'driverEarnings + pickupPay + driverBonus' in dt and 'Offer.driverTotal' in dt and 'driver view only' in dt, 'driverTotal rule'
+assert 'driverAdjustments' in dt and 'TripProjection.driverTotal' in dt and 'never shows below 0' in dt and 'no tip' in dt and 'no later pay change' not in dt, 'driverTotal includes the J6 driver-pay change (M23 MF1)'
+assert 'driver_adjustments' in br['apps']['server'] and 'driverTotalOf' in br['apps']['server'], 'server: same driverTotalOf'
 assert 'never sent to the rider' in dt and "'—'" in dt and 'never' in br['apps']['driver'], 'privacy + no phone maths'
 for k in ('driver', 'rider', 'admin', 'server'):
     assert k in br['apps'], 'apps ' + k
