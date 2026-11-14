@@ -1290,7 +1290,8 @@ mb = c['moneyBase']
 ld = mb['lostDriverPaid']
 assert 'session-2026-11-06.md:1263' in ld['note'] and 'REASSIGNED' in ld['note'], 'lostDriverPaid note'
 assert '/reassign and /cancel' in ld['rule'] and 'however many times' in ld['rule'] and 'riderPaid − driverTotal − debtCollected − lostDriverPaid' in ld['rule'], 'lostDriverPaid rule'
-assert 'never sent to him' in ld['driverView'] and 'hideDriverMoney' in ld['driverView'] and 'Open point' in ld['driverView'], 'driver view keeps his own trip'
+assert 'never sent to him' in ld['driverView'] and 'hideDriverMoney' in ld['driverView'] and 'kept as is' in ld['driverView'] and ld['driverViewBefore0_18_90b'].startswith('Replaced'), 'driver view keeps his own trip (GM: kept)'
+assert 'admin audit rows trip.reassign / trip.cancel' in ld['server'] and 'without a transaction' in ld['server'] and 'got the trip back' in ld['server'] and ld['serverBefore0_18_90b'].startswith('Replaced'), 'lostDriverPaid backfill source'
 assert 'Not taken off twice' in ld['kpi'] and 'never reads moneySplit' in ld['kpi'] and 'payoutSummary' in ld['kpi'], 'KPI once'
 assert '20,00 kr' in ld['example'] and '2.000 DT' in ld['example'], 'SEK + TND example'
 cr = mb['commissionRow']
