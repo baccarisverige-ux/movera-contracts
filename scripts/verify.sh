@@ -535,7 +535,7 @@ for p in ('/driver/config', '/driver/config/stream'):
     assert {'$ref': '#/components/parameters/ZoneIdQuery'} not in g['parameters'], p + ' still shared ZoneIdQuery'
 assert {'$ref': '#/components/parameters/ZoneIdQuery'} in spec['paths']['/rider/config']['get']['parameters'], 'rider keeps ZoneIdQuery'
 assert 'driverConfigZone' in spec['components']['schemas']['DriverAppConfig']['properties']['emergencyNumbers']['description'], 'openapi emergencyNumbers v0.18.72'
-md = open('CONTRACT.md').read()
+md = open('CONTRACT.md').read() + open('CHANGELOG.md').read()  # v0.18.93: the v0.18.72-v0.18.81 notes moved to CHANGELOG.md
 assert "## 89. The driver's config follows the zone he works in (v0.18.72, G17)" in md and 'contract.json#driverConfigZone' in md and '`driver_locations.zone_id`' in md and 'does not move an open stream' in md and 'Versions are compared per zone: on a zone change the app compares against, and sends as\n  `Last-Event-ID`, the last version it holds for THAT zone (none if none).' in md and '(at most one: `trips_one_active_per_driver`)' in md, 'CONTRACT.md v0.18.72 wording'
 PY
 # v0.18.73 (wording only, server B1.14 d5400cd + B1.15 73d28e1, rider G26-back f513af55): dispatch_round restarts once, streams end with their session, rider back before pickup.
@@ -555,7 +555,7 @@ assert rb['onBoard']['statuses'] == c['tripStatus']['riderOnboard'] and rb['onBo
 assert set(b['statuses']) <= set(c['tripStatus']['driverAssigned']) and not set(b['statuses']) & set(c['tripStatus']['riderOnboard']), 'riderBack statuses'
 spec = yaml.safe_load(open('openapi.yaml'))
 assert str(spec['info']['version']) == c['version'], 'openapi version'
-md = open('CONTRACT.md').read()
+md = open('CONTRACT.md').read() + open('CHANGELOG.md').read()  # v0.18.93: the v0.18.72-v0.18.81 notes moved to CHANGELOG.md
 assert md.startswith('# Movera shared contract v' + c['version'] + '\n') or tuple(map(int, c['version'].split('.'))) > (0, 18, 73), 'CONTRACT.md title'
 assert '**Streams end with their session** (v0.18.73' in md and '`: session ended; sign in again`' in md and '`contract.json#realtime.sessionEnd`' in md, 'CONTRACT.md §4 v0.18.73'
 assert '**Rider back before pickup** (v0.18.73, G26-back' in md and '`contract.json#riderBack`' in md and '**a stopped dispatch round restarts once** (B1.14' in md, 'CONTRACT.md v0.18.73 wording'
@@ -571,7 +571,7 @@ assert all(r in s for r in reads) and 'exactly six, no more' in s and 'matched o
 assert s.startswith('Only new low-priority work is ever refused with server_busy: POST /quotes'), 'shedOnly start kept'
 spec = yaml.safe_load(open('openapi.yaml'))
 assert str(spec['info']['version']) == c['version'], 'openapi version'
-md = open('CONTRACT.md').read()
+md = open('CONTRACT.md').read() + open('CHANGELOG.md').read()  # v0.18.93: the v0.18.72-v0.18.81 notes moved to CHANGELOG.md
 assert md.startswith('# Movera shared contract v' + c['version'] + '\n') or tuple(map(int, c['version'].split('.'))) > (0, 18, 74), 'CONTRACT.md title'
 assert '**admin safety reads are never shed** — exactly six' in md and '`GET /admin/incidents/{incidentId}/emergency-contacts`' in md and '`GET /admin/alerts/book`' in md, 'CONTRACT.md v0.18.74 note'
 assert "GPS and streams are never shed; v0.18.74 (B1.24): nor are the six admin safety reads (incidents list, an incident, its emergency contacts, ride checks, the alert book, a trip's detail; `contract.json#fastDispatch.shedOnly`). Apps treat it like 429" in md, 'CONTRACT.md Overload bullet v0.18.74'
@@ -591,7 +591,7 @@ assert str(spec['info']['version']) == c['version'], 'openapi version'
 for p in ('/telemetry/logs', '/telemetry/analytics', '/telemetry/crashes'):
     d = spec['paths'][p]['post']['description']
     assert 'v0.18.75 (B1.25): without a valid token, a server copy stores at most contract.json#telemetry.anonRowsPerMinute (600) lines and anonBytesPerMinute (2097152) bytes per minute in total; over it the call still answers 202 but is not stored.' in d, 'openapi ' + p
-md = open('CONTRACT.md').read()
+md = open('CONTRACT.md').read() + open('CHANGELOG.md').read()  # v0.18.93: the v0.18.72-v0.18.81 notes moved to CHANGELOG.md
 assert md.startswith('# Movera shared contract v' + c['version'] + '\n') or tuple(map(int, c['version'].split('.'))) > (0, 18, 75), 'CONTRACT.md title'
 assert '**no-token telemetry has a total per server copy**' in md and '`TELEMETRY_ANON_ROWS_PER_MINUTE` / `TELEMETRY_ANON_BYTES_PER_MINUTE`, not divided by `WEB_COPIES`' in md, 'CONTRACT.md v0.18.75 note'
 PY
@@ -638,7 +638,7 @@ assert 'email_not_verified' in spec['paths']['/admin/drivers/{driverId}/status']
 assert 'email_verified true' in spec['paths']['/auth/provider']['post']['description'], 'provider'
 assert 'email_not_verified' in sc['DriverReminder']['properties']['kind']['enum'] and 'verify_email' in sc['ReminderFix']['properties']['target']['enum'], 'reminder enums'
 assert 'v0.18.76 (G30): email_not_verified' in spec['paths']['/driver/reminders']['get']['description'], 'GET /driver/reminders'
-md = open('CONTRACT.md').read()
+md = open('CONTRACT.md').read() + open('CHANGELOG.md').read()  # v0.18.93: the v0.18.72-v0.18.81 notes moved to CHANGELOG.md
 assert md.startswith('# Movera shared contract v' + c['version'] + '\n') or tuple(map(int, c['version'].split('.'))) > (0, 18, 76), 'CONTRACT.md title'
 assert '**an e-mail is saved only after a code check**' in md and 'email?, emailVerifiedAt? (v0.18.76), rating?' in md and 'email?, emailVerifiedAt? (v0.18.76), country?' in md, 'CONTRACT.md v0.18.76'
 PY
@@ -674,7 +674,7 @@ assert 'NEVER active before' in st and 'first_activated_at' in st, 'openapi appr
 assert 'refused the send or it failed' in spec['components']['schemas']['AccountEmailChallenge']['properties']['delivery']['description'], 'openapi delivery'
 assert 'email_not_verified_approval' in spec['paths']['/driver/reminders']['get']['description'], 'openapi reminder level'
 assert 'delivery: pending_provider' not in spec['paths']['/account/email/change']['post']['description'], 'openapi accountChange'
-md = open('CONTRACT.md').read()
+md = open('CONTRACT.md').read() + open('CHANGELOG.md').read()  # v0.18.93: the v0.18.72-v0.18.81 notes moved to CHANGELOG.md
 assert '(also a refused or failed send)' in md and 'red “needed for approval”' in md and 'for a driver never active before, not for re-activating one' in md, 'CONTRACT.md owner answers'
 PY
 # v0.18.76 round 3 (supervisor R2-1..R2-3): once-active backfill also from audit 'from active' and trips; seed paths named;
@@ -718,7 +718,7 @@ assert 'change_too_many' in r['description'] and 'at most 10 code starts' in r['
 assert r['content']['application/json']['schema'] == {'$ref': '#/components/schemas/Error'}, 'openapi 429 Error shape'
 assert spec['paths']['/account/phone/change']['post']['responses']['429'] == {'$ref': '#/components/responses/RateLimited'}, 'phone 429 unchanged'
 assert 'at most 10 e-mail code starts' in spec['components']['schemas']['AccountEmailChallenge']['properties']['delivery']['description'], 'openapi delivery'
-md = open('CONTRACT.md').read()
+md = open('CONTRACT.md').read() + open('CHANGELOG.md').read()  # v0.18.93: the v0.18.72-v0.18.81 notes moved to CHANGELOG.md
 assert md.startswith('# Movera shared contract v' + c['version'] + '\n') or tuple(map(int, c['version'].split('.'))) > (0, 18, 77), 'CONTRACT.md title'
 assert '**at most 10 e-mail code starts per hour**' in md and 'counting every start (`sent` or `pending_provider`)' in md, 'CONTRACT.md v0.18.77 note'
 PY
@@ -760,10 +760,10 @@ assert all(p['required'] is False and p['schema'] == {'$ref': '#/components/sche
 cc = sch['TripFinish']['properties']['cashToCollect']
 assert cc['allOf'] == [{'$ref': '#/components/schemas/Money'}] and 'payDriverInCar' in cc['description'], 'openapi TripFinish.cashToCollect'
 assert 'cashToCollect' in sch['TripFinish']['required'], 'cashToCollect still required'
-md = open('CONTRACT.md').read()
+md = open('CONTRACT.md').read() + open('CHANGELOG.md').read()  # v0.18.93: the v0.18.72-v0.18.81 notes moved to CHANGELOG.md
 assert md.startswith('# Movera shared contract v' + c['version'] + '\n') or tuple(map(int, c['version'].split('.'))) > (0, 18, 78), 'CONTRACT.md title'
 assert 'supersedes the S5 J16 `totalAtLeast` idea' in md and '**G33 rider pay-in-car line**' in md and 'first page when counted exactly' in md and '**admin lists “50 of N”**' in md, 'CONTRACT.md v0.18.78 note'
-assert md.count('\n') <= 1500, 'CONTRACT.md over 1,500 lines'
+assert open('CONTRACT.md').read().count('\n') <= 1500, 'CONTRACT.md over 1,500 lines'
 PY
 # v0.18.79 (server B1.33, owner Q93 "A) Yes"): a ticket without a zone can be assigned and auto-sorted to an admin of its
 # country team (wording only).
@@ -782,10 +782,10 @@ assert 'see and answer it (list and one ticket), get it assigned (assign) and au
 spec = yaml.safe_load(open('openapi.yaml'))
 d = spec['paths']['/admin/tickets/{ticketId}/assign']['post']['description']
 assert cov in d and 'a ticket without a zone: an admin with a zone in its country, or all zones (contract.json#supportDesk.countryTeam); else 403 zone_out_of_scope.' in d, 'B1.33 openapi assign'
-md = open('CONTRACT.md').read()
+md = open('CONTRACT.md').read() + open('CHANGELOG.md').read()  # v0.18.93: the v0.18.72-v0.18.81 notes moved to CHANGELOG.md
 assert md.startswith('# Movera shared contract v' + c['version'] + '\n') or tuple(map(int, c['version'].split('.'))) > (0, 18, 79), 'CONTRACT.md title'
 assert '**a support ticket without a zone can be assigned and auto-sorted to its country team**' in md and '\nv0.18.79 (wording only, server B1.33, owner Q93' in md, 'CONTRACT.md v0.18.79 note'
-assert md.count('\n') <= 1500, 'CONTRACT.md over 1,500 lines'
+assert open('CONTRACT.md').read().count('\n') <= 1500, 'CONTRACT.md over 1,500 lines'
 PY
 # v0.18.81 (server B1.34, owner Q94 "A) Yes" + 2026-11-13 answers): at most maxOpenPerRider (default 3, 1-50) open booked
 # rides per rider; the next POST /trips kind scheduled -> 409 conflict, reason booked_rides_limit, the number in the message.
@@ -810,10 +810,10 @@ m = spec['components']['schemas']['DriverReservations']['properties']['maxOpenPe
 assert (m['type'], m['minimum'], m['maximum'], m['default']) == ('integer', 1, 50, 3), 'B1.34 openapi setting'
 d = spec['paths']['/trips']['post']['responses']['409']
 assert 'booked_rides_limit' in d['description'], 'B1.34 openapi 409'
-md = open('CONTRACT.md').read()
+md = open('CONTRACT.md').read() + open('CHANGELOG.md').read()  # v0.18.93: the v0.18.72-v0.18.81 notes moved to CHANGELOG.md
 assert md.startswith('# Movera shared contract v' + c['version'] + '\n') or tuple(map(int, c['version'].split('.'))) > (0, 18, 81), 'CONTRACT.md title'
 assert '**at most 3 open booked rides per rider**' in md and '\nv0.18.81 (server B1.34' in md and '`maxOpenPerRider` (3)' in md, 'CONTRACT.md v0.18.81 note'
-assert md.count('\n') <= 1500, 'CONTRACT.md over 1,500 lines'
+assert open('CONTRACT.md').read().count('\n') <= 1500, 'CONTRACT.md over 1,500 lines'
 PY
 # v0.18.82 (S5 J3 money fixes; owner Sitting 3 2026-11-12: 106, 107, Q-M7, Q-S5-6, Q-S5-7, J1 0.14a, S07 M8/M14):
 # expectedVersion on the two admin money buttons, one commission + KPI money rule, admin fare = driver side only,
@@ -1353,5 +1353,37 @@ assert t.startswith('# Movera shared contract v' + c['version']) and '\nv0.18.91
 assert t.count('\n') <= 1500, 'CONTRACT.md over 1,500 lines'
 spec = yaml.safe_load(open('openapi.yaml'))
 assert spec['info']['version'] == c['version'], 'openapi version'
+PY
+# v0.18.93 job C9 (owner 2026-11-02 review Q3 "Both: auto + button", Rules decisions/driver-g7.md:83-84): the server marks the
+# driver arrived within waiting.autoArriveMeters; the waiting clock stops while he is farther than waiting.leaveMeters.
+python3 - <<'PY'
+import json, yaml
+c = json.load(open('contract.json'))
+assert tuple(map(int, c['version'].split('.'))) >= (0, 18, 93), 'version 0.18.93 or later'
+aa = c['autoArrive']
+assert 'driver-g7.md:83-84' in aa['note'] and 'Both: auto + button' in aa['note'], 'autoArrive owner note'
+st = aa['settings']
+assert st['arriveMeters']['configPath'] == 'DriverAppConfig.waiting.autoArriveMeters' and st['arriveMeters']['default'] == 100 and st['arriveMeters']['range'] == [30, 300], 'arriveMeters'
+assert st['leaveMeters']['configPath'] == 'DriverAppConfig.waiting.leaveMeters' and st['leaveMeters']['default'] == 200 and st['leaveMeters']['range'] == [100, 2000], 'leaveMeters'
+assert 'invalid_auto_arrive_distance' in st['validation'] and 'invalid_auto_arrive_distance' in c['errors']['reason'] and 'driver_away_from_pickup' in c['errors']['reason'], 'reasons'
+assert 'actor driver' in aa['auto'] and 'arrivedBy auto' in aa['auto'] and 'chat.autoArrived' in aa['auto'], 'auto step'
+assert 'No version change' in aa['away'] and 'max(away.since, waitFrom)' in aa['back'] and 'clockAt' in aa['money'], 'away / back / money'
+assert {'autoArriveMeters', 'leaveMeters'} <= set(c['bookingSnapshot']['fields']), 'kept at booking'
+for k in ('driver', 'rider', 'admin'):
+    assert k in aa['apps'], 'apps ' + k
+for k in ('driverPaused', 'riderPaused', 'noShowAway'):
+    assert set(aa['texts'][k]) == {'sv', 'fr', 'en'}, k
+spec = yaml.safe_load(open('openapi.yaml'))
+S = spec['components']['schemas']
+assert spec['info']['version'] == c['version'], 'openapi version'
+w = S['Waiting']['properties']
+assert w['arrivedBy']['enum'] == ['auto', 'tap'] and w['away']['required'] == ['since'] and 'pausedSeconds' in w and 'pauseCount' in w, 'Waiting fields'
+assert all(k not in S['Waiting']['required'] for k in ('arrivedBy', 'away', 'pausedSeconds', 'pauseCount')), 'Waiting additive'
+assert 'autoArriveMeters' in S['TripTerms']['properties'] and 'leaveMeters' in S['TripTerms']['properties'], 'TripTerms'
+dw = S['DriverWaiting']['allOf'][-1]['properties']
+assert dw['autoArriveMeters']['minimum'] == 30 and dw['leaveMeters']['maximum'] == 2000, 'DriverWaiting'
+t = open('CONTRACT.md', encoding='utf-8').read()
+assert t.startswith('# Movera shared contract v' + c['version']) and '\nv0.18.93 (job C9' in t and '## 91. Auto arrived' in t, 'CONTRACT.md v0.18.93'
+assert t.count('\n') <= 1500, 'CONTRACT.md over 1,500 lines'
 PY
 echo "contract ok"
