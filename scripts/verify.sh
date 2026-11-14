@@ -1240,4 +1240,36 @@ md = open('CONTRACT.md').read()
 assert '\nv0.18.88 (owner 2026-10-29' in md and 'fleetPayoutWhole' in md and 'adminCalculator.removed' in md, 'CONTRACT.md v0.18.88 note'
 assert md.count('\n') <= 1500, 'CONTRACT.md over 1,500 lines'
 PY
+# v0.18.89 (owner 2026-11-14 "make sure rider and driver app show correct prices every where" + "Check all apps"; Rules
+# audits/price-display-2026-11-14/REPORT.md): price fields from the server; payouts 3 lines (Q-M8); whole amounts keep decimals.
+python3 - <<'PY'
+import json, yaml
+c = json.load(open('contract.json'))
+pd = c['priceDisplay']
+assert 'never work money out' in pd['note'] and 'driverEarnings + pickupPay' in pd['offer']['driverTotal'] and 'ONLY this number' in pd['offer']['driverTotal'], 'Offer.driverTotal'
+assert 'never works pickup pay out' in pd['offer']['pickupPay'] and 'walletApplied' in pd['offer']['cashToCollect'], 'offer pickupPay / cashToCollect'
+assert 'driverEarnings + pickupPay + driverBonus' in pd['routeChange'] and 'feeNow' in pd['cancelPreview']['shape'] and 'cancel_fee.dart' in pd['cancelPreview']['apps'], 'routeChange / cancelPreview'
+assert '− finish.driverTotal' in pd['owedToMovera'] and 'cash_balance.dart' in pd['owedToMovera'], 'owedToMovera'
+ps = pd['payoutSummary']
+assert 'Q-M8' in ps['owner'] and 'session-2026-11-06.md:1107' in ps['owner'] and 'earnings − owedToMovera' in ps['rule'], 'payoutSummary'
+assert ps['display'].startswith('Three separate lines') and ps['texts']['earnings']['sv'] == 'Intäkter', 'payout 3 lines texts'
+pn = c['payouts']['note']
+assert 'v0.18.89' in pn and 'Earnings / Owed to Movera / Paid out' in pn and 'is replaced' in pn, 'payouts.note 3 lines'
+tm = c['arrivedWaiting']['termsTexts']['money']
+assert 'follows the currency, not the' in tm and "'65,00 kr'" in tm and "'5.000 DT'" in tm and 'driver-g6.md:96' in tm and "'13,49 kr'" in tm, 'termsTexts.money'
+assert c['arrivedWaiting']['termsTexts']['moneyBefore0_18_89'].startswith('Replaced in v0.18.89'), 'old termsTexts.money kept'
+md = c['moneyDisplay']
+assert 'owner 2026-11-14' in md['wholeAmounts'] and 'every server text' in md['wholeAmounts'] and 'every app' in md['wholeAmounts'], 'wholeAmounts'
+assert md['examplesWhole'] == {'SEK': {'3500': '35,00 kr'}, 'EUR': {'800': '8,00 €'}, 'TND': {'5000': '5.000 DT'}}, 'whole examples'
+assert 'legalTerms' in c['waitingPriceShown'], 'Terms shown waiting price'
+S = yaml.safe_load(open('openapi.yaml'))['components']['schemas']
+for sch, f in (('Offer', 'driverTotal'), ('Offer', 'cashToCollect'), ('TripRouteChange', 'driverTotal'), ('TripProjection', 'cancelPreview'),
+               ('TripProjection', 'cashToCollect'), ('TripFinish', 'owedToMovera'), ('Payout', 'summary')):
+    assert f in S[sch]['properties'] and f not in S[sch].get('required', []), sch + '.' + f + ' additive'
+assert S['CancelPreview']['required'] == ['feeNow', 'kind'] and S['PayoutSummary']['required'] == ['earnings', 'owedToMovera', 'paidOut'], 'new schemas'
+assert 'only the total' not in S['Payout']['properties']['lines']['description'], 'Payout.lines 3 lines'
+t = open('CONTRACT.md', encoding='utf-8').read()
+assert '## 90. Prices the apps show' in t and '`fare + pickupPay`' not in t and 'Offer.driverTotal' in t, 'CONTRACT.md §90 / §3.2'
+assert t.count('\n') <= 1500, 'CONTRACT.md over 1,500 lines'
+PY
 echo "contract ok"
