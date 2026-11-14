@@ -1136,7 +1136,7 @@ assert 'Commission panel' in cs['apps']['admin'] and 'never global' in cs['apps'
 AC = cs['adminCalculator']
 assert 'EACH car-type card' in AC['rule'] and 'not moneyBase.commission' in AC['rule'] and '22:46' in cs['note'] and '23:05' not in json.dumps(cs, ensure_ascii=False) and '22:00' not in cs['note'], 'calculator'
 assert 'reproduce fixtures/commission_steps.json exactly' in AC['fixtures'] and 'J5b admin build must run a test' in AC['fixtures'], 'calculator fixtures'
-assert {'title', 'priceInput', 'stepUsed', 'commission', 'driverGets', 'moveraKeeps', 'aroundLimits', 'atLimit', 'justAbove'} <= set(cs['texts']['calculator']), 'calculator texts'
+assert {'title', 'priceInput', 'stepUsed', 'commission', 'driverGets'} <= set(cs['texts']['calculator']), 'calculator texts (v0.18.88: moveraKeeps, aroundLimits, atLimit, justAbove removed)'
 for tt in cs['texts']['calculator'].values(): assert set(tt) == {'sv', 'fr', 'en'} and all(tt.values()), 'calculator texts sv/fr/en'
 W = cs['warn']
 assert 'driverRidePart(L, step i) > driverRidePart(L + 1, step i+1)' in W['rule'] and 'Yes, warn (Rec.)' in W['rule'], 'warn rule'
@@ -1207,6 +1207,35 @@ assert 'never by when an entry was written' in bo['inside'] and 'fare − debtCo
 assert 'created_at' not in bo['server'] and 'tells apart' not in bo['server'] and 'Driver and rider: no change' not in bo['apps'], 'server/apps text'
 assert 'bonus being typed' in cr['admin'] and 'waybill row is hidden too' in cr['driver'] and 'every driver and admin screen use this same number' not in mb['commission'], 'box/waybill/commission'
 assert 'moveraKeepsNow' in md, 'CONTRACT.md commission row'
+assert md.count('\n') <= 1500, 'CONTRACT.md over 1,500 lines'
+PY
+# v0.18.88 (owner 2026-10-29 "Movera dont care about what fleet owner take from drivers! ... if there is any % u delete that",
+# owner 2026-11-14 ~02:49 UTC "What the fuck is fleet owner keep !??? And why its complicate ?!"): no fleet-owner % anywhere
+# (fleetCommissionPct removed, ignored; fleet payouts = the whole driver earnings) and ONE simple commission calculator.
+python3 - <<'PY'
+import json, yaml
+c = json.load(open('contract.json'))
+assert tuple(map(int, c['version'].split('.'))) >= (0, 18, 88), 'version'
+fp = c['fleetPayoutWhole']
+assert 'Movera dont care about what fleet owner take from drivers' in fp['note'] and 'fleet owner keep' in fp['note'] and 'driver-g10.md:3' in fp['note'], 'owner quotes'
+assert 'REMOVED (v0.18.13), IGNORED' in fp['pricing'] and 'never reads it for any money' in fp['pricing'], 'removed, ignored'
+assert 'the whole driver earnings' in fp['payouts'] and 'paid to the fleet owner' in fp['payouts'] and 'outside Movera' in fp['payouts'], 'fleet payout whole'
+assert list(c).index('fleetPayoutWhole') == list(c).index('fleetShareRemoved') + 1 and c['fleetShareRemoved'].startswith('v0.18.13'), 'key order, old note kept'
+assert 'fleetCommissionPct' not in json.dumps(c['configDefaults']) and 'fleetCommissionPct' not in json.load(open('fixtures/config/pricing_document.json')), 'no fleet % in defaults / sample'
+assert not any('fleet' in l for l in c['payouts']['lines']) and 'fleet' not in json.dumps(c['payouts']['schedule']['default']), 'no fleet payout line'
+spec = yaml.safe_load(open('openapi.yaml'))
+S = spec['components']['schemas']
+assert 'fleetCommissionPct' not in S['PricingDocument']['properties'] and S['PricingDocument'].get('additionalProperties') is not False, 'old key accepted, not in the schema'
+ac = c['commissionSteps']['adminCalculator']
+assert set(ac) == {'rule', 'formula', 'removed', 'steps', 'fixtures'} and 'aroundLimits' not in ac, 'calculator keys'
+assert 'ONLY one price input and three results' in ac['rule'] and 'no rows around the limits' in ac['rule'] and 'why its complicate' in ac['rule'], 'one calculator'
+assert 'REMOVED' in ac['removed'] and 'warn.rule and texts.warnDrop' in ac['removed'], 'removed + warn kept'
+tc = c['commissionSteps']['texts']['calculator']
+assert not ({'moveraKeeps', 'aroundLimits', 'atLimit', 'justAbove'} & set(tc)) and {'title', 'priceInput', 'stepUsed', 'noStepsPct', 'commission', 'driverGets', 'waitingNote'} == set(tc), 'calculator texts'
+assert 'warnDrop' in c['commissionSteps']['texts'] and 'STILL ALLOWS SAVING' in c['commissionSteps']['warn']['advisory'], 'warn kept'
+assert 'ONE calculator' in c['commissionSteps']['apps']['admin'] and 'rows around each limit' not in c['commissionSteps']['apps']['admin'], 'apps.admin'
+md = open('CONTRACT.md').read()
+assert '\nv0.18.88 (owner 2026-10-29' in md and 'fleetPayoutWhole' in md and 'adminCalculator.removed' in md, 'CONTRACT.md v0.18.88 note'
 assert md.count('\n') <= 1500, 'CONTRACT.md over 1,500 lines'
 PY
 echo "contract ok"
