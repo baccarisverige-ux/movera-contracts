@@ -1195,6 +1195,14 @@ spec = yaml.safe_load(open('openapi.yaml'))
 assert 'payLostDriver' in spec['components']['schemas']['KpiDay']['properties']['moveraEarnings']['description'], 'openapi KpiDay.moveraEarnings'
 md = open('CONTRACT.md').read()
 assert '\nv0.18.87 (BQ-M19' in md and 'moneyBase.bonusOutsideCommission' in md, 'CONTRACT.md v0.18.87 note'
+cr = mb['commissionRow']
+assert '23:42 UTC' in cr['note'] and 'how much movera keep' in cr['note'] and 'never rewritten' in cr['note'], 'commissionRow owner quote'
+assert 'moneySplit.movera' in cr['admin'] and 'moveraKeepsNow' in cr['driver'] and 'never TripProjection.commission' in cr['driver'], 'commissionRow admin/driver'
+assert 'moneyBase.commissionRow' in mb['commission'] and 'moveraKeepsNow' in spec['components']['schemas']['TripProjection']['properties'], 'commissionRow commission/openapi'
+assert 'moveraKeepsNow' not in spec['components']['schemas']['TripProjection'].get('required', []), 'moveraKeepsNow additive'
+qs = [v for v in json.dumps(c, ensure_ascii=False).split('"serverSafety": ')[1:] if v.startswith('"Rule 33: the queued trip starts')]
+assert len(qs) == 1 and '(FOR NO KEY UPDATE' in qs[0].split('",')[0], 'queued-trip start lock wording'
+assert 'moveraKeepsNow' in md, 'CONTRACT.md commission row'
 assert md.count('\n') <= 1500, 'CONTRACT.md over 1,500 lines'
 PY
 echo "contract ok"

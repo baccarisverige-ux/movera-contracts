@@ -19689,7 +19689,12 @@ components:
             never rewritten by it; the bonus is its own earnings entry kind bonus, it is in TripProjection.driverBonus and
             in the driverTotal bonus line (the driver''s money), and it lowers moneySplit.movera and the KPI moveraEarnings
             (moneyBase.bonusOutsideCommission). So commission = what Movera kept at the trip''s end, and moneySplit.movera
-            / moveraEarnings = what Movera keeps after every later change, each change taken off once.'
+            / moveraEarnings = what Movera keeps after every later change, each change taken off once. v0.18.87 screen rule
+            (owner 2026-11-13 23:42 UTC (Rules decisions/session-2026-11-06.md:1263, s06): ''Movera commission is how much
+            movera keep''): every app row labelled ''Movera commission'' shows what Movera keeps NOW on that trip (moneySplit.movera
+            on the admin view, TripProjection.moveraKeepsNow on the driver view; later pay changes and bonuses included),
+            never this stored commission when they differ; the stored commission stays what Movera kept at the paid end and
+            is never rewritten (moneyBase.commissionRow).'
         driverBonus:
           allOf:
           - $ref: '#/components/schemas/Money'
@@ -19931,6 +19936,18 @@ components:
           allOf:
           - $ref: '#/components/schemas/Id'
           description: 'v0.18.33, driver and admin views: a live trip queued behind this driver''s current trip (contract.json#afterTestRules.bookedNext.accept).'
+        moveraKeepsNow:
+          allOf:
+          - $ref: '#/components/schemas/Money'
+          description: 'v0.18.87: TripProjection.moveraKeepsNow: Money, driver and admin views, sent on a paid trip (completed,
+            ended early by the rider, ended by the driver on board, admin complete); additive; older apps ignore it. What
+            Movera keeps now = moneySplit.movera = riderPaid − driverTotal − debtCollected (contract.json#finish.debt.moneySplit).
+            With no later change and no refund it equals commission. The driver view has no moneySplit (admin view only).
+            The server sends TripProjection.moveraKeepsNow (driver and admin views, = moneySplit.movera, on paid trips). The
+            driver''s ''Movera commission'' rows (finished screen, waybill, trip details) show it; when it is absent (an older
+            server, or a trip not paid yet) the finished-screen and history rows are not shown (never TripProjection.commission
+            as a fallback, never worked out on the phone); before the paid end the waybill shows TripProjection.commission
+            (nothing changed yet).'
     DriverSilentAlert:
       type: object
       description: 'v0.7.0: documents the server''s alert of 2026-10-26: no position for 30 min with the rider on board; the
