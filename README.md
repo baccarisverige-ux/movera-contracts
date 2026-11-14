@@ -6,7 +6,7 @@ serve all three. This repository is the only place the contract changes.
 Each app and the server carries a byte-for-byte copy under `contracts/` and checks it
 against `CHECKSUMS`.
 
-Current version: **0.18.86** (`contract.json#version`, tag `v0.18.86`; numbered after 0.18.85, A1 waiting prices with the app fee, merged first in #128). The server and driver carry
+Current version: **0.18.87** (`contract.json#version`, tag `v0.18.87`; numbered after 0.18.86, J5b commission steps, merged first in #129). The server and driver carry
 0.18.72; admin and rider carry 0.18.66 (later versions land in them after the merge).
 
 ## What is here
