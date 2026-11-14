@@ -9759,7 +9759,7 @@
         "en": "Waiting time paused: your driver is away from the pickup."
       },
       "noShowAway": {
-        "sv": "Kör tillbaka till upphämtningen innan du markerar att passageraren inte kom.",
+        "sv": "Kör tillbaka till upphämtningen innan du markerar att resenären inte kom.",
         "fr": "Revenez au point de prise en charge avant de signaler l’absence du passager.",
         "en": "Drive back to the pickup before marking a no-show."
       }
