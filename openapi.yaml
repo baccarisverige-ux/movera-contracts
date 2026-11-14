@@ -19477,8 +19477,9 @@ components:
             (not accepted, not a booked ride held for later) and a counting fix within autoArriveMeters of the pickup: the
             server runs the same step as POST /trips/{tripId}/arrive, as the driver (actor driver, command arrive, version
             + 1, trip_projection, the rider''s driver_arrived push, the automatic "I''ve arrived" chat message once per trip,
-            chat.autoArrived), with waiting.arrivedBy auto. It runs as a job right after the position is stored (never inside
-            POST /driver/location''s answer), once per new fix.'
+            chat.autoArrived), with waiting.arrivedBy auto. It runs as a job (timer kind pickup_geofence, the trip lane, watched
+            by fastDispatch.lateAlarm.tripTimers) right after the position is stored (never inside POST /driver/location''s
+            answer), once per new fix.'
         away:
           type: object
           description: 'v0.18.93: { since: Timestamp } while the waiting clock is stopped; absent otherwise. Status arrived

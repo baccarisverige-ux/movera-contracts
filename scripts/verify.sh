@@ -916,7 +916,7 @@ for part in ('503 unavailable, reason server_busy', 'Retry-After 2', 'route patt
     assert part in sp['rule'] + sp['note'], 'S2 rule: ' + part
 assert 'v0.18.83' in fd['shedOnly'] and 'fastDispatch.shedPolls' in fd['shedOnly'], 'S2 shedOnly points to shedPolls'
 la = fd['lateAlarm']
-assert la['tripTimers']['lateSeconds'] == 60 and la['tripTimers']['kinds'] == ['trip_eta', 'ride_check_scan', 'near_dropoff'], 'S3 trip timers 60 s'
+assert la['tripTimers']['lateSeconds'] == 60 and la['tripTimers']['kinds'][:3] == ['trip_eta', 'ride_check_scan', 'near_dropoff'], 'S3 trip timers 60 s'
 assert la['dispatch']['lateSeconds'] == 30 and la['dispatch']['kinds'] == ['dispatch_round', 'withdraw_driver_offers'], 'S3 dispatch 30 s'
 for part in ('/healthz/jobs', '503', 'lateSeconds', 'overdue', 'TRIP_LANES', 'default 1', '60 s / 30 s', 'never restarts'):
     assert part in la['rule'] + la['note'], 'S3 lateAlarm: ' + part
@@ -1367,6 +1367,7 @@ assert st['arriveMeters']['configPath'] == 'DriverAppConfig.waiting.autoArriveMe
 assert st['leaveMeters']['configPath'] == 'DriverAppConfig.waiting.leaveMeters' and st['leaveMeters']['default'] == 200 and st['leaveMeters']['range'] == [100, 2000], 'leaveMeters'
 assert 'invalid_auto_arrive_distance' in st['validation'] and 'invalid_auto_arrive_distance' in c['errors']['reason'] and 'driver_away_from_pickup' in c['errors']['reason'], 'reasons'
 assert 'actor driver' in aa['auto'] and 'arrivedBy auto' in aa['auto'] and 'chat.autoArrived' in aa['auto'], 'auto step'
+assert 'pickup_geofence' in c['fastDispatch']['lateAlarm']['tripTimers']['kinds'] and 'pickup_geofence' in aa['auto'], 'job kind on the trip lane, watched'
 assert 'No version change' in aa['away'] and 'max(away.since, waitFrom)' in aa['back'] and 'clockAt' in aa['money'], 'away / back / money'
 assert {'autoArriveMeters', 'leaveMeters'} <= set(c['bookingSnapshot']['fields']), 'kept at booking'
 for k in ('driver', 'rider', 'admin'):
