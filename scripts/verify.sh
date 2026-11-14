@@ -1241,7 +1241,7 @@ assert '\nv0.18.88 (owner 2026-10-29' in md and 'fleetPayoutWhole' in md and 'ad
 assert md.count('\n') <= 1500, 'CONTRACT.md over 1,500 lines'
 PY
 # v0.18.89 (owner 2026-11-14 "make sure rider and driver app show correct prices every where" + "Check all apps"; Rules
-# audits/price-display-2026-11-14/REPORT.md): price fields from the server; payouts 3 lines (Q-M8); whole amounts keep decimals.
+# audits/price-display-2026-11-14/REPORT.md): price fields from the server; payouts 2 lines (Driver gets / Movera gets); whole amounts keep decimals.
 python3 - <<'PY'
 import json, yaml
 c = json.load(open('contract.json'))
