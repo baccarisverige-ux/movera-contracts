@@ -9616,12 +9616,6 @@
           "sv": "Movera får",
           "fr": "Movera reçoit",
           "en": "Movera gets"
-        },
-        "moveraGetsHint": {
-          "note": "Admin only, optional tooltip; amounts only, no %.",
-          "sv": "Provision + appavgift",
-          "fr": "Commission + frais d'application",
-          "en": "Commission + app fee"
         }
       },
       "ruleBefore0_18_89b": "Replaced the same day (kept, Rule 21) by owner 2026-11-14 ~05:17 UTC, Rules decisions/session-2026-11-06.md:1278: \"write only how much in amour driver get and how much movera get in amount dont write any fucking pourcentage\" — \"Movera gets = commission + app fee as one amount\": driverGets = his earnings for the payout's period, all trips (pay in car and in app alike): the sum of each trip's finish.driverTotal plus each entry of his money that is not inside a trip's driverTotal (cancel / no-show shares, tips, a later bonus), each once. moveraGets = Movera's commission for the period: the sum of what Movera keeps now on each of the period's trips (TripProjection.moveraKeepsNow / moneySplit.movera, moneyBase.commissionRow; owner 2026-11-13 \"Movera commission is how much movera keep\") plus Movera's share of the period's fees. The server works both out; the apps never do (no adding of lines, no subtracting)."
