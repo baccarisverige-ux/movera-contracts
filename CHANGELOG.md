@@ -2,6 +2,12 @@
 
 Moved from CONTRACT.md (Rule 25: file size); nothing removed. Newer notes stay at the top of CONTRACT.md.
 
+v0.18.99 (BQ-M25b; Rule 21 / Rule 25: moved from CONTRACT.md word for word, nothing removed): the v0.18.71 note and the old pointer line (below, in their CONTRACT.md order).
+
+v0.18.71 (wording fix, live bug 2026-11-12; X-Api-Version stays `0.5`; no API shape change; no migration; no app change): **§85 same-language shortcut** — the text-as-written answer when `Message.lang` = `to` applies only to quick-reply chips and automatic messages (`quickReplyId` or `auto` set); typed text goes to the kept translation or the provider like any other (its `lang` is the sender's app language, a hint only; no provider: 503 `coming_soon`) — see `contract.json#chat.autoTranslate.sameLanguage`.
+
+Older version notes (v0.18.70 and before) are in `CHANGELOG.md`.
+
 v0.18.93 round 2 (C9 supervisor must-fixes M1–M3, Rules audits/impact/c9-auto-arrive-supervisor.md; Rule 21): §91 lines as first written, replaced in CONTRACT.md by the round-2 wording (one fix never decides; the back tap within leaveMeters; a rider cancel while the driver is away is free):
 
 - **Position**: only the server's latest stored fix, accuracy ≤ 50 m, not older than `positionMaxAgeSeconds`; straight line to the pickup.

@@ -1,11 +1,11 @@
-# Movera API v0.18.97 — generated from contract.json (+ CONTRACT.md §7). PROPOSED; no backend exists.
+# Movera API v0.18.99 — generated from contract.json (+ CONTRACT.md §7). PROPOSED; no backend exists.
 openapi: 3.1.0
 info:
   title: Movera API
-  version: 0.18.97
+  version: 0.18.99
   description: '**Proposed contract — no backend exists yet.** One future backend serves the Rider (Flutter), Driver (Flutter)
     and Admin (React/TS) apps. Source of truth for names, enums, transitions, realtime and errors is `contract.json` + `CONTRACT.md`
-    v0.18.97 in this folder; this file must agree with them.
+    v0.18.99 in this folder; this file must agree with them.
 
 
     Wire rules: ids match `^[A-Za-z0-9_-]{1,64}$`; times are RFC 3339 UTC with `Z`; durations are integer seconds; money is
@@ -84,7 +84,7 @@ tags:
 - name: Admin · Finance
 x-contract:
   name: movera
-  version: 0.18.97
+  version: 0.18.99
   source: contract.json
 paths:
   /auth/otp/request:
@@ -5812,11 +5812,11 @@ paths:
         v0.7.2 (owner 2026-10-28, one admin is enough): 200 / 201 at once for every admin with the permission, written in
         the audit. v0.18.10: For the admin trip page (Give money back): POST /admin/trips/{tripId}/refund { expectedVersion,
         amount: Money, reason, fromDriver? } (payments.refund) → 201 Refund (or 202 PendingApproval over the role limit).
-        At most what the rider paid (cash + wallet) less earlier refunds (400 refund_too_large); only a paid ended trip (409
-        not_paid). fromDriver true (''take from driver'', owner decision 31): the driver loses his share of the refunded money
-        (an earnings adjustment − share), now also in driverTotal / driverAdjustments. The rider chooses where the money goes
-        (POST /rider/refunds/{refundId}/destination); the admin marks a Swish / bank refund paid (POST /admin/refunds/{refundId}/paid,
-        finance.edit). Lists: GET /admin/refunds/payouts.'
+        At most what the rider paid (v0.18.99, BQ-M25b F2: the cash taken, or the card part, plus the wallet part) less earlier
+        refunds (400 refund_too_large); only a paid ended trip (409 not_paid). fromDriver true (''take from driver'', owner
+        decision 31): the driver loses his share of the refunded money (an earnings adjustment − share), now also in driverTotal
+        / driverAdjustments. The rider chooses where the money goes (POST /rider/refunds/{refundId}/destination); the admin
+        marks a Swish / bank refund paid (POST /admin/refunds/{refundId}/paid, finance.edit). Lists: GET /admin/refunds/payouts.'
       tags:
       - Admin · Trips
       x-actor:
@@ -10814,15 +10814,24 @@ paths:
         and replaces the trip''s earlier preview. total and fareLines are computed by the same code as POST /trips/{tripId}/complete
         would at that moment with the driver''s latest fix (pricing.driverEndsEarly): earlyEnd is true when the driver is
         farther than pricing.completeNearDropoffMeters from the drop-off. cashDue = total − the part the rider''s wallet would
-        pay. driverEarnings = the driver''s part of that total (as TripProjection.driverEarnings after complete), for the
-        sheet''s cash balance. POST /trips/{tripId}/complete { expectedVersion, previewId, cashCollected } with the trip''s
-        latest previewId before expiresAt: complete uses the frozen price exactly (total, fareLines, driverEarnings, earlyEnd):
-        no early-end flip, no extra minutes or waiting. On a cash trip cashCollected must equal its cashDue (and the wallet
-        part must be unchanged); otherwise 409 conflict, reason price_changed, with a fresh preview in the error''s preview
-        field. The app sends POST /trips/{tripId}/complete { expectedVersion, previewId, cashCollected = the cashDue it showed
-        } on a cash trip. On 409 price_changed it shows the sheet again with error.preview (never resends the old amount).
-        After completing the app shows the fare of the returned TripProjection. An older server without the preview (404)
-        leaves the app on the old flow (complete without cashCollected).'
+        pay on a trip paid in the car (paymentMethod cash); 0 on every other trip (card, Apple Pay, wallet: nothing is collected
+        in the car, contract.json#priceDisplay.nonCashZero). driverEarnings = the driver''s part of that total (as TripProjection.driverEarnings
+        after complete), for the sheet''s cash balance. POST /trips/{tripId}/complete { expectedVersion, previewId, cashCollected
+        } with the trip''s latest previewId before expiresAt: complete uses the frozen price exactly (total, fareLines, driverEarnings,
+        earlyEnd): no early-end flip, no extra minutes or waiting. On a cash trip cashCollected must equal its cashDue (and
+        the wallet part must be unchanged); otherwise 409 conflict, reason price_changed, with a fresh preview in the error''s
+        preview field. v0.18.99 (BQ-M25b; M25 supervisor F1/F2, Rules audits/impact/m25-card-cash-supervisor.md; Rule 21:
+        the wording before is kept as *Before0_18_99): on a trip not paid in the car cashCollected is not compared: 0 (its
+        cashDue) or an older app''s total − wallet part is taken, never 409 price_changed, and the trip books 0 cash; more
+        than total − wallet part stays 400 cash_above_fare. The app sends POST /trips/{tripId}/complete { expectedVersion,
+        previewId, cashCollected = the cashDue it showed } on a cash trip. On 409 price_changed it shows the sheet again with
+        error.preview (never resends the old amount). After completing the app shows the fare of the returned TripProjection.
+        An older server without the preview (404) leaves the app on the old flow (complete without cashCollected). v0.18.99:
+        On a trip whose paymentMethod is not cash (card, apple_pay, wallet): CompletePreview.cashDue = 0, TripFinish.cashToCollect
+        = 0 (driver, rider and admin views; complete, the rider''s end_early, the driver''s end with the rider on board) and
+        TripProjection.cashToCollect = 0 (where it is sent), in the trip''s currency. On a cash trip they are unchanged: fare
+        − walletApplied (cashDue: total − the wallet part; finish.cashToCollect: fare − walletApplied). Offer.cashToCollect
+        already said 0 for any other payment method (priceDisplay.offer.cashToCollect).'
       tags:
       - Driver · Trip
       x-actor:
@@ -15259,11 +15268,11 @@ paths:
       summary: The rider's refunds and where each one goes
       description: 'v0.18.13 (audit M4: served since v0.18.10, now in the paths). For the admin trip page (Give money back):
         POST /admin/trips/{tripId}/refund { expectedVersion, amount: Money, reason, fromDriver? } (payments.refund) → 201
-        Refund (or 202 PendingApproval over the role limit). At most what the rider paid (cash + wallet) less earlier refunds
-        (400 refund_too_large); only a paid ended trip (409 not_paid). fromDriver true (''take from driver'', owner decision
-        31): the driver loses his share of the refunded money (an earnings adjustment − share), now also in driverTotal /
-        driverAdjustments. The rider chooses where the money goes (POST /rider/refunds/{refundId}/destination); the admin
-        marks a Swish / bank refund paid (POST /admin/refunds/{refundId}/paid, finance.edit). Lists: GET /admin/refunds/payouts.'
+        Refund (or 202 PendingApproval over the role limit). At most what the rider paid (v0.18.99, BQ-M25b F2: the cash taken,
+        or the card part, plus the wallet part) less earlier refunds (400 refund_too_large); only a paid ended trip (409 not_paid).
+        fromDriver true (''take from driver'', owner decision 31): the driver loses his share of the refunded money (an earnings
+        adjustment − share), now also in driverTotal / driverAdjustments. The rider chooses where the money goes (POST /rider/refunds/{refundId}/destination);
+        the admin marks a Swish / bank refund paid (POST /admin/refunds/{refundId}/paid, finance.edit). Lists: GET /admin/refunds/payouts.'
       tags:
       - Rider · Payments
       x-actor:
@@ -20029,7 +20038,15 @@ components:
           description: 'v0.18.89: TripProjection.cashToCollect (driver and admin views; rider view unchanged) is sent on every
             pay-in-car trip from accept, not only when the wallet paid part (before v0.18.89): fare − walletApplied. The collect
             screen shows CompletePreview.cashDue, else finish.cashToCollect, else this; none of them → "—", never fare − wallet
-            worked out on the phone.'
+            worked out on the phone. v0.18.99 (BQ-M25b; M25 supervisor F1/F2, Rules audits/impact/m25-card-cash-supervisor.md;
+            Rule 21: the wording before is kept as *Before0_18_99): on a trip not paid in the car (paymentMethod not cash)
+            TripProjection.cashToCollect is 0 in every view where it is sent (the rider''s view once the wallet paid part,
+            beside walletApplied); it is no longer fare − walletApplied there. v0.18.99: On a trip whose paymentMethod is
+            not cash (card, apple_pay, wallet): CompletePreview.cashDue = 0, TripFinish.cashToCollect = 0 (driver, rider and
+            admin views; complete, the rider''s end_early, the driver''s end with the rider on board) and TripProjection.cashToCollect
+            = 0 (where it is sent), in the trip''s currency. On a cash trip they are unchanged: fare − walletApplied (cashDue:
+            total − the wallet part; finish.cashToCollect: fare − walletApplied). Offer.cashToCollect already said 0 for any
+            other payment method (priceDisplay.offer.cashToCollect).'
         cancelPreview:
           allOf:
           - $ref: '#/components/schemas/CancelPreview'
@@ -27090,8 +27107,10 @@ components:
       description: 'v0.18.1 (CONTRACT.md §26): the final price complete would set now, frozen for 120 s. total and fareLines
         are computed by the same code as POST /trips/{tripId}/complete would at that moment with the driver''s latest fix
         (pricing.driverEndsEarly): earlyEnd is true when the driver is farther than pricing.completeNearDropoffMeters from
-        the drop-off. cashDue = total − the part the rider''s wallet would pay. driverEarnings = the driver''s part of that
-        total (as TripProjection.driverEarnings after complete), for the sheet''s cash balance.'
+        the drop-off. cashDue = total − the part the rider''s wallet would pay on a trip paid in the car (paymentMethod cash);
+        0 on every other trip (card, Apple Pay, wallet: nothing is collected in the car, contract.json#priceDisplay.nonCashZero).
+        driverEarnings = the driver''s part of that total (as TripProjection.driverEarnings after complete), for the sheet''s
+        cash balance.'
       required:
       - previewId
       - expiresAt
@@ -27116,7 +27135,11 @@ components:
           allOf:
           - $ref: '#/components/schemas/Money'
           description: 'What the driver collects in cash: total less what the rider''s wallet would pay. Send it as cashCollected
-            on complete.'
+            on complete. v0.18.99: On a trip whose paymentMethod is not cash (card, apple_pay, wallet): CompletePreview.cashDue
+            = 0, TripFinish.cashToCollect = 0 (driver, rider and admin views; complete, the rider''s end_early, the driver''s
+            end with the rider on board) and TripProjection.cashToCollect = 0 (where it is sent), in the trip''s currency.
+            On a cash trip they are unchanged: fare − walletApplied (cashDue: total − the wallet part; finish.cashToCollect:
+            fare − walletApplied). Offer.cashToCollect already said 0 for any other payment method (priceDisplay.offer.cashToCollect).'
         driverEarnings:
           allOf:
           - $ref: '#/components/schemas/Money'
@@ -28473,16 +28496,22 @@ components:
               previewId, cashCollected } with the trip''s latest previewId before expiresAt: complete uses the frozen price
               exactly (total, fareLines, driverEarnings, earlyEnd): no early-end flip, no extra minutes or waiting. On a cash
               trip cashCollected must equal its cashDue (and the wallet part must be unchanged); otherwise 409 conflict, reason
-              price_changed, with a fresh preview in the error''s preview field. previewId missing, unknown or expired: complete
-              prices the trip as now. If the app sent previewId with cashCollected and that no longer equals the cash part
-              of the new price: 409 conflict, reason price_changed, with a fresh preview (error.preview); the trip is not
-              completed and the driver is never trapped by a 400. Without previewId (older apps) cashCollected keeps its old
-              rule (at most the fare less the wallet, else 400 cash_above_fare).'
+              price_changed, with a fresh preview in the error''s preview field. v0.18.99 (BQ-M25b; M25 supervisor F1/F2,
+              Rules audits/impact/m25-card-cash-supervisor.md; Rule 21: the wording before is kept as *Before0_18_99): on
+              a trip not paid in the car cashCollected is not compared: 0 (its cashDue) or an older app''s total − wallet
+              part is taken, never 409 price_changed, and the trip books 0 cash; more than total − wallet part stays 400 cash_above_fare.
+              previewId missing, unknown or expired: complete prices the trip as now. If the app sent previewId with cashCollected
+              and that no longer equals the cash part of the new price: 409 conflict, reason price_changed, with a fresh preview
+              (error.preview); the trip is not completed and the driver is never trapped by a 400. Without previewId (older
+              apps) cashCollected keeps its old rule (at most the fare less the wallet, else 400 cash_above_fare).'
           cashCollected:
             allOf:
             - $ref: '#/components/schemas/Money'
             description: 'v0.18.1: on a cash trip the cashDue of GET /driver/trips/{tripId}/complete-preview that the app
-              showed; at most the fare less the wallet (else 400 cash_above_fare). Absent: the fare less the wallet.'
+              showed; at most the fare less the wallet (else 400 cash_above_fare). Absent: the fare less the wallet. v0.18.99:
+              POST /trips/{tripId}/complete with a previewId on such a trip: cashCollected 0 (the cashDue shown), an older
+              app''s total − wallet part, or none are all taken; never 409 price_changed for the cash amount; the trip books
+              0 cash. More than total − wallet part: 400 cash_above_fare (unchanged).'
     NoShowCommand:
       allOf:
       - $ref: '#/components/schemas/TripCommand'
@@ -33952,7 +33981,12 @@ components:
             /trips/{tripId}/receipt cashPaid. Money is formatted by moneyDisplay. Wording only: no API shape change. Server:
             no change (the rider view already carries finish.cashToCollect). Admin: none (rider-only line, no setting). Driver:
             none (its collect screen is the source of the amount). sv wording owner OK 2026-11-12 ~17:30; fr = the owner''s
-            words (no « dans la voiture », Q13).'
+            words (no « dans la voiture », Q13). v0.18.99: On a trip whose paymentMethod is not cash (card, apple_pay, wallet):
+            CompletePreview.cashDue = 0, TripFinish.cashToCollect = 0 (driver, rider and admin views; complete, the rider''s
+            end_early, the driver''s end with the rider on board) and TripProjection.cashToCollect = 0 (where it is sent),
+            in the trip''s currency. On a cash trip they are unchanged: fare − walletApplied (cashDue: total − the wallet
+            part; finish.cashToCollect: fare − walletApplied). Offer.cashToCollect already said 0 for any other payment method
+            (priceDisplay.offer.cashToCollect).'
         driverTotal:
           allOf:
           - $ref: '#/components/schemas/Money'
