@@ -1240,4 +1240,45 @@ md = open('CONTRACT.md').read()
 assert '\nv0.18.88 (owner 2026-10-29' in md and 'fleetPayoutWhole' in md and 'adminCalculator.removed' in md, 'CONTRACT.md v0.18.88 note'
 assert md.count('\n') <= 1500, 'CONTRACT.md over 1,500 lines'
 PY
+# v0.18.89 (owner 2026-11-14 "make sure rider and driver app show correct prices every where" + "Check all apps"; Rules
+# audits/price-display-2026-11-14/REPORT.md): price fields from the server; payouts 2 lines (Driver gets / Movera gets); whole amounts keep decimals.
+python3 - <<'PY'
+import json, yaml
+c = json.load(open('contract.json'))
+pd = c['priceDisplay']
+assert 'never work money out' in pd['note'] and 'driverEarnings + pickupPay' in pd['offer']['driverTotal'] and 'ONLY this number' in pd['offer']['driverTotal'], 'Offer.driverTotal'
+assert 'never works pickup pay out' in pd['offer']['pickupPay'] and 'walletApplied' in pd['offer']['cashToCollect'], 'offer pickupPay / cashToCollect'
+assert 'driverEarnings + pickupPay + driverBonus' in pd['routeChange'] and 'feeNow' in pd['cancelPreview']['shape'] and 'cancel_fee.dart' in pd['cancelPreview']['apps'], 'routeChange / cancelPreview'
+assert '− finish.driverTotal' in pd['owedToMovera'] and 'cash_balance.dart' in pd['owedToMovera'], 'owedToMovera'
+ps = pd['payoutSummary']
+assert 'thats all no details' in ps['owner'] and 'all trips' in ps['rule'] and 'commissionRow' in ps['rule'] and 'never do' in ps['rule'], 'payoutSummary 2 lines'
+assert ps['display'].startswith('Exactly two lines') and 'No other detail' in ps['display'], 'payout card no details'
+assert 'PLUS the app fee' in ps['rule'] and 'never added a second time' in ps['rule'] and 'session-2026-11-06.md:1278' in ps['rule'] and 'never a %' in ps['display'], 'Movera gets = commission + app fee, no %'
+assert 'amounts only, never a %' in c['moneyDisplay']['resultLinesNoPercent'] and 'session-2026-11-06.md:1278' in c['moneyDisplay']['resultLinesNoPercent'] and ps['ruleBefore0_18_89b'].startswith('Replaced'), 'result lines no %'
+assert {k: ps['texts'][k] for k in ('driverGets', 'moveraGets')} == {'driverGets': {'sv': 'Föraren får', 'fr': 'Le chauffeur reçoit', 'en': 'Driver gets'}, 'moveraGets': {'sv': 'Movera får', 'fr': 'Movera reçoit', 'en': 'Movera gets'}}, 'payout texts'
+assert 'Three separate lines' in pd['payoutSummaryBefore0_18_89']['display'] and 'Earnings / Owed to Movera / Paid out' in c['payouts']['noteBefore0_18_89'], 'old 3-line text kept (Rule 21)'
+pn = c['payouts']['note']
+assert 'v0.18.89' in pn and 'Driver gets /' in pn and 'Movera gets' in pn and 'Owed to Movera' not in pn and 'is replaced' in pn, 'payouts.note 2 lines'
+tm = c['arrivedWaiting']['termsTexts']['money']
+assert 'follows the currency, not the' in tm and "'65,00 kr'" in tm and "'5.000 DT'" in tm and 'driver-g6.md:96' in tm and "'13,49 kr'" in tm, 'termsTexts.money'
+assert c['arrivedWaiting']['termsTexts']['moneyBefore0_18_89'].startswith('Replaced in v0.18.89'), 'old termsTexts.money kept'
+md = c['moneyDisplay']
+assert 'owner 2026-11-14' in md['wholeAmounts'] and 'every server text' in md['wholeAmounts'] and 'every app' in md['wholeAmounts'], 'wholeAmounts'
+assert md['examplesWhole'] == {'SEK': {'3500': '35,00 kr'}, 'EUR': {'800': '8,00 €'}, 'TND': {'5000': '5.000 DT'}}, 'whole examples'
+assert 'legalTerms' in c['waitingPriceShown'], 'Terms shown waiting price'
+S = yaml.safe_load(open('openapi.yaml'))['components']['schemas']
+for sch, f in (('Offer', 'driverTotal'), ('Offer', 'cashToCollect'), ('TripRouteChange', 'driverTotal'), ('TripProjection', 'cancelPreview'),
+               ('TripProjection', 'cashToCollect'), ('TripFinish', 'owedToMovera'), ('Payout', 'summary')):
+    assert f in S[sch]['properties'] and f not in S[sch].get('required', []), sch + '.' + f + ' additive'
+assert S['CancelPreview']['required'] == ['feeNow', 'kind'] and S['PayoutSummary']['required'] == ['driverGets', 'moveraGets'], 'new schemas'
+assert 'only the total' not in S['Payout']['properties']['lines']['description'], 'Payout.lines 2 lines'
+assert '3 lines' not in S['Payout']['properties']['summary']['description'] and 'the 2 lines Driver gets / Movera gets' in S['Payout']['properties']['summary']['description'], 'Payout.summary 2 lines'
+assert S['CancelPreview']['properties']['kindAfterFree']['enum'] == ['cancel', 'no_show'] and 'kindAfterFree' not in S['CancelPreview']['required'] and 'kindAfterFree is no_show' in pd['cancelPreview']['rule'], 'cancelPreview.kindAfterFree additive'
+assert 'never added again' in pd['payoutSummary']['rule'] and 'tips, a later bonus' not in pd['payoutSummary']['rule'], 'driverGets: no tip / bonus added twice'
+assert 'The admin sees the lines" is replaced' in c['payouts']['note'] and 'session-2026-11-06.md:1277' in c['payouts']['note'], 'payouts.note admin lines replaced'
+assert 'tip, later pay change' in pd['offer']['driverTotal'], 'offer driverTotal no tip'
+t = open('CONTRACT.md', encoding='utf-8').read()
+assert '## 90. Prices the apps show' in t and '`fare + pickupPay`' not in t and 'Offer.driverTotal' in t, 'CONTRACT.md §90 / §3.2'
+assert t.count('\n') <= 1500, 'CONTRACT.md over 1,500 lines'
+PY
 echo "contract ok"
