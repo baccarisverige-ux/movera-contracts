@@ -19678,12 +19678,12 @@ components:
           description: 'v0.18.82: B2.4 (S07 M5): ONE commission for every paid trip end (completed, ended early by the rider,
             ended by the driver with the rider on board, admin complete): commission = fare − debtCollected − driverEarnings
             − pickupPay − driverBonus (finish.debt.rule). The trip (TripProjection.commission, KPI commission), the trip''s
-            earnings entry and every driver and admin screen use this same number; the apps show the server''s number and
-            never work it out themselves. Movera''s later changes to the driver''s pay (driver-pay, an admin fare, a refund
-            taken from the driver) are not in commission: they are in driverAdjustments and lower moneySplit.movera. Earnings
-            entries written before v0.18.82 keep their stored value (history, never rewritten). v0.18.87 (BQ-M19, owner 107
-            ''Yes, count + fix old days (Rec.)'' + the approved B2.4 plan, which names the lost-driver bonus; owner 2026-11-13
-            ''Movera commission is how much movera keep''): an admin bonus on a completed trip (POST /admin/trips/{tripId}/driver-bonus
+            earnings entry and every report and KPI use this same number; the apps show the server''s number and never work
+            it out themselves. Movera''s later changes to the driver''s pay (driver-pay, an admin fare, a refund taken from
+            the driver) are not in commission: they are in driverAdjustments and lower moneySplit.movera. Earnings entries
+            written before v0.18.82 keep their stored value (history, never rewritten). v0.18.87 (BQ-M19, owner 107 ''Yes,
+            count + fix old days (Rec.)'' + the approved B2.4 plan, which names the lost-driver bonus; owner 2026-11-13 ''Movera
+            commission is how much movera keep''): an admin bonus on a completed trip (POST /admin/trips/{tripId}/driver-bonus
             after the paid end) is a later change to the driver''s pay like driver-pay: the trip''s commission and its earnings
             entry keep the value set at the paid end (the driverBonus in the formula is the bonus at the paid end) and are
             never rewritten by it; the bonus is its own earnings entry kind bonus, it is in TripProjection.driverBonus and
@@ -19946,8 +19946,8 @@ components:
             The server sends TripProjection.moveraKeepsNow (driver and admin views, = moneySplit.movera, on paid trips). The
             driver''s ''Movera commission'' rows (finished screen, waybill, trip details) show it; when it is absent (an older
             server, or a trip not paid yet) the finished-screen and history rows are not shown (never TripProjection.commission
-            as a fallback, never worked out on the phone); before the paid end the waybill shows TripProjection.commission
-            (nothing changed yet).'
+            as a fallback, never worked out on the phone); on a paid trip the waybill row is hidden too when it is absent;
+            only before the paid end does the waybill show TripProjection.commission (nothing changed yet).'
     DriverSilentAlert:
       type: object
       description: 'v0.7.0: documents the server''s alert of 2026-10-26: no position for 30 min with the rider on board; the

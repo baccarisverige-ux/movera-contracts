@@ -1201,7 +1201,11 @@ assert 'moneySplit.movera' in cr['admin'] and 'moveraKeepsNow' in cr['driver'] a
 assert 'moneyBase.commissionRow' in mb['commission'] and 'moveraKeepsNow' in spec['components']['schemas']['TripProjection']['properties'], 'commissionRow commission/openapi'
 assert 'moveraKeepsNow' not in spec['components']['schemas']['TripProjection'].get('required', []), 'moveraKeepsNow additive'
 qs = [v for v in json.dumps(c, ensure_ascii=False).split('"serverSafety": ')[1:] if v.startswith('"Rule 33: the queued trip starts')]
-assert len(qs) == 1 and '(FOR NO KEY UPDATE' in qs[0].split('",')[0], 'queued-trip start lock wording'
+assert len(qs) == 1 and '(FOR UPDATE)' in qs[0].split('",')[0], 'queued-trip start lock wording (money.ts FOR UPDATE, not changed by #218)'
+bo = mb['bonusOutsideCommission']
+assert 'never by when an entry was written' in bo['inside'] and 'fare − debtCollected − driverEarnings − pickupPay − commission' in bo['inside'] and 'every bonus entry is outside' in bo['inside'], 'inside rule'
+assert 'created_at' not in bo['server'] and 'tells apart' not in bo['server'] and 'Driver and rider: no change' not in bo['apps'], 'server/apps text'
+assert 'bonus being typed' in cr['admin'] and 'waybill row is hidden too' in cr['driver'] and 'every driver and admin screen use this same number' not in mb['commission'], 'box/waybill/commission'
 assert 'moveraKeepsNow' in md, 'CONTRACT.md commission row'
 assert md.count('\n') <= 1500, 'CONTRACT.md over 1,500 lines'
 PY
