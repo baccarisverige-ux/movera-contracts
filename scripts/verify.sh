@@ -1305,6 +1305,12 @@ assert 'lostDriverPaid' in S['MoneySplit']['properties'] and 'lostDriverPaid' no
 assert '− lostDriverPaid' in S['TripProjection']['properties']['moveraKeepsNow']['description'], 'moveraKeepsNow description'
 t = open('CONTRACT.md', encoding='utf-8').read()
 assert t.startswith('# Movera shared contract v0.18.90') and '\nv0.18.90 (BQ-M21' in t and 'lostDriverPaid? }' in t, 'CONTRACT.md v0.18.90'
+pd = c['priceDisplay']
+assert 'cash the driver holds' in pd['owedToMovera'] and 'plus a cash tip' in pd['owedToMovera'] and 'fare − walletApplied' in pd['owedToMovera'] and pd['owedToMoveraBefore0_18_90'].startswith('Replaced in v0.18.90'), 'owedToMovera cash held (P89 must-fix 1)'
+assert "'counted as cash the driver already holds'" in pd['owedToMovera'] and 'counted as cash the driver already holds' in S['TripTip']['properties']['driverShare']['description'], 'owedToMovera matches TripTip.driverShare'
+aw = json.load(open('fixtures/arrived_waiting.json'))
+assert [x['text'] for x in aw['termsMoney']] == ['12,26 kr', '65,00 kr', '0,50 €', '8,10 €', '8,00 €', '12,26 kr', '5.000 DT'] and 'N4' in aw['termsMoneyNote'], 'termsMoney fixture follows moneyDisplay (P89 N4)'
+assert '`TripFinish.owedToMovera` = cash the driver holds' in t, 'CONTRACT.md §90 owedToMovera'
 assert t.count('\n') <= 1500, 'CONTRACT.md over 1,500 lines'
 PY
 echo "contract ok"
