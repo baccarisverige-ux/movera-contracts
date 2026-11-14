@@ -1176,4 +1176,25 @@ assert md.startswith('# Movera shared contract v' + c['version']), 'CONTRACT.md 
 assert 'v0.18.86' in md and 'commissionSteps' in md and 'commission_steps_invalid' in md, 'CONTRACT.md text'
 assert md.count('\n') <= 1500, 'CONTRACT.md over 1,500 lines'
 PY
+# v0.18.87 (BQ-M19, owner 107 + approved B2.4 plan; owner 2026-11-13 "Movera commission is how much movera keep"): bonus
+# entries outside a trip's commission (lost-driver payment, admin bonus after the paid end) are Movera pay changes, taken
+# off moveraEarnings once; an admin bonus on a completed trip never rewrites the commission. takeBack: FOR NO KEY UPDATE (#218).
+python3 - <<'PY'
+import json, yaml
+c = json.load(open('contract.json'))
+mb, km = c['moneyBase'], c['kpis']['money']
+bo = mb['bonusOutsideCommission']
+assert set(bo['which']) == {'lostDriver', 'afterPaidEnd'} and 'NOT a pay change' in bo['inside'], 'BQ-M19 which/inside'
+me = km['moveraEarnings']
+assert me.startswith('v0.18.82') and 'v0.18.87' in me and 'payLostDriver' in me and 'after the trip' in me and 'taken off once' in me, 'BQ-M19 moveraEarnings'
+assert 'bonusOutsideCommission' in mb['kpiMoney'] and 'never rewritten by it' in mb['commission'] and mb['commission'].startswith('B2.4 (S07 M5)'), 'BQ-M19 commission/kpiMoney'
+assert list(mb).index('bonusOutsideCommission') == list(mb).index('kpiMoney') + 1, 'BQ-M19 key order'
+tb = c['bookedTakeBack']['takeBack']
+assert '(FOR NO KEY UPDATE' in tb and '(FOR UPDATE)' not in tb, 'takeBack lock wording'
+spec = yaml.safe_load(open('openapi.yaml'))
+assert 'payLostDriver' in spec['components']['schemas']['KpiDay']['properties']['moveraEarnings']['description'], 'openapi KpiDay.moveraEarnings'
+md = open('CONTRACT.md').read()
+assert '\nv0.18.87 (BQ-M19' in md and 'moneyBase.bonusOutsideCommission' in md, 'CONTRACT.md v0.18.87 note'
+assert md.count('\n') <= 1500, 'CONTRACT.md over 1,500 lines'
+PY
 echo "contract ok"
