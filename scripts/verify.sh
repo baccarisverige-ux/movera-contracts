@@ -1271,7 +1271,12 @@ for sch, f in (('Offer', 'driverTotal'), ('Offer', 'cashToCollect'), ('TripRoute
                ('TripProjection', 'cashToCollect'), ('TripFinish', 'owedToMovera'), ('Payout', 'summary')):
     assert f in S[sch]['properties'] and f not in S[sch].get('required', []), sch + '.' + f + ' additive'
 assert S['CancelPreview']['required'] == ['feeNow', 'kind'] and S['PayoutSummary']['required'] == ['driverGets', 'moveraGets'], 'new schemas'
-assert 'only the total' not in S['Payout']['properties']['lines']['description'], 'Payout.lines 3 lines'
+assert 'only the total' not in S['Payout']['properties']['lines']['description'], 'Payout.lines 2 lines'
+assert '3 lines' not in S['Payout']['properties']['summary']['description'] and 'the 2 lines Driver gets / Movera gets' in S['Payout']['properties']['summary']['description'], 'Payout.summary 2 lines'
+assert S['CancelPreview']['properties']['kindAfterFree']['enum'] == ['cancel', 'no_show'] and 'kindAfterFree' not in S['CancelPreview']['required'] and 'kindAfterFree is no_show' in pd['cancelPreview']['rule'], 'cancelPreview.kindAfterFree additive'
+assert 'never added again' in pd['payoutSummary']['rule'] and 'tips, a later bonus' not in pd['payoutSummary']['rule'], 'driverGets: no tip / bonus added twice'
+assert 'The admin sees the lines" is replaced' in c['payouts']['note'] and 'session-2026-11-06.md:1277' in c['payouts']['note'], 'payouts.note admin lines replaced'
+assert 'tip, later pay change' in pd['offer']['driverTotal'], 'offer driverTotal no tip'
 t = open('CONTRACT.md', encoding='utf-8').read()
 assert '## 90. Prices the apps show' in t and '`fare + pickupPay`' not in t and 'Offer.driverTotal' in t, 'CONTRACT.md §90 / §3.2'
 assert t.count('\n') <= 1500, 'CONTRACT.md over 1,500 lines'

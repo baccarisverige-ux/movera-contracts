@@ -20108,10 +20108,10 @@ components:
           description: 'v0.18.89: Offer.driverTotal: Money, driver view, on every offer (Radar, Exclusive, assigned, next
             trip, booked-ride / reservation offers): what the driver gets for this offer = driverEarnings + pickupPay (driverBonus
             is already inside driverEarnings), in the offer''s currency. It is the number the finished trip''s finish.driverTotal
-            shows when nothing changes on the way (no waiting, stop waiting, route change, later pay change). The offer card
-            (Home radar, Exclusive sheet, accept sheet, Live list, Scheduled rides, Booked rides, reservation request, next
-            trip) shows ONLY this number (owner 2026-11-12 ~16:05 UTC, Rules decisions/session-2026-11-06.md:1164: "on the
-            offer when come he see only how much he get"). Absent only from a server before v0.18.89: the app shows driverEarnings
+            shows when nothing changes on the way (no waiting, stop waiting, route change, tip, later pay change). The offer
+            card (Home radar, Exclusive sheet, accept sheet, Live list, Scheduled rides, Booked rides, reservation request,
+            next trip) shows ONLY this number (owner 2026-11-12 ~16:05 UTC, Rules decisions/session-2026-11-06.md:1164: "on
+            the offer when come he see only how much he get"). Absent only from a server before v0.18.89: the app shows driverEarnings
             and adds nothing.'
         cashToCollect:
           allOf:
@@ -22855,7 +22855,7 @@ components:
         summary:
           allOf:
           - $ref: '#/components/schemas/PayoutSummary'
-          description: 'v0.18.89: driver and admin views: the 3 lines (contract.json#priceDisplay.payoutSummary).'
+          description: 'v0.18.89: driver and admin views: the 2 lines Driver gets / Movera gets (contract.json#priceDisplay.payoutSummary).'
       description: 'v0.18.13: v0.18.13 (audit M1): one payout is in ONE currency: the unpaid entries of a driver''s period
         are paid per currency (a driver with kr and € entries gets two payouts); amounts of different currencies are never
         added.'
@@ -36356,18 +36356,22 @@ components:
     CancelPreview:
       type: object
       description: 'v0.18.89: TripProjection.cancelPreview { feeNow: Money, kind: cancel | no_show, freeUntil?: Timestamp,
-        feeAfterFree?: Money }, rider and admin views (never the driver view). Sent while the rider can cancel a trip a driver
-        has (accepted, driver_to_pickup, arrived) and on a booked ride (scheduled) before its pickup; not while searching
-        (no fee) and not on an ended trip. feeNow = the fee POST /trips/{tripId}/cancel would charge if sent at the projection''s
-        time: riderCancelFee() with the trip''s terms.cancelRule (live: minutes since accept; booked: minutes before pickup;
-        chain.freeCancelAt and a queued trip stay free), or, after arrival with cancelAfterArrivedIsNoShow on and the free
-        minutes passed, the no-show fee (kind no_show); 0 while free. freeUntil = when the free cancel ends (absent once it
-        has ended, or when cancelling stays free); feeAfterFree = the fee charged from freeUntil on (absent with freeUntil).
-        Rider app: the cancel sheet shows feeNow, and from freeUntil on feeAfterFree (a clock compare, no maths); it reads
-        the trip again on every trip_projection event. It stops using its own calculator (core/contracts/cancel_fee.dart,
-        CancelFeeCalculator) for real trips; fixtures/cancel_fees.json stays for tests. Absent (no rule, an older server)
-        → no amount on the sheet, never a worked-out fee. The cancel answer (cancellation.fee) is final. Admin: the trip page
-        may show it ("Cancel now costs …"). Driver: not affected (his share stays cancellation.driverShare).'
+        feeAfterFree?: Money, kindAfterFree?: cancel | no_show }, rider and admin views (never the driver view). Sent while
+        the rider can cancel a trip a driver has (accepted, driver_to_pickup, arrived) and on a booked ride (scheduled) before
+        its pickup; not while searching (no fee) and not on an ended trip. feeNow = the fee POST /trips/{tripId}/cancel would
+        charge if sent at the projection''s time: riderCancelFee() with the trip''s terms.cancelRule (live: minutes since
+        accept; booked: minutes before pickup; chain.freeCancelAt and a queued trip stay free), or, after arrival with cancelAfterArrivedIsNoShow
+        on and the free minutes passed, the no-show fee (kind no_show); 0 while free. freeUntil = when the free cancel ends
+        (absent once it has ended, or when cancelling stays free); feeAfterFree = the fee charged from freeUntil on (absent
+        with freeUntil). kindAfterFree = what feeAfterFree is (cancel or no_show), sent with feeAfterFree: on an arrived trip
+        with cancelAfterArrivedIsNoShow on, kind is cancel before freeUntil and kindAfterFree is no_show (the fee becomes
+        the no-show fee at freeUntil). From freeUntil on the rider sheet shows feeAfterFree with the kindAfterFree label (a
+        clock compare, no maths). Absent with feeAfterFree (an older server) → the sheet keeps the kind label. Rider app:
+        the cancel sheet shows feeNow, and from freeUntil on feeAfterFree (a clock compare, no maths); it reads the trip again
+        on every trip_projection event. It stops using its own calculator (core/contracts/cancel_fee.dart, CancelFeeCalculator)
+        for real trips; fixtures/cancel_fees.json stays for tests. Absent (no rule, an older server) → no amount on the sheet,
+        never a worked-out fee. The cancel answer (cancellation.fee) is final. Admin: the trip page may show it ("Cancel now
+        costs …"). Driver: not affected (his share stays cancellation.driverShare).'
       required:
       - feeNow
       - kind
@@ -36383,6 +36387,11 @@ components:
           $ref: '#/components/schemas/Timestamp'
         feeAfterFree:
           $ref: '#/components/schemas/Money'
+        kindAfterFree:
+          type: string
+          enum:
+          - cancel
+          - no_show
       additionalProperties: false
     PayoutSummary:
       type: object
@@ -36393,19 +36402,20 @@ components:
         gets = commission + app fee as one amount"). Payout.summary { driverGets: Money, moveraGets: Money }, same currency
         as Payout.amount; driver (GET /driver/payouts) and admin (GET /admin/payouts, the payout page, the payout run card)
         views. driverGets = his earnings for the payout''s period, all trips (pay in car and in app alike): the sum of each
-        trip''s finish.driverTotal plus each entry of his money that is not inside a trip''s driverTotal (cancel / no-show
-        shares, tips, a later bonus), each once. moveraGets = Movera''s commission PLUS the app fee for the period, as ONE
-        amount (owner 2026-11-14 ~05:17 UTC, Rules decisions/session-2026-11-06.md:1278: "write only how much in amour driver
-        get and how much movera get in amount dont write any fucking pourcentage" — "Movera gets = commission + app fee as
-        one amount"): for each of the period''s trips, what Movera keeps now on it (TripProjection.moveraKeepsNow / moneySplit.movera,
-        moneyBase.commissionRow) — that number is fare − debtCollected − driverEarnings − pickupPay − driverBonus after later
-        pay changes, and because the fare holds the app_fee line it already holds the app fee (example 20 DT ride, 20 % commission,
-        10 % app fee: rider 22.000 DT, driver 16.000 DT, Movera gets 6.000 DT = 4.000 commission + 2.000 app fee) — plus Movera''s
-        share of the period''s cancel / no-show fees. The app fee is never added a second time and never shown as its own
-        line or as a %. The server works both out; the apps never do (no adding of lines, no subtracting). Exactly two lines
-        on every payout card, in the driver app and in the admin: "Driver gets 1 000,00 kr" / "Movera gets 150,00 kr" — amounts
-        only, never a % (no commission % or app fee %). No other detail line on the card (no Payout.lines, no cash collected,
-        no owed, no paid-out, no app-fee line). Absent (an older server) → the card shows Payout.amount only.'
+        trip''s finish.driverTotal plus each of his entries that is not inside any trip''s driverTotal (his cancel / no-show
+        shares), each once; tips, bonuses and pay changes on a trip are already inside that trip''s driverTotal (finish.driverMoney)
+        and are never added again. moveraGets = Movera''s commission PLUS the app fee for the period, as ONE amount (owner
+        2026-11-14 ~05:17 UTC, Rules decisions/session-2026-11-06.md:1278: "write only how much in amour driver get and how
+        much movera get in amount dont write any fucking pourcentage" — "Movera gets = commission + app fee as one amount"):
+        for each of the period''s trips, what Movera keeps now on it (TripProjection.moveraKeepsNow / moneySplit.movera, moneyBase.commissionRow)
+        — that number is fare − debtCollected − driverEarnings − pickupPay − driverBonus after later pay changes, and because
+        the fare holds the app_fee line it already holds the app fee (example 20 DT ride, 20 % commission, 10 % app fee: rider
+        22.000 DT, driver 16.000 DT, Movera gets 6.000 DT = 4.000 commission + 2.000 app fee) — plus Movera''s share of the
+        period''s cancel / no-show fees. The app fee is never added a second time and never shown as its own line or as a
+        %. The server works both out; the apps never do (no adding of lines, no subtracting). Exactly two lines on every payout
+        card, in the driver app and in the admin: "Driver gets 1 000,00 kr" / "Movera gets 150,00 kr" — amounts only, never
+        a % (no commission % or app fee %). No other detail line on the card (no Payout.lines, no cash collected, no owed,
+        no paid-out, no app-fee line). Absent (an older server) → the card shows Payout.amount only.'
       required:
       - driverGets
       - moveraGets

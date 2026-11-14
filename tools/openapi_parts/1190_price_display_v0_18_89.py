@@ -14,7 +14,7 @@ S["TripRouteChange"]["properties"]["driverTotal"] = {"allOf": [ref("Money")], "d
 S["TripProjection"]["properties"]["cashToCollect"] = {"allOf": [ref("Money")], "description": _V + _PD["tripCashToCollect"]}
 _CP = _PD["cancelPreview"]
 S["CancelPreview"] = obj({"feeNow": ref("Money"), "kind": s(enum=["cancel", "no_show"]), "freeUntil": ref("Timestamp"),
-                          "feeAfterFree": ref("Money")}, ["feeNow", "kind"],
+                          "feeAfterFree": ref("Money"), "kindAfterFree": s(enum=["cancel", "no_show"])}, ["feeNow", "kind"],
                          _V + _CP["shape"] + " " + _CP["when"] + " " + _CP["rule"] + " " + _CP["apps"], addl=False)
 S["TripProjection"]["properties"]["cancelPreview"] = {"allOf": [ref("CancelPreview")], "description": _V + "rider and admin views (contract.json#priceDisplay.cancelPreview)."}
 S["TripFinish"]["properties"]["owedToMovera"] = {"allOf": [ref("Money")], "description": _V + _PD["owedToMovera"]}
@@ -22,7 +22,7 @@ _PS = _PD["payoutSummary"]
 S["PayoutSummary"] = obj({"driverGets": ref("Money"), "moveraGets": ref("Money")},
                          ["driverGets", "moveraGets"],
                          _V + _PS["owner"] + " " + _PS["shape"] + " " + _PS["rule"] + " " + _PS["display"], addl=False)
-S["Payout"]["properties"]["summary"] = {"allOf": [ref("PayoutSummary")], "description": _V + "driver and admin views: the 3 lines (contract.json#priceDisplay.payoutSummary)."}
+S["Payout"]["properties"]["summary"] = {"allOf": [ref("PayoutSummary")], "description": _V + "driver and admin views: the 2 lines Driver gets / Movera gets (contract.json#priceDisplay.payoutSummary)."}
 _L = S["Payout"]["properties"]["lines"]
 assert _L["description"].endswith("The driver app shows only the total."), "Payout.lines text changed before v0.18.89"
 _L["description"] = _L["description"][: -len("The driver app shows only the total.")] + (
