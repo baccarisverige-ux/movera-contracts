@@ -1448,6 +1448,11 @@ assert ps['ruleBefore0_18_97'].startswith('Replaced in v0.18.97 (kept, Rule 21')
 fe = c['debtModel']['driverOwes']['fleetEarnings']
 assert 'GET /driver/fleet/earnings' in fe and 'a paid_to_movera entry' in fe and 'is not earnings' in fe, 'fleet earnings'
 assert 'paid_to_movera' in c['debtModel']['driverOwes']['paidMovera'], 'paidMovera kept'
+pmv = c['debtModel']['driverOwes']['paidMovera']
+assert 'v0.18.97' in pmv and 'open payouts below 0' in pmv and 'oldest first (period start, then payoutId)' in pmv and 'LINKED to that payout' in pmv, 'paidMovera: linked to open payouts below 0, oldest first'
+assert 'covers in full is closed as paid' in pmv and 'audit payout.paid' in pmv and 'frozen in the same step' in pmv and 'covered only in part stays open' in pmv, 'paidMovera: full cover closes, audits, freezes'
+assert "Any amount left over becomes one UNLINKED entry, counted in the next payout's amount and lines" in pmv, 'paidMovera: left over is unlinked'
+assert c['debtModel']['driverOwes']['paidMoveraBefore0_18_97'].startswith('Replaced in v0.18.97 (kept, Rule 21') and 'oldest first' not in c['debtModel']['driverOwes']['paidMoveraBefore0_18_97'], 'old paidMovera kept'
 spec = yaml.safe_load(open('openapi.yaml'))
 S = spec['components']['schemas']
 assert spec['info']['version'] == c['version'], 'openapi version'
@@ -1457,9 +1462,9 @@ assert fe in S['FleetEarnings']['description'], 'openapi FleetEarnings wording'
 P = spec['paths']
 assert fe in P['/driver/fleet/earnings']['get']['description'], 'openapi fleet earnings op'
 pm = P['/admin/drivers/{driverId}/paid-movera']['post']['description']
-assert 'v0.18.97' in pm and 'frozen in the same step' in pm and 'never in driverGets or moveraGets' in pm, 'openapi paid-movera op'
+assert pmv in pm and 'v0.18.97' in pm and 'frozen in the same step' in pm and 'never in driverGets or moveraGets' in pm, 'openapi paid-movera op'
 t = open('CONTRACT.md', encoding='utf-8').read()
-assert t.startswith('# Movera shared contract v' + c['version']) and '\nv0.18.97 (J8 wording' in t and 'is frozen in the same step' in t, 'CONTRACT.md v0.18.97'
+assert t.startswith('# Movera shared contract v' + c['version']) and '\nv0.18.97 (J8 wording' in t and 'is frozen in the same step' in t and '**paid-movera settles the carried rest first**' in t, 'CONTRACT.md v0.18.97'
 assert '\nv0.18.70 (server S4 B1.23' not in t and '\nv0.18.70 (server S4 B1.23' in open('CHANGELOG.md', encoding='utf-8').read(), 'v0.18.70 note moved to CHANGELOG.md (Rule 21)'
 assert t.count('\n') <= 1500, 'CONTRACT.md over 1,500 lines'
 PY
