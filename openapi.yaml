@@ -36388,16 +36388,24 @@ components:
       type: object
       description: 'v0.18.89: owner 2026-11-14 "It''s very simple ! U show how much driver get and how much movera get thats
         all no details" (replaces the 3-line reading of Q-M8, Rules decisions/session-2026-11-06.md:1107, for the payout card).
-        Payout.summary { driverGets: Money, moveraGets: Money }, same currency as Payout.amount; driver (GET /driver/payouts)
-        and admin (GET /admin/payouts, the payout page, the payout run card) views. driverGets = his earnings for the payout''s
-        period, all trips (pay in car and in app alike): the sum of each trip''s finish.driverTotal plus each entry of his
-        money that is not inside a trip''s driverTotal (cancel / no-show shares, tips, a later bonus), each once. moveraGets
-        = Movera''s commission for the period: the sum of what Movera keeps now on each of the period''s trips (TripProjection.moveraKeepsNow
-        / moneySplit.movera, moneyBase.commissionRow; owner 2026-11-13 "Movera commission is how much movera keep") plus Movera''s
-        share of the period''s fees. The server works both out; the apps never do (no adding of lines, no subtracting). Exactly
-        two lines on every payout card, in the driver app and in the admin: "Driver gets 1 000,00 kr" / "Movera gets 150,00
-        kr". No other detail line on the card (no Payout.lines, no cash collected, no owed, no paid-out line). Absent (an
-        older server) → the card shows Payout.amount only.'
+        Movera gets = commission + app fee, as one amount, no % (owner 2026-11-14 ~05:17 UTC, Rules decisions/session-2026-11-06.md:1278:
+        "write only how much in amour driver get and how much movera get in amount dont write any fucking pourcentage" — "Movera
+        gets = commission + app fee as one amount"). Payout.summary { driverGets: Money, moveraGets: Money }, same currency
+        as Payout.amount; driver (GET /driver/payouts) and admin (GET /admin/payouts, the payout page, the payout run card)
+        views. driverGets = his earnings for the payout''s period, all trips (pay in car and in app alike): the sum of each
+        trip''s finish.driverTotal plus each entry of his money that is not inside a trip''s driverTotal (cancel / no-show
+        shares, tips, a later bonus), each once. moveraGets = Movera''s commission PLUS the app fee for the period, as ONE
+        amount (owner 2026-11-14 ~05:17 UTC, Rules decisions/session-2026-11-06.md:1278: "write only how much in amour driver
+        get and how much movera get in amount dont write any fucking pourcentage" — "Movera gets = commission + app fee as
+        one amount"): for each of the period''s trips, what Movera keeps now on it (TripProjection.moveraKeepsNow / moneySplit.movera,
+        moneyBase.commissionRow) — that number is fare − debtCollected − driverEarnings − pickupPay − driverBonus after later
+        pay changes, and because the fare holds the app_fee line it already holds the app fee (example 20 DT ride, 20 % commission,
+        10 % app fee: rider 22.000 DT, driver 16.000 DT, Movera gets 6.000 DT = 4.000 commission + 2.000 app fee) — plus Movera''s
+        share of the period''s cancel / no-show fees. The app fee is never added a second time and never shown as its own
+        line or as a %. The server works both out; the apps never do (no adding of lines, no subtracting). Exactly two lines
+        on every payout card, in the driver app and in the admin: "Driver gets 1 000,00 kr" / "Movera gets 150,00 kr" — amounts
+        only, never a % (no commission % or app fee %). No other detail line on the card (no Payout.lines, no cash collected,
+        no owed, no paid-out, no app-fee line). Absent (an older server) → the card shows Payout.amount only.'
       required:
       - driverGets
       - moveraGets

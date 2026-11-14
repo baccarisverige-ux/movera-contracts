@@ -1253,7 +1253,9 @@ assert '− finish.driverTotal' in pd['owedToMovera'] and 'cash_balance.dart' in
 ps = pd['payoutSummary']
 assert 'thats all no details' in ps['owner'] and 'all trips' in ps['rule'] and 'commissionRow' in ps['rule'] and 'never do' in ps['rule'], 'payoutSummary 2 lines'
 assert ps['display'].startswith('Exactly two lines') and 'No other detail' in ps['display'], 'payout card no details'
-assert ps['texts'] == {'driverGets': {'sv': 'Föraren får', 'fr': 'Le chauffeur reçoit', 'en': 'Driver gets'}, 'moveraGets': {'sv': 'Movera får', 'fr': 'Movera reçoit', 'en': 'Movera gets'}}, 'payout texts'
+assert 'PLUS the app fee' in ps['rule'] and 'never added a second time' in ps['rule'] and 'session-2026-11-06.md:1278' in ps['rule'] and 'never a %' in ps['display'], 'Movera gets = commission + app fee, no %'
+assert 'amounts only, never a %' in c['moneyDisplay']['resultLinesNoPercent'] and 'session-2026-11-06.md:1278' in c['moneyDisplay']['resultLinesNoPercent'] and ps['ruleBefore0_18_89b'].startswith('Replaced'), 'result lines no %'
+assert {k: ps['texts'][k] for k in ('driverGets', 'moveraGets')} == {'driverGets': {'sv': 'Föraren får', 'fr': 'Le chauffeur reçoit', 'en': 'Driver gets'}, 'moveraGets': {'sv': 'Movera får', 'fr': 'Movera reçoit', 'en': 'Movera gets'}}, 'payout texts'
 assert 'Three separate lines' in pd['payoutSummaryBefore0_18_89']['display'] and 'Earnings / Owed to Movera / Paid out' in c['payouts']['noteBefore0_18_89'], 'old 3-line text kept (Rule 21)'
 pn = c['payouts']['note']
 assert 'v0.18.89' in pn and 'Driver gets /' in pn and 'Movera gets' in pn and 'Owed to Movera' not in pn and 'is replaced' in pn, 'payouts.note 2 lines'
