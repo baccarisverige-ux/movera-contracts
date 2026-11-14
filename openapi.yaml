@@ -1,11 +1,11 @@
-# Movera API v0.18.91 — generated from contract.json (+ CONTRACT.md §7). PROPOSED; no backend exists.
+# Movera API v0.18.92 — generated from contract.json (+ CONTRACT.md §7). PROPOSED; no backend exists.
 openapi: 3.1.0
 info:
   title: Movera API
-  version: 0.18.91
+  version: 0.18.92
   description: '**Proposed contract — no backend exists yet.** One future backend serves the Rider (Flutter), Driver (Flutter)
     and Admin (React/TS) apps. Source of truth for names, enums, transitions, realtime and errors is `contract.json` + `CONTRACT.md`
-    v0.18.91 in this folder; this file must agree with them.
+    v0.18.92 in this folder; this file must agree with them.
 
 
     Wire rules: ids match `^[A-Za-z0-9_-]{1,64}$`; times are RFC 3339 UTC with `Z`; durations are integer seconds; money is
@@ -84,7 +84,7 @@ tags:
 - name: Admin · Finance
 x-contract:
   name: movera
-  version: 0.18.91
+  version: 0.18.92
   source: contract.json
 paths:
   /auth/otp/request:
@@ -19952,7 +19952,10 @@ components:
             waybill, trip details) show it; when it is absent (an older server, or a trip not paid yet) the finished-screen
             and history rows are not shown (never TripProjection.commission as a fallback, never worked out on the phone);
             on a paid trip the waybill row is hidden too when it is absent; only before the paid end does the waybill show
-            TripProjection.commission (nothing changed yet).'
+            TripProjection.commission (nothing changed yet). v0.18.92: TripProjection.moveraKeepsNow on the ADMIN view is
+            also sent on an ended trip with no paid ride = Movera''s share of the fee charged on that end (0 when free) −
+            lostDriverPaid (commissionRow.admin (2)); the driver view keeps it only on a paid end (unchanged: absent → the
+            driver''s rows are hidden), and the driver''s stream never gets the admin number.'
         cashToCollect:
           allOf:
           - $ref: '#/components/schemas/Money'
@@ -19964,6 +19967,19 @@ components:
           allOf:
           - $ref: '#/components/schemas/CancelPreview'
           description: 'v0.18.89: rider and admin views (contract.json#priceDisplay.cancelPreview).'
+        lostDriverPaid:
+          allOf:
+          - $ref: '#/components/schemas/Money'
+          description: 'v0.18.92: v0.18.92 (GM 2026-11-14; owner rule s06:1263 ''Movera commission is how much movera keep''):
+            TripProjection.lostDriverPaid: Money, ADMIN view only, sent when above 0 on every trip, paid or not (a reassigned
+            trip still running, an admin cancel or a reassign that ended in no driver) = the same sum as `rule` (every driverBonus
+            of POST /admin/trips/{tripId}/reassign and /cancel paid to a driver who lost the trip). On a paid end it equals
+            moneySplit.lostDriverPaid. Never on the driver or rider view nor on their realtime streams (the stored event is
+            the admin projection: the server takes it out for both). Additive; older admins ignore it. v0.18.92: moneySplit
+            (''Who gets what'') is sent only on a paid trip end (completed, the rider''s early end, the driver''s end on board,
+            admin complete — the same paid end as moveraKeepsNow and the KPI money, moneyBase.kpiMoney); an unpaid or cancelled
+            trip has no moneySplit (the rider paid nothing, so there is no riderPaid to split). Its lost-driver payment is
+            TripProjection.lostDriverPaid, and its admin ''Movera commission'' row is commissionRow.admin (2) / (3).'
     DriverSilentAlert:
       type: object
       description: 'v0.7.0: documents the server''s alert of 2026-10-26: no position for 30 min with the rider on board; the
@@ -36423,21 +36439,27 @@ components:
         "write only how much in amour driver get and how much movera get in amount dont write any fucking pourcentage" — "Movera
         gets = commission + app fee as one amount"). Payout.summary { driverGets: Money, moveraGets: Money }, same currency
         as Payout.amount; driver (GET /driver/payouts) and admin (GET /admin/payouts, the payout page, the payout run card)
-        views. driverGets = his earnings for the payout''s period, all trips (pay in car and in app alike): the sum of each
-        trip''s finish.driverTotal plus each of his entries that is not inside any trip''s driverTotal (his cancel / no-show
-        shares), each once; tips, bonuses and pay changes on a trip are already inside that trip''s driverTotal (finish.driverMoney)
-        and are never added again. moveraGets = Movera''s commission PLUS the app fee for the period, as ONE amount (owner
-        2026-11-14 ~05:17 UTC, Rules decisions/session-2026-11-06.md:1278: "write only how much in amour driver get and how
-        much movera get in amount dont write any fucking pourcentage" — "Movera gets = commission + app fee as one amount"):
-        for each of the period''s trips, what Movera keeps now on it (TripProjection.moveraKeepsNow / moneySplit.movera, moneyBase.commissionRow)
-        — that number is fare − debtCollected − driverEarnings − pickupPay − driverBonus after later pay changes, and because
-        the fare holds the app_fee line it already holds the app fee (example 20 DT ride, 20 % commission, 10 % app fee: rider
-        22.000 DT, driver 16.000 DT, Movera gets 6.000 DT = 4.000 commission + 2.000 app fee) — plus Movera''s share of the
-        period''s cancel / no-show fees. The app fee is never added a second time and never shown as its own line or as a
-        %. The server works both out; the apps never do (no adding of lines, no subtracting). Exactly two lines on every payout
-        card, in the driver app and in the admin: "Driver gets 1 000,00 kr" / "Movera gets 150,00 kr" — amounts only, never
-        a % (no commission % or app fee %). No other detail line on the card (no Payout.lines, no cash collected, no owed,
-        no paid-out, no app-fee line). Absent (an older server) → the card shows Payout.amount only.'
+        views. v0.18.92 (supervisor MF1 / MF2 / G2 on server BQ-M22; GM 2026-11-14): ''the payout''s period'' means the payout''s
+        OWN entries — the earnings entries the payout pays (each entry is in one payout only: a manual and a weekly payout
+        over the same days never count an entry twice; a late or carried entry counts in the payout that pays it; a paid payout''s
+        numbers never move to another payout). driverGets = the sum of the payout''s entries (trip, tip, pickup pay, bonus,
+        pay change, cancel / no-show share, a lost-driver payment), each once — all his earnings in it, all trips (pay in
+        car and in app alike; = Payout.amount + the cash he collected); a tip, bonus or pay change is its own entry, counted
+        once and never added again. moveraGets = Movera''s commission PLUS the app fee, as ONE amount (owner 2026-11-14 ~05:17
+        UTC, Rules decisions/session-2026-11-06.md:1278: "write only how much in amour driver get and how much movera get
+        in amount dont write any fucking pourcentage" — "Movera gets = commission + app fee as one amount"): for each trip
+        whose trip entry is in the payout, what Movera keeps now on it as the VIEWER sees it (TripProjection.moveraKeepsNow
+        of that view; moneyBase.commissionRow) — fare − debtCollected − driverEarnings − pickupPay − driverBonus after later
+        pay changes, the app fee inside the fare (example 20 DT ride, 20 % commission, 10 % app fee: rider 22.000 DT, driver
+        16.000 DT, Movera gets 6.000 DT = 4.000 commission + 2.000 app fee) — plus Movera''s share of each cancel / no-show
+        fee of a cancel / no-show share in the payout. The two views may differ: the admin''s moveraGets takes the lost-driver
+        payments off (moneySplit.movera; and, on a trip with no paid end, the lost driver''s bonus entry once, in the payout
+        that pays it — moneyBase.lostDriverPaid.kpi), the driver''s never shows another driver''s money (moneyBase.lostDriverPaid.driverView:
+        what Movera keeps from HIS trips). The app fee is never added a second time and never shown as its own line or as
+        a %. The server works both out; the apps never do (no adding of lines, no subtracting). Exactly two lines on every
+        payout card, in the driver app and in the admin: "Driver gets 1 000,00 kr" / "Movera gets 150,00 kr" — amounts only,
+        never a % (no commission % or app fee %). No other detail line on the card (no Payout.lines, no cash collected, no
+        owed, no paid-out, no app-fee line). Absent (an older server) → the card shows Payout.amount only.'
       required:
       - driverGets
       - moveraGets
