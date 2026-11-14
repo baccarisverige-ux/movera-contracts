@@ -1374,6 +1374,15 @@ for k in ('driver', 'rider', 'admin'):
     assert k in aa['apps'], 'apps ' + k
 for k in ('driverPaused', 'riderPaused', 'noShowAway'):
     assert set(aa['texts'][k]) == {'sv', 'fr', 'en'}, k
+# v0.18.93 round 2 (C9 supervisor M1-M3): one fix never decides; the back tap within leaveMeters; a rider cancel while away is free.
+cf = aa['confirm']
+assert cf['fixes'] == 2 and cf['minGapSeconds'] == 5 and cf['maxArriveSpeedKmh'] == 15, 'autoArrive.confirm numbers'
+assert 'confirm' in aa['auto'] and 'confirm' in aa['away'] and 'confirm' in aa['back'] and 'never decides' in aa['position'], 'confirm used'
+assert 'leaveMeters' in aa['back'] and 'not_at_pickup' in aa['back'] and 'driverBack' in aa['button'], 'back tap'
+assert 'driver-g15.md:64' in aa['riderCancel'] and 'FREE' in aa['riderCancel'], 'rider cancel while away is free'
+for k in ('position', 'auto', 'button', 'away', 'back', 'riderCancel'):
+    assert k + 'Before0_18_93r1' in aa, 'Rule 21: first wording kept ' + k
+assert set(aa['texts']['driverBack']) == {'sv', 'fr', 'en'}, 'driverBack'
 spec = yaml.safe_load(open('openapi.yaml'))
 S = spec['components']['schemas']
 assert spec['info']['version'] == c['version'], 'openapi version'

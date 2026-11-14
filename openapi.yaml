@@ -19473,28 +19473,36 @@ components:
           enum:
           - auto
           - tap
-          description: 'v0.18.93: "auto" | "tap" (absent on a trip that arrived before v0.18.93). Trip status driver_to_pickup
-            (not accepted, not a booked ride held for later) and a counting fix within autoArriveMeters of the pickup: the
-            server runs the same step as POST /trips/{tripId}/arrive, as the driver (actor driver, command arrive, version
-            + 1, trip_projection, the rider''s driver_arrived push, the automatic "I''ve arrived" chat message once per trip,
-            chat.autoArrived), with waiting.arrivedBy auto. It runs as a job (timer kind pickup_geofence, the trip lane, watched
-            by fastDispatch.lateAlarm.tripTimers) right after the position is stored (never inside POST /driver/location''s
-            answer), once per new fix.'
+          description: 'v0.18.93: "auto" | "tap" (absent on a trip that arrived before v0.18.93). v0.18.93 round 2 (supervisor
+            must-fixes M1–M3, Rules audits/impact/c9-auto-arrive-supervisor.md; Rule 21: the first wording is kept as *Before0_18_93r1):
+            Trip status driver_to_pickup (not accepted, not a booked ride held for later) and the latest counting fix within
+            autoArriveMeters of the pickup, confirmed (confirm: 2 counting fixes in a row at least 5 s apart, both within,
+            and slow, at most 15 km/h): the server runs the same step as POST /trips/{tripId}/arrive, as the driver (actor
+            driver, command arrive, version + 1, trip_projection, the rider''s driver_arrived push, the automatic "I''ve arrived"
+            chat message once per trip, chat.autoArrived), with waiting.arrivedBy auto. It runs as a job (timer kind pickup_geofence,
+            the trip lane, watched by fastDispatch.lateAlarm.tripTimers) right after the position is stored (never inside
+            POST /driver/location''s answer), once per new fix.'
         away:
           type: object
-          description: 'v0.18.93: { since: Timestamp } while the waiting clock is stopped; absent otherwise. Status arrived
-            and a counting fix farther than leaveMeters from the pickup: the waiting clock stops. waiting.away = { since }
-            (since = the fix''s measuredAt, never before arrivedAt nor after now). No version change; a trip_projection event
-            goes out (like the island alerts). While waiting.away is set, a counting fix within autoArriveMeters of the pickup,
-            or the driver''s tap on Arrived (POST /trips/{tripId}/arrive, same checks as the first tap; then version + 1),
-            is the new arrival: the clock goes on. stopped = resumeAt − max(away.since, waitFrom), at least 0 (resumeAt =
-            the fix''s measuredAt, never before since nor after now; a tap: now). waiting.freeUntil and waiting.noShowAt move
-            later by stopped seconds, waiting.pausedSeconds grows by stopped, waiting.pauseCount by 1, waiting.away goes.
-            The island alerts (arrivedWaiting.alerts) follow the moved moments. GPS between leaveMeters and autoArriveMeters
-            changes nothing (no flip-flop). clockAt(t) = waiting.away.since while away, else t. Paid waiting at board = max(0,
-            floor((clockAt(board) − freeUntil) / 1 s)) seconds (Waiting.chargedSeconds), priced as before (§3.5: waiting line
-            = chargedSeconds / 60 × perMin, half-up to a minor unit; 100 % the driver''s). Waiting.chargedSecondsNow / chargedSoFar
-            at read time use clockAt(now): frozen while away. Away time never costs the rider. Examples: fixtures/auto_arrive.json
+          description: 'v0.18.93: { since: Timestamp } while the waiting clock is stopped; absent otherwise. v0.18.93 round
+            2 (supervisor must-fixes M1–M3, Rules audits/impact/c9-auto-arrive-supervisor.md; Rule 21: the first wording is
+            kept as *Before0_18_93r1): Status arrived and the latest counting fix farther than leaveMeters from the pickup,
+            confirmed (confirm: 2 counting fixes in a row at least 5 s apart, both farther): the waiting clock stops. waiting.away
+            = { since } (since = the first fix of the confirming pair''s measuredAt, never before arrivedAt nor after now).
+            No version change; a trip_projection event goes out (like the island alerts). v0.18.93 round 2 (supervisor must-fixes
+            M1–M3, Rules audits/impact/c9-auto-arrive-supervisor.md; Rule 21: the first wording is kept as *Before0_18_93r1):
+            While waiting.away is set, a confirmed counting fix within autoArriveMeters of the pickup (confirm: 2 in a row
+            at least 5 s apart, both within, slow), or the driver''s tap (POST /trips/{tripId}/arrive, texts.driverBack; the
+            position sent with it or the server''s latest, fresh as the first tap, and within the trip''s leaveMeters of the
+            pickup — not the first tap''s 300 m — else 409 invalid_transition, reason not_at_pickup; then version + 1), is
+            the new arrival: the clock goes on. stopped = resumeAt − max(away.since, waitFrom), at least 0 (resumeAt = the
+            first fix of the confirming pair''s measuredAt, never before since nor after now; a tap: now). waiting.freeUntil
+            and waiting.noShowAt move later by stopped seconds, waiting.pausedSeconds grows by stopped, waiting.pauseCount
+            by 1, waiting.away goes. The island alerts (arrivedWaiting.alerts) follow the moved moments. GPS between leaveMeters
+            and autoArriveMeters changes nothing (no flip-flop). clockAt(t) = waiting.away.since while away, else t. Paid
+            waiting at board = max(0, floor((clockAt(board) − freeUntil) / 1 s)) seconds (Waiting.chargedSeconds), priced
+            as before (§3.5: waiting line = chargedSeconds / 60 × perMin, half-up to a minor unit; 100 % the driver''s). Waiting.chargedSecondsNow
+            / chargedSoFar at read time use clockAt(now): frozen while away. Away time never costs the rider. Examples: fixtures/auto_arrive.json
             (SEK 12,26 kr/min, TND 0.250 DT/min).'
           required:
           - since
