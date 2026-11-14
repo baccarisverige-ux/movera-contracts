@@ -1136,7 +1136,7 @@ assert 'Commission panel' in cs['apps']['admin'] and 'never global' in cs['apps'
 AC = cs['adminCalculator']
 assert 'EACH car-type card' in AC['rule'] and 'not moneyBase.commission' in AC['rule'] and '22:46' in cs['note'] and '23:05' not in json.dumps(cs, ensure_ascii=False) and '22:00' not in cs['note'], 'calculator'
 assert 'reproduce fixtures/commission_steps.json exactly' in AC['fixtures'] and 'J5b admin build must run a test' in AC['fixtures'], 'calculator fixtures'
-assert {'title', 'priceInput', 'stepUsed', 'commission', 'driverGets'} <= set(cs['texts']['calculator']), 'calculator texts (v0.18.88: moveraKeeps, aroundLimits, atLimit, justAbove removed)'
+assert {'title', 'priceInput', 'driverGets'} <= set(cs['texts']['calculator']), 'calculator texts (v0.18.88: moveraKeeps, aroundLimits, atLimit, justAbove, stepUsed, commission removed)'
 for tt in cs['texts']['calculator'].values(): assert set(tt) == {'sv', 'fr', 'en'} and all(tt.values()), 'calculator texts sv/fr/en'
 W = cs['warn']
 assert 'driverRidePart(L, step i) > driverRidePart(L + 1, step i+1)' in W['rule'] and 'Yes, warn (Rec.)' in W['rule'], 'warn rule'
@@ -1228,14 +1228,14 @@ S = spec['components']['schemas']
 assert 'fleetCommissionPct' not in S['PricingDocument']['properties'] and S['PricingDocument'].get('additionalProperties') is not False, 'old key accepted, not in the schema'
 ac = c['commissionSteps']['adminCalculator']
 assert set(ac) == {'rule', 'formula', 'removed', 'steps', 'fixtures'} and 'aroundLimits' not in ac, 'calculator keys'
-assert 'ONLY one price input and three results' in ac['rule'] and 'no rows around the limits' in ac['rule'] and 'why its complicate' in ac['rule'], 'one calculator'
+assert 'ONLY one price input and exactly two result lines, AMOUNTS ONLY' in ac['rule'] and 'no rows around the limits' in ac['rule'] and 'why its complicate' in ac['rule'] and 'dont write any percentage' in ac['rule'], 'one calculator, amounts only'
 assert 'REMOVED' in ac['removed'] and 'warn.rule and texts.warnDrop' in ac['removed'], 'removed + warn kept'
 assert 'capNote' not in c['commissionSteps']['texts'] and 'already minimum trip price' in ac['removed'] and 'min(amountMinor, base)' in c['commissionSteps']['pick'], 'no cap note, cap kept'
-assert 'Yes add app fee in same card' in ac['rule'] and 'appFeePct' in ac['rule'] and 'SAME value as Pricing › Limits › App fee' in c['commissionSteps']['adminPlacement'], 'app fee in the card'
+assert 'Yes add app fee in same card' in ac['rule'] and 'appFeePct' in ac['rule'] and 'Movera gets <amount>' in ac['rule'] and 'SAME value as Pricing › Limits › App fee' in c['commissionSteps']['adminPlacement'], 'app fee in the card'
 tc = c['commissionSteps']['texts']['calculator']
-assert not ({'moveraKeeps', 'aroundLimits', 'atLimit', 'justAbove'} & set(tc)) and {'title', 'priceInput', 'stepUsed', 'noStepsPct', 'commission', 'driverGets', 'waitingNote'} == set(tc), 'calculator texts'
+assert not ({'moveraKeeps', 'aroundLimits', 'atLimit', 'justAbove', 'stepUsed', 'commission'} & set(tc)) and {'title', 'priceInput', 'noStepsPct', 'driverGets', 'moveraGets', 'waitingNote'} == set(tc), 'calculator texts'
 assert 'warnDrop' in c['commissionSteps']['texts'] and 'STILL ALLOWS SAVING' in c['commissionSteps']['warn']['advisory'], 'warn kept'
-assert 'ONE calculator' in c['commissionSteps']['apps']['admin'] and 'rows around each limit' not in c['commissionSteps']['apps']['admin'], 'apps.admin'
+assert 'ONE calculator' in c['commissionSteps']['apps']['admin'] and 'Movera gets' in c['commissionSteps']['apps']['admin'] and 'rows around each limit' not in c['commissionSteps']['apps']['admin'], 'apps.admin'
 md = open('CONTRACT.md').read()
 assert '\nv0.18.88 (owner 2026-10-29' in md and 'fleetPayoutWhole' in md and 'adminCalculator.removed' in md, 'CONTRACT.md v0.18.88 note'
 assert md.count('\n') <= 1500, 'CONTRACT.md over 1,500 lines'
