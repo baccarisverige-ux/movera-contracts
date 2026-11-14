@@ -1230,6 +1230,8 @@ ac = c['commissionSteps']['adminCalculator']
 assert set(ac) == {'rule', 'formula', 'removed', 'steps', 'fixtures'} and 'aroundLimits' not in ac, 'calculator keys'
 assert 'ONLY one price input and three results' in ac['rule'] and 'no rows around the limits' in ac['rule'] and 'why its complicate' in ac['rule'], 'one calculator'
 assert 'REMOVED' in ac['removed'] and 'warn.rule and texts.warnDrop' in ac['removed'], 'removed + warn kept'
+assert 'capNote' not in c['commissionSteps']['texts'] and 'already minimum trip price' in ac['removed'] and 'min(amountMinor, base)' in c['commissionSteps']['pick'], 'no cap note, cap kept'
+assert 'Yes add app fee in same card' in ac['rule'] and 'appFeePct' in ac['rule'] and 'SAME value as Pricing › Limits › App fee' in c['commissionSteps']['adminPlacement'], 'app fee in the card'
 tc = c['commissionSteps']['texts']['calculator']
 assert not ({'moveraKeeps', 'aroundLimits', 'atLimit', 'justAbove'} & set(tc)) and {'title', 'priceInput', 'stepUsed', 'noStepsPct', 'commission', 'driverGets', 'waitingNote'} == set(tc), 'calculator texts'
 assert 'warnDrop' in c['commissionSteps']['texts'] and 'STILL ALLOWS SAVING' in c['commissionSteps']['warn']['advisory'], 'warn kept'
