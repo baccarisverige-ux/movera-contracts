@@ -1,4 +1,6 @@
-# Movera shared contract v0.18.109
+# Movera shared contract v0.18.115
+
+v0.18.115 (BQ-V21; owner full-audit Q6 2026-11-02 "Keep as 'approximate'" => admin on/off per zone (default on), Rules decisions/rider-g4-pickup.md:7; X-Api-Version stays `0.5`; additive; no migration; not money; follows v0.18.109): **the rider's pickup entrance chips get an admin switch per zone** — `RiderAppConfig.booking.pickupSpots.on` (default `true`, `contract.json#configDefaults.pickupSpotsOn`) in the zone's rider document (Admin Dispatch › Rides 'Pickup entrance chips (approximate)'). Off: the rider's Set pickup sheet shows no Main entrance / Side entrance / Parking chips and the pickup label is the address only; 'Previously used' and 'Near Home' stay. `GET /rider/config` always serves `booking.pickupSpots { on }` (missing = `true`); `PUT /admin/config/rider_app_config` with a non-boolean `on` is `400 invalid_document`. An older server (no field) = on. The driver app is not changed — `contract.json#pickupSpots`, §5, §6.
 
 v0.18.109 (server BQ-FLEETCUR, owner 2026-11-15 "What u mean fleet can earn in two currencies!", Rules decisions/session-2026-11-06.md:1322; X-Api-Version stays `0.5`; wording only; no API shape change; no migration; no admin setting (an owner rule); follows v0.18.108): **a fleet works in ONE country and earns in ONE currency** — a driver joins only a fleet of his own country (his country, else his first zone's); otherwise `409 conflict` with reason `fleet_other_country`, on `POST /driver/fleet/join` (and `fleetJoin` on `POST /driver/onboarding`), `POST /driver/fleet/invite` (a number with an account), `POST /driver/fleet/invitations/{invitationId}/accept` and `POST /admin/fleets/{fleetId}/invitations/{invitationId}/accept`. `POST /driver/onboarding` is `409 fleet_other_country` too when a fleet member changes his country away from his fleet's, or a fleet owner changes it while his fleet has other drivers. `FleetDriverEarnings.earnings` / `.trips` and `FleetEarnings.total` count only entries in the fleet's currency (SE SEK, FR EUR, TN TND) — `contract.json#driverOnboarding.fleetInvitations.oneCountry`, `debtModel.driverOwes.fleetEarnings`, §14.
 
@@ -327,6 +329,7 @@ Every admin control below has one owner page, one config path and one defined ef
 | Waiting & no-show (Dispatch › Waiting at pickup; money in Pricing) | `rider.waiting`, `driver.waiting` (+ `byCategory`) | Waiting clock, price/min per category | Waiting clock, no-show button at the category free wait | Waiting charge (100% driver), no-show fee, driver share per country |
 | Stops (Dispatch › Stops) | `rider.booking.maxStops`, `driver.booking.maxStops` | Max stops | Stop marks | Stop pricing |
 | Pickup move after accept (Dispatch) | `rider.booking.maxPickupMoveMeters`, `driver.booking.maxPickupMoveMeters` | Move pickup up to N m (default 200, v0.18.7; the server checks it), further = cancel/rebook | Island "Pickup moved" (`pickup_moved`) | Rejects a bigger move (`pickup_move_too_far`) |
+| Pickup entrance chips, approximate (Dispatch › Rides; v0.18.115, `contract.json#pickupSpots`) | `rider.booking.pickupSpots.on` (default true) | Shows or hides the Main entrance / Side entrance / Parking chips on Set pickup | — (reads the booked pickup label as before) | Serves `on` (missing = true); refuses a non-boolean (`invalid_document`) |
 | Cancel after the driver arrived counts as a no-show (Settings › Driver app › Waiting) | `driver.waiting.cancelAfterArrivedIsNoShow` (copied to `rider.waiting`) | Pays the no-show fee when cancelling after arrival (after the free minutes) | Gets the no-show share | v0.18.7 (§33), default on |
 | Tips (Pricing, per zone or country standard; v0.8.1 `country_rules`) | `rider.tips` | Tip options | — | Tip limits |
 | Raise-offer steps (Pricing, per zone or country standard; v0.8.1 `country_rules`) | `rider.raiseSteps` | Quick "+" steps while searching | — | Fare raise |
@@ -366,7 +369,7 @@ RiderAppConfig  { version, publishedAt, zoneId, currency, timeZone, country, lan
   wallet: { usedFirst: bool },                  // one balance per currency; on/off is features.wallet
   tips: [AmountOption], raiseSteps: [AmountOption], promoCap: Money | null,
   pickupFee: { byCategory: { [categoryId]: { live: Money | null, reservation: Money | null } } },   // §3.2
-  booking: { maxStops, bookingHorizonDays, maxPickupMoveMeters },
+  booking: { maxStops, bookingHorizonDays, maxPickupMoveMeters, pickupSpots: { on } },   // v0.18.115: on = the approximate entrance chips (default true)
   cancelFees: { live: { [categoryId]: FeeRule }, reservation: { [categoryId]: FeeRule } },
   waiting: { freeWaitMin, perMin: Money, noShowAfterMin, noShowFee: Money, byCategory: { [categoryId]: CategoryWaiting }, cancelAfterArrivedIsNoShow? },   // v0.18.7: copied from the driver document
   cancelReasons: [{ code, title }],
