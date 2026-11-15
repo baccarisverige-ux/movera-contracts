@@ -873,9 +873,9 @@ for name in ('AdminAdjustCommand', 'AdminCompleteCommand'):
     assert pr['fare'].get('deprecated') is True and 'fare_is_driver_pay' in pr['fare']['description'] and 'driverPay' not in S[name].get('required', []), 'Q-S5-8 openapi old fare ' + name
 assert 'debtCollected' in S['TripProjection']['properties']['commission']['description'], 'J3 openapi commission'
 assert S['KpiDay']['properties']['gross']['description'].startswith('v0.18.82'), 'J3 openapi KPI gross'
-md = open('CONTRACT.md').read()
+md = open("CONTRACT.md").read()
 assert md.startswith('# Movera shared contract v' + c['version'] + '\n') or tuple(map(int, c['version'].split('.'))) > (0, 18, 82), 'CONTRACT.md title'
-assert '\nv0.18.82 (S5 J3 money fixes' in md and '**money fixes**' in md and '`driverPay` on adjust / complete' in md and 'Q-S5-8, open' not in md, 'CONTRACT.md v0.18.82 note'
+ch = open('CHANGELOG.md').read(); assert '\nv0.18.82 (S5 J3 money fixes' in ch and '**money fixes**' in ch and '`driverPay` on adjust / complete' in ch and 'Q-S5-8, open' not in md, 'CONTRACT.md v0.18.82 note'  # v0.18.101: the v0.18.82 note moved to CHANGELOG.md
 assert '  //         commission = Movera\'s share of the fare: fare − debtCollected − driverEarnings − pickupPay − driverBonus' in md and '(fare − driverEarnings)' not in md, 'CONTRACT.md one commission'
 # Third commit (owner values re-confirmed 2026-11-13 + supervisor M1-M3, S1-S4): 150 DT is the J7 cash-owed limit, never in J3.
 oa = open('openapi.yaml').read()
@@ -949,9 +949,9 @@ for route in tot['lists']:
     assert len(ps) == 1 and ps[0]['schema']['type'] == 'boolean' and ps[0]['schema'].get('default') is True, 'P4-B openapi total param ' + route
 ps = [p for p in P['/admin/trips']['get']['parameters'] if p.get('name') == 'scheduledBefore']
 assert len(ps) == 1 and ps[0]['schema'] == {'$ref': '#/components/schemas/Timestamp'} and 'scheduledAt' in ps[0]['description'], 'A2 openapi scheduledBefore'
-md = open('CONTRACT.md').read()
+md = open("CONTRACT.md").read(); ch = open("CHANGELOG.md").read()  # v0.18.101: the v0.18.83 note moved to CHANGELOG.md
 assert md.startswith('# Movera shared contract v' + c['version'] + '\n') or tuple(map(int, c['version'].split('.'))) > (0, 18, 83), 'CONTRACT.md title'
-assert '\nv0.18.83 (G34 fix plan' in md and '**busy-server fixes**' in md and '`GET /rider/trips/active` is never refused' in md and '`scheduledBefore`' in md and '`total=false`' in md, 'CONTRACT.md v0.18.83 note'
+assert '\nv0.18.83 (G34 fix plan' in ch and '**busy-server fixes**' in ch and '`GET /rider/trips/active` is never refused' in ch and '`scheduledBefore`' in ch and '`total=false`' in ch, 'CONTRACT.md v0.18.83 note'
 assert md.count('\n') <= 1500, 'CONTRACT.md over 1,500 lines'
 PY
 # v0.18.84 (S5 J7 debt model; owner Sitting 3 2026-11-12 Q-M1, Q-M2, Q-M4, Q-S5-1..5 + 2026-11-13 14:22/14:32 "150 DT ... admin can change",
@@ -1080,7 +1080,7 @@ assert 'paid_to_movera' in S['PayoutLine']['properties']['code']['enum'], 'opena
 assert 'v0.18.84' in P['/admin/riders/{riderId}/fees/{tripId}/mark-paid']['post']['description'] and 'v0.18.84' in P['/quotes']['post']['description'], 'openapi mark-paid / quotes'
 md = open('CONTRACT.md').read()
 assert md.startswith('# Movera shared contract v' + c['version'] + '\n') or tuple(map(int, c['version'].split('.'))) > (0, 18, 84), 'CONTRACT.md title'
-assert '\nv0.18.84 (S5 J7 debt model' in md and '**an unpaid fee is a negative wallet balance, read when the trip is paid**' in md, 'CONTRACT.md v0.18.84 note'
+mdc = md + open('CHANGELOG.md').read(); assert '\nv0.18.84 (S5 J7 debt model' in mdc and '**an unpaid fee is a negative wallet balance, read when the trip is paid**' in mdc, 'CONTRACT.md v0.18.84 note'  # v0.18.101: this note moved to CHANGELOG.md (Rule 21 kept word for word)
 assert 'while the rider owes one, the `outstanding_fee` line is added after the rounding; `Quote.total` and `fare` include it' not in md, 'CONTRACT.md §3.5 step 8 rewritten'
 assert 'While it is open, every quote and the next trip carry it' not in md and 'v0.18.84 (`debtModel.readAtPayment`' in md, 'CONTRACT.md §3.7 rewritten'
 assert '`walletApplied = max(0, min(balance in the trip\'s currency, fare))`' in md, 'M2 CONTRACT.md walletApplied'
@@ -1498,3 +1498,4 @@ PY
 # car the cash numbers are 0 (cashDue, TripFinish.cashToCollect, TripProjection.cashToCollect); refund room wording.
 python3 scripts/verify_v0_18_99.py
 python3 scripts/verify_v0_18_100.py  # v0.18.100 BQ-V37 (owner W1 Q66 = Q-B6): ride-check scan cadence per zone
+python3 scripts/verify_v0_18_101.py  # v0.18.101 §92 (BQ-V34): the asserts live in scripts/verify_v0_18_101.py (Rule 25)
