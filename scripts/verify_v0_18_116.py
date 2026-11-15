@@ -26,7 +26,8 @@ assert pub['queuedPhase'] == 'queued' and 'next_after_trip_id' in pub['positionR
 # Owner Q-A / Q-B (2026-11-15): no position before the rider is in the car, none within 500 m of the drop-off.
 assert pub['hideWithinMetersOfDropoff'] == 500 and 'hideWithinMetersOfDropoff' in pub['positionRule'], 'Q-B: hide the last 500 m'
 assert "Hide until rider is in" in pub['positionRule'] and 'tripStatus.riderOnboard' in pub['positionRule'] and pub['phases']['on_trip'] == c['tripStatus']['riderOnboard'], 'Q-A: position only with the rider in the car'
-assert 'the drop-off and the distance are never sent' in pub['positionRule'], 'Q-B: nothing about the drop-off is sent'
+assert 'the drop-off, the stops and the distances are never sent' in pub['positionRule'], 'Q-B: nothing about the drop-off or the stops is sent'
+assert 'every middle stop' in pub['positionRule'] and 'session decision' in pub['positionRule'] and 'no coordinates for hides the position' in pub['positionRule'], 'the same 500 m around every middle stop (session decision, not an owner answer)'
 assert all('noPosition' not in st['texts'][l] for l in ('sv', 'fr', 'en')), 'no position line when the position is hidden' 
 assert "state: 'searching'" in pub['searching'] and 'NOT ended' in pub['searching'], 'no driver = searching'
 assert 'load-shed 503' in pub['headers'], 'headers on every answer of the share paths'
