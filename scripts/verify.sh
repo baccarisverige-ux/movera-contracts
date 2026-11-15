@@ -1431,7 +1431,7 @@ echo "contract ok"
 # v0.18.101: every version's own checks are in scripts/verify_v<major>_<minor>_<patch>.py (Rule 25) and all run here, in
 # version order (numeric sort). A new version adds its file and no line here. v0.18.94 and v0.18.97: their blocks, moved word for
 # word from here in v0.18.101 (Rule 25). v0.18.99 BQ-M25b: verify_v0_18_99.py (cash 0 on a
-# trip not paid in the car; refund room wording). v0.18.100 BQ-V37: verify_v0_18_100.py (ride-check scan cadence per zone). v0.18.101 §92 BQ-V34: verify_v0_18_101.py (the driver's SOS texts his contacts).
+# trip not paid in the car; refund room wording). v0.18.100 BQ-V37: verify_v0_18_100.py (ride-check scan cadence per zone). v0.18.101 §92 BQ-V34: verify_v0_18_101.py (the driver's SOS texts his contacts). v0.18.109 BQ-FLEETCUR: verify_v0_18_109.py (a fleet works in one country).
 vfiles=$(python3 - <<'PY'
 import glob, re
 fs = sorted(glob.glob('scripts/verify_v*.py'))
@@ -1441,7 +1441,7 @@ key = lambda f: tuple(int(x) for x in re.findall(r'\d+', f))
 print('\n'.join(sorted(fs, key=key)))
 PY
 )
-for f in scripts/verify_v0_18_94.py scripts/verify_v0_18_97.py scripts/verify_v0_18_99.py scripts/verify_v0_18_100.py scripts/verify_v0_18_101.py; do
+for f in scripts/verify_v0_18_94.py scripts/verify_v0_18_97.py scripts/verify_v0_18_99.py scripts/verify_v0_18_100.py scripts/verify_v0_18_101.py scripts/verify_v0_18_109.py; do
   printf '%s\n' "$vfiles" | grep -qx "$f" || { echo "$f is not in the verify_v*.py list"; exit 1; }
 done
 ran=0
