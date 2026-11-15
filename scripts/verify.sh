@@ -390,8 +390,7 @@ assert 'driver_reservations_changed' in spec['paths']['/driver/config/stream']['
 assert spec['components']['schemas']['DriverReservationsChangedEvent']['properties']['kind']['const'] == 'driver_reservations_changed'
 assert 'renumbered from 0.18.42' in c['sameAddress']['note'] and 'renumbered from 0.18.44' not in c['sameAddress']['note'], 'sameAddress.note typo (C10)'
 PY
-# v0.18.102 BQ-V38 (owner item 105 "Refresh, approve again"): approving a payout run carries what the admin saw; a changed run = 409 run_changed + PayoutRunCard.
-python3 -c "import json,yaml;c=json.load(open('contract.json'));g=c['payoutMode']['approveGuard']['note'];S=yaml.safe_load(open('openapi.yaml'))['components']['schemas'];assert all(x in g for x in ('run_changed','expected_total_required','PayoutRunCard')),'approveGuard';assert {'expectedCount','expectedTotal'}<=set(S['PayoutRunApproveCommand']['required']) and set(S['PayoutRunCard']['required'])=={'country','periodEnd','count','total'},'V38 openapi'"
+python3 scripts/verify_v0_18_102.py  # v0.18.102 BQ-V38 (owner item 105): approving a payout run carries what the admin saw
 # CONTRACT.md's title names the same version as contract.json.
 v=$(python3 -c "import json;print(json.load(open('contract.json'))['version'])")
 head -1 CONTRACT.md | grep -q "v$v\b" || { echo "CONTRACT.md title does not name v$v"; exit 1; }
@@ -877,7 +876,7 @@ assert 'debtCollected' in S['TripProjection']['properties']['commission']['descr
 assert S['KpiDay']['properties']['gross']['description'].startswith('v0.18.82'), 'J3 openapi KPI gross'
 md = open('CONTRACT.md').read()
 assert md.startswith('# Movera shared contract v' + c['version'] + '\n') or tuple(map(int, c['version'].split('.'))) > (0, 18, 82), 'CONTRACT.md title'
-assert '\nv0.18.82 (S5 J3 money fixes' in open('CHANGELOG.md').read() and '**money fixes**' in open('CHANGELOG.md').read() and '`driverPay` on adjust / complete' in open('CHANGELOG.md').read() and 'Q-S5-8, open' not in md, 'CONTRACT.md v0.18.82 note (its note moved to CHANGELOG.md in v0.18.102)'
+assert '\nv0.18.82 (S5 J3 money fixes' in md and '**money fixes**' in md and '`driverPay` on adjust / complete' in md and 'Q-S5-8, open' not in md, 'CONTRACT.md v0.18.82 note'
 assert '  //         commission = Movera\'s share of the fare: fare − debtCollected − driverEarnings − pickupPay − driverBonus' in md and '(fare − driverEarnings)' not in md, 'CONTRACT.md one commission'
 # Third commit (owner values re-confirmed 2026-11-13 + supervisor M1-M3, S1-S4): 150 DT is the J7 cash-owed limit, never in J3.
 oa = open('openapi.yaml').read()
