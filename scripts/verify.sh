@@ -1497,4 +1497,4 @@ PY
 # v0.18.99 BQ-M25b (M25 supervisor F1 + F2, Rules audits/impact/m25-card-cash-supervisor.md): on a trip not paid in the
 # car the cash numbers are 0 (cashDue, TripFinish.cashToCollect, TripProjection.cashToCollect); refund room wording.
 python3 scripts/verify_v0_18_99.py
-python3 scripts/verify_v0_18_107.py  # v0.18.107 BQ-M28 (audits/impact/m28-late-bonus-supervisor.md): payoutSummary.laterBonus
+python3 scripts/verify_v0_18_107.py  # v0.18.107 BQ-M28 (audits/impact/m28-late-bonus-supervisor.md): payoutSummary.laterBonus; BQ-M29 (audits/impact/m29-late-adjustment.md): laterPayChange
