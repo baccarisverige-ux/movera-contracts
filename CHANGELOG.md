@@ -2,6 +2,14 @@
 
 Moved from CONTRACT.md (Rule 25: file size); nothing removed. Newer notes stay at the top of CONTRACT.md.
 
+v0.18.108 (job C9b; Rule 21 / Rule 25: moved from CONTRACT.md word for word, nothing removed): the last §91 line as it was before v0.18.108, and the pointer line as it was before v0.18.97 (the v0.18.82–v0.18.96 notes and the v0.18.71 pointer line were moved in v0.18.101, below).
+
+The pointer line as it was before v0.18.97 (#140 replaced it in CONTRACT.md; kept here word for word, Rule 21):
+
+Older version notes (v0.18.69 and before) are in `CHANGELOG.md`.
+
+- **Apps**: driver follows the server's arrived status (no tap needed) and, while away, stops its waiting clock and shows `autoArrive.texts.driverPaused`; rider stops its waiting clock and shows `texts.riderPaused`; admin has the two settings and shows arrived by, away since and stopped minutes in the trip waiting box. Middle stops keep their taps in this version.
+
 v0.18.101 (BQ-V34; Rule 21 / Rule 25: moved from CONTRACT.md word for word, nothing removed): the v0.18.96–v0.18.85 notes and the old pointer line (below, in their CONTRACT.md order); the v0.18.84, v0.18.83 and v0.18.82 notes, also moved in v0.18.101, are further down above v0.18.81.
 
 v0.18.96 (BQ-M23; owner 2026-11-12 ~16:05 UTC "on the offer when come he see only how much he get", Rules decisions/session-2026-11-06.md:1164; X-Api-Version stays `0.5`; additive; no migration; no admin setting; follows v0.18.95): **a booked ride in the driver's lists says what he gets** — every `DriverReservation` item of `GET /driver/reservations` (scope open and accepted) carries `driverTotal` (Money, driver view only) = the trip's driverEarnings + pickupPay + driverBonus + Movera's driver-pay change on a held ride (driverAdjustments, J6, capped never below 0; no tip), the same number as `TripProjection.driverTotal` (equals `Offer.driverTotal` on an open ride). The Booked rides list, its ride sheet, the Home popup, the ride-changed notice and "Keep it at the new time?" show only it; "—" without it (a server before v0.18.96); the app never works money out. `DriverReservation.earnings` stays (the trip line without bonus and pickup pay) and is not shown. Never sent to the rider. `contract.json#priceDisplay.bookedRide`.
