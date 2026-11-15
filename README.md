@@ -6,8 +6,10 @@ serve all three. This repository is the only place the contract changes.
 Each app and the server carries a byte-for-byte copy under `contracts/` and checks it
 against `CHECKSUMS`.
 
-Current version: **0.18.101** (`contract.json#version`, tag `v0.18.101`; after v0.18.97 J8 wording; 0.18.98-0.18.100 reserved for other jobs; BQ-V34 the driver's SOS texts his emergency contacts, `contract.json#sosContactsSms`). The server and driver carry
+Current version: **0.18.101** (`contract.json#version`, tag `v0.18.101`; BQ-V34 the driver's SOS texts his emergency contacts, `contract.json#sosContactsSms`; on top of v0.18.100 BQ-V37 ride-check scan cadence per zone). The server and driver carry
 0.18.72; admin and rider carry 0.18.66 (later versions land in them after the merge).
+
+Was (v0.18.99): **0.18.99** (`contract.json#version`, tag `v0.18.99`; 0.18.99 BQ-M25b no cash to collect on a trip not paid in the car, on 0.18.97 (0.18.98 not shipped); after v0.18.96 BQ-M23; J8 wording: a `paid_to_movera` entry is never in `Payout.summary` or fleet earnings, paid-movera closing a payout freezes it).
 
 ## What is here
 

@@ -1114,7 +1114,7 @@ for s_, k in (('TripTerms', 'waitPerMinShown'), ('TripTerms', 'stopWaitPerMinSho
 assert 'waitPerMinShown' not in spec['TripTerms'].get('required', []), 'additive'
 md = open('CONTRACT.md').read()
 assert md.startswith('# Movera shared contract v' + c['version']), 'CONTRACT.md heading'
-assert 'v0.18.85' in md and 'waitPerMinShown' in md, 'CONTRACT.md text'
+mdc = md + open('CHANGELOG.md', encoding='utf-8').read(); assert 'v0.18.85' in mdc and 'waitPerMinShown' in mdc, 'CONTRACT.md text'  # v0.18.101: this note moved to CHANGELOG.md (Rule 21 kept word for word)
 assert md.count('\n') <= 1500, 'CONTRACT.md over 1,500 lines'
 PY
 # v0.18.86 (J5b; owner 2026-11-13 ~20:41 UTC "Admin can set commission even by amount !" + ~20:48 "Yes, like this (Rec.)",
@@ -1173,7 +1173,7 @@ for m, p in (('put', '/admin/config/{doc}'), ('post', '/admin/config/{doc}/publi
     assert 'commission_steps_invalid' in P[p][m]['responses']['400']['description'], p
 md = open('CONTRACT.md').read()
 assert md.startswith('# Movera shared contract v' + c['version']), 'CONTRACT.md heading'
-assert 'v0.18.86' in md and 'commissionSteps' in md and 'commission_steps_invalid' in md, 'CONTRACT.md text'
+mdc = md + open('CHANGELOG.md', encoding='utf-8').read(); assert 'v0.18.86' in mdc and 'commissionSteps' in mdc and 'commission_steps_invalid' in mdc, 'CONTRACT.md text'  # v0.18.101: this note moved to CHANGELOG.md (Rule 21 kept word for word)
 assert md.count('\n') <= 1500, 'CONTRACT.md over 1,500 lines'
 PY
 # v0.18.87 (BQ-M19, owner 107 + approved B2.4 plan; owner 2026-11-13 "Movera commission is how much movera keep"): bonus
@@ -1194,7 +1194,7 @@ assert '(FOR NO KEY UPDATE' in tb and '(FOR UPDATE)' not in tb, 'takeBack lock w
 spec = yaml.safe_load(open('openapi.yaml'))
 assert 'payLostDriver' in spec['components']['schemas']['KpiDay']['properties']['moveraEarnings']['description'], 'openapi KpiDay.moveraEarnings'
 md = open('CONTRACT.md').read()
-assert '\nv0.18.87 (BQ-M19' in md and 'moneyBase.bonusOutsideCommission' in md, 'CONTRACT.md v0.18.87 note'
+mdc = md + open('CHANGELOG.md', encoding='utf-8').read(); assert '\nv0.18.87 (BQ-M19' in mdc and 'moneyBase.bonusOutsideCommission' in mdc, 'CONTRACT.md v0.18.87 note'  # v0.18.101: this note moved to CHANGELOG.md (Rule 21 kept word for word)
 cr = mb['commissionRow']
 assert '23:42 UTC' in cr['note'] and 'how much movera keep' in cr['note'] and 'never rewritten' in cr['note'], 'commissionRow owner quote'
 assert 'moneySplit.movera' in cr['admin'] and 'moveraKeepsNow' in cr['driver'] and 'never TripProjection.commission' in cr['driver'], 'commissionRow admin/driver'
@@ -1206,7 +1206,7 @@ bo = mb['bonusOutsideCommission']
 assert 'never by when an entry was written' in bo['inside'] and 'fare − debtCollected − driverEarnings − pickupPay − commission' in bo['inside'] and 'every bonus entry is outside' in bo['inside'], 'inside rule'
 assert 'created_at' not in bo['server'] and 'tells apart' not in bo['server'] and 'Driver and rider: no change' not in bo['apps'], 'server/apps text'
 assert 'bonus being typed' in cr['admin'] and 'waybill row is hidden too' in cr['driver'] and 'every driver and admin screen use this same number' not in mb['commission'], 'box/waybill/commission'
-assert 'moveraKeepsNow' in md, 'CONTRACT.md commission row'
+mdc = md + open('CHANGELOG.md', encoding='utf-8').read(); assert 'moveraKeepsNow' in mdc, 'CONTRACT.md commission row'  # v0.18.101: this note moved to CHANGELOG.md (Rule 21 kept word for word)
 assert md.count('\n') <= 1500, 'CONTRACT.md over 1,500 lines'
 PY
 # v0.18.88 (owner 2026-10-29 "Movera dont care about what fleet owner take from drivers! ... if there is any % u delete that",
@@ -1237,7 +1237,7 @@ assert not ({'moveraKeeps', 'aroundLimits', 'atLimit', 'justAbove', 'stepUsed', 
 assert 'warnDrop' in c['commissionSteps']['texts'] and 'STILL ALLOWS SAVING' in c['commissionSteps']['warn']['advisory'], 'warn kept'
 assert 'ONE calculator' in c['commissionSteps']['apps']['admin'] and 'Movera gets' in c['commissionSteps']['apps']['admin'] and 'rows around each limit' not in c['commissionSteps']['apps']['admin'], 'apps.admin'
 md = open('CONTRACT.md').read()
-assert '\nv0.18.88 (owner 2026-10-29' in md and 'fleetPayoutWhole' in md and 'adminCalculator.removed' in md, 'CONTRACT.md v0.18.88 note'
+mdc = md + open('CHANGELOG.md', encoding='utf-8').read(); assert '\nv0.18.88 (owner 2026-10-29' in mdc and 'fleetPayoutWhole' in mdc and 'adminCalculator.removed' in mdc, 'CONTRACT.md v0.18.88 note'  # v0.18.101: this note moved to CHANGELOG.md (Rule 21 kept word for word)
 assert md.count('\n') <= 1500, 'CONTRACT.md over 1,500 lines'
 PY
 # v0.18.89 (owner 2026-11-14 "make sure rider and driver app show correct prices every where" + "Check all apps"; Rules
@@ -1305,7 +1305,7 @@ S = yaml.safe_load(open('openapi.yaml'))['components']['schemas']
 assert 'lostDriverPaid' in S['MoneySplit']['properties'] and 'lostDriverPaid' not in S['MoneySplit']['required'], 'MoneySplit.lostDriverPaid additive'
 assert '− lostDriverPaid' in S['TripProjection']['properties']['moveraKeepsNow']['description'], 'moveraKeepsNow description'
 t = open('CONTRACT.md', encoding='utf-8').read()
-assert t.startswith('# Movera shared contract v' + c['version']) and '\nv0.18.90 (BQ-M21' in t and 'lostDriverPaid? }' in t, 'CONTRACT.md v0.18.90'
+tc = t + open('CHANGELOG.md', encoding='utf-8').read(); assert t.startswith('# Movera shared contract v' + c['version']) and '\nv0.18.90 (BQ-M21' in tc and 'lostDriverPaid? }' in tc, 'CONTRACT.md v0.18.90'  # v0.18.101: this note moved to CHANGELOG.md (Rule 21 kept word for word)
 pd = c['priceDisplay']
 assert 'cash the driver holds' in pd['owedToMovera'] and 'plus a cash tip' in pd['owedToMovera'] and 'fare − walletApplied' in pd['owedToMovera'] and pd['owedToMoveraBefore0_18_90'].startswith('Replaced in v0.18.90'), 'owedToMovera cash held (P89 must-fix 1)'
 assert "'counted as cash the driver already holds'" in pd['owedToMovera'] and 'counted as cash the driver already holds' in S['TripTip']['properties']['driverShare']['description'], 'owedToMovera matches TripTip.driverShare'
@@ -1315,7 +1315,7 @@ assert '`TripFinish.owedToMovera` = cash the driver holds' in t, 'CONTRACT.md §
 assert t.count('\n') <= 1500, 'CONTRACT.md over 1,500 lines'
 # v0.18.92 (GM 2026-11-14, owner rule s06:1263; server BQ-M24): TripProjection.lostDriverPaid on the admin view of every trip.
 assert tuple(map(int, c['version'].split('.'))) >= (0, 18, 92), 'version'
-assert '\nv0.18.92 (GM 2026-11-14' in t and '`TripProjection.lostDriverPaid`' in t, 'CONTRACT.md v0.18.92 note'
+tc = t + open('CHANGELOG.md', encoding='utf-8').read(); assert '\nv0.18.92 (GM 2026-11-14' in tc and '`TripProjection.lostDriverPaid`' in tc, 'CONTRACT.md v0.18.92 note'  # v0.18.101: this note moved to CHANGELOG.md (Rule 21 kept word for word)
 cr2 = c['moneyBase']['commissionRow']; ld2 = c['moneyBase']['lostDriverPaid']
 assert 'commission − TripProjection.lostDriverPaid' in cr2['admin'] and 'ONE server number' in cr2['admin'] and 'the admin never adds or subtracts' in cr2['admin'] and 'keep no quoted pay' in cr2['admin'] and cr2['adminBefore0_18_92'].startswith('Replaced in v0.18.92'), 'commissionRow.admin unpaid rows (G1)'
 assert 'ADMIN view only' in ld2['tripField'] and 'paid or not' in ld2['tripField'] and 'equals moneySplit.lostDriverPaid' in ld2['tripField'], 'lostDriverPaid.tripField'
@@ -1325,12 +1325,12 @@ ps2 = c['priceDisplay']['payoutSummary']
 assert "the payout's OWN entries" in ps2['rule'] and 'The two views may differ' in ps2['rule'] and ps2['ruleBefore0_18_92'].startswith('Replaced in v0.18.92'), 'payoutSummary own entries / views (MF1, MF2)'
 assert 'migration 0108' in ps2['index0_18_92'] and 'ADMIN view' in cr2['fieldAdmin0_18_92'] and 'still under way' in cr2['fieldAdmin0_18_92'], 'payout index / admin moveraKeepsNow on an unpaid end'
 assert "the payout's OWN entries" in S['PayoutSummary']['description'] and cr2['fieldAdmin0_18_92'] in S['TripProjection']['properties']['moveraKeepsNow']['description'], 'openapi follows'
-assert '**Payout.summary = the payout\'s own entries**' in t, 'CONTRACT.md v0.18.92 payout line'
+tc = t + open('CHANGELOG.md', encoding='utf-8').read(); assert '**Payout.summary = the payout\'s own entries**' in tc, 'CONTRACT.md v0.18.92 payout line'  # v0.18.101: this note moved to CHANGELOG.md (Rule 21 kept word for word)
 # v0.18.95 (server BQ-M26; M24 supervisor N1): a paid payout's summary is frozen when it is marked paid.
 assert tuple(map(int, c['version'].split('.'))) >= (0, 18, 95), 'version'
 fz = c['priceDisplay']['payoutSummary']['frozenWhenPaid']
 assert fz.startswith('v0.18.95') and 'marks the payout paid' in fz and 'never moves a paid payout' in fz and 'stays live' in fz and 'freeze at deploy' in fz and 'migration 0109' in fz, 'payoutSummary.frozenWhenPaid'
-assert '\nv0.18.95 (server BQ-M26' in t and '**a paid payout\'s summary is frozen**' in t and 'payoutSummary.frozenWhenPaid' in t, 'CONTRACT.md v0.18.95 note'
+tc = t + open('CHANGELOG.md', encoding='utf-8').read(); assert '\nv0.18.95 (server BQ-M26' in tc and '**a paid payout\'s summary is frozen**' in tc and 'payoutSummary.frozenWhenPaid' in tc, 'CONTRACT.md v0.18.95 note'  # v0.18.101: this note moved to CHANGELOG.md (Rule 21 kept word for word)
 assert fz in S['PayoutSummary']['description'], 'openapi PayoutSummary follows frozenWhenPaid'
 PY
 # v0.18.91 job A7 (owner 2026-11-02 "taken from the driver's NEXT payout (driver sees why)", Rules decisions/driver-g8.md:95-98;
@@ -1355,7 +1355,7 @@ ta = c['finish']['tips']['cashInCarAdmin']
 assert 'Anything admin can adjust' in ta and 'cashInCarMinutes' in ta and 'per zone or the country standard' in ta and '0–60' in ta and 'default 5' in ta, 'tips.cashInCarAdmin'
 assert c['finish']['tips']['settings_ranges']['cashInCarMinutes'] == [0, 60] and c['configDefaults']['tipRules']['cashInCarMinutes'] == 5, 'tip window range / default'
 t = open('CONTRACT.md', encoding='utf-8').read()
-assert t.startswith('# Movera shared contract v' + c['version']) and '\nv0.18.91 (jobs A7 + C8' in t and 'driver_refund_taken' in t, 'CONTRACT.md v0.18.91'
+tc = t + open('CHANGELOG.md', encoding='utf-8').read(); assert t.startswith('# Movera shared contract v' + c['version']) and '\nv0.18.91 (jobs A7 + C8' in tc and 'driver_refund_taken' in tc, 'CONTRACT.md v0.18.91'  # v0.18.101: this note moved to CHANGELOG.md (Rule 21 kept word for word)
 assert t.count('\n') <= 1500, 'CONTRACT.md over 1,500 lines'
 spec = yaml.safe_load(open('openapi.yaml'))
 assert spec['info']['version'] == c['version'], 'openapi version'
@@ -1399,7 +1399,7 @@ assert 'autoArriveMeters' in S['TripTerms']['properties'] and 'leaveMeters' in S
 dw = S['DriverWaiting']['allOf'][-1]['properties']
 assert dw['autoArriveMeters']['minimum'] == 30 and dw['leaveMeters']['maximum'] == 2000, 'DriverWaiting'
 t = open('CONTRACT.md', encoding='utf-8').read()
-assert t.startswith('# Movera shared contract v' + c['version']) and '\nv0.18.93 (job C9' in t and '## 91. Auto arrived' in t, 'CONTRACT.md v0.18.93'
+tc = t + open('CHANGELOG.md', encoding='utf-8').read(); assert t.startswith('# Movera shared contract v' + c['version']) and '\nv0.18.93 (job C9' in tc and '## 91. Auto arrived' in tc, 'CONTRACT.md v0.18.93'  # v0.18.101: this note moved to CHANGELOG.md (Rule 21 kept word for word)
 assert t.count('\n') <= 1500, 'CONTRACT.md over 1,500 lines'
 PY
 # v0.18.96 (BQ-M23; owner s06:1164 "only how much he get"): a booked ride in the driver's lists carries driverTotal.
@@ -1424,78 +1424,28 @@ assert r['properties']['driverTotal']['allOf'] == [{'$ref': '#/components/schema
 assert 'driverTotal' not in r['required'], 'additive (optional)'
 assert 'v0.18.96' in r['properties']['driverTotal']['description'] and 'v0.18.96' in r['properties']['earnings']['description'], 'descriptions'
 t = open('CONTRACT.md', encoding='utf-8').read()
-assert t.startswith('# Movera shared contract v' + c['version']) and '\nv0.18.96 (BQ-M23' in t, 'CONTRACT.md v0.18.96'
-assert t.count('\n') <= 1500, 'CONTRACT.md over 1,500 lines'
-PY
-# v0.18.97 (J8 wording, Rules audits/impact/j8-rebase-money-fix-supervisor.md §6): a paid_to_movera entry is never in
-# Payout.summary or fleet earnings; paid-movera closing a payout freezes its summary in the same step.
-python3 - <<'PY'
-import json, yaml
-c = json.load(open('contract.json'))
-assert tuple(map(int, c['version'].split('.'))) >= (0, 18, 97), 'version 0.18.97 or later'
-ps = c['priceDisplay']['payoutSummary']
-r = ps['rule']
-assert 'v0.18.97' in r and "A 'Driver paid Movera' entry (kind paid_to_movera" in r and 'never in driverGets or moveraGets, in the payout it closes or in the next payout' in r, 'rule: paid_to_movera never in the summary'
-assert '= Payout.amount + the cash he collected − his paid_to_movera entries in Payout.amount' in r, 'rule: identity fixed'
-assert '= Payout.amount + the cash he collected)' not in r, 'rule: old identity gone'
-ptm = ps['paidToMovera']
-assert 'never in driverGets or moveraGets' in ptm and 'not in the payout it closes' in ptm and 'not in the next payout' in ptm, 'paidToMovera both payouts'
-assert 'driverGets = Payout.amount + the cash he collected − his paid_to_movera entries in Payout.amount' in ptm and 'line paid_to_movera, +amount' in ptm, 'paidToMovera identity'
-fz = ps['frozenWhenPaid']
-assert 'POST /admin/payouts/{payoutId}/paid' in fz and 'POST /admin/drivers/{driverId}/paid-movera covers the payout\'s carried rest in full and closes it as paid' in fz and 'frozen in the same step' in fz, 'frozenWhenPaid paid-movera'
-assert ps['frozenWhenPaidBefore0_18_97'].startswith('Replaced in v0.18.97 (kept, Rule 21') and 'paid-movera' not in ps['frozenWhenPaidBefore0_18_97'], 'old frozenWhenPaid kept'
-assert ps['ruleBefore0_18_97'].startswith('Replaced in v0.18.97 (kept, Rule 21') and '= Payout.amount + the cash he collected)' in ps['ruleBefore0_18_97'], 'old rule kept'
-fe = c['debtModel']['driverOwes']['fleetEarnings']
-assert 'GET /driver/fleet/earnings' in fe and 'a paid_to_movera entry' in fe and 'is not earnings' in fe, 'fleet earnings'
-assert 'paid_to_movera' in c['debtModel']['driverOwes']['paidMovera'], 'paidMovera kept'
-pmv = c['debtModel']['driverOwes']['paidMovera']
-assert 'v0.18.97' in pmv and 'open payouts below 0' in pmv and 'oldest first (period start, then payoutId)' in pmv and 'LINKED to that payout' in pmv, 'paidMovera: linked to open payouts below 0, oldest first'
-assert 'covers in full is closed as paid' in pmv and 'audit payout.paid' in pmv and 'frozen in the same step' in pmv and 'covered only in part stays open' in pmv, 'paidMovera: full cover closes, audits, freezes'
-assert "Any amount left over becomes one UNLINKED entry, counted in the next payout's amount and lines" in pmv, 'paidMovera: left over is unlinked'
-assert c['debtModel']['driverOwes']['paidMoveraBefore0_18_97'].startswith('Replaced in v0.18.97 (kept, Rule 21') and 'oldest first' not in c['debtModel']['driverOwes']['paidMoveraBefore0_18_97'], 'old paidMovera kept'
-spec = yaml.safe_load(open('openapi.yaml'))
-S = spec['components']['schemas']
-assert spec['info']['version'] == c['version'], 'openapi version'
-d = S['PayoutSummary']['description']
-assert r in d and ptm in d and fz in d, 'openapi PayoutSummary wording'
-assert fe in S['FleetEarnings']['description'], 'openapi FleetEarnings wording'
-P = spec['paths']
-assert fe in P['/driver/fleet/earnings']['get']['description'], 'openapi fleet earnings op'
-pm = P['/admin/drivers/{driverId}/paid-movera']['post']['description']
-assert pmv in pm and 'v0.18.97' in pm and 'frozen in the same step' in pm and 'never in driverGets or moveraGets' in pm, 'openapi paid-movera op'
-t = open('CONTRACT.md', encoding='utf-8').read()
-assert t.startswith('# Movera shared contract v' + c['version']) and '\nv0.18.97 (J8 wording' in t and 'is frozen in the same step' in t and '**paid-movera settles the carried rest first**' in t, 'CONTRACT.md v0.18.97'
-assert '\nv0.18.70 (server S4 B1.23' not in t and '\nv0.18.70 (server S4 B1.23' in open('CHANGELOG.md', encoding='utf-8').read(), 'v0.18.70 note moved to CHANGELOG.md (Rule 21)'
+tc = t + open('CHANGELOG.md', encoding='utf-8').read(); assert t.startswith('# Movera shared contract v' + c['version']) and '\nv0.18.96 (BQ-M23' in tc, 'CONTRACT.md v0.18.96'  # v0.18.101: this note moved to CHANGELOG.md (Rule 21 kept word for word)
 assert t.count('\n') <= 1500, 'CONTRACT.md over 1,500 lines'
 PY
 echo "contract ok"
-# v0.18.94 job A5 / BQ-M13 (owner G10-2 "Admin sets day and time (Recommended)" ... "driver app shows next payout",
-# Rules decisions/driver-g10.md:6): GET /driver/payouts sends the driver's next payout moment.
-python3 - <<'PY'
-import json, yaml
-c = json.load(open('contract.json'))
-assert tuple(map(int, c['version'].split('.'))) >= (0, 18, 94), 'version 0.18.94 or later'
-np_ = c['payouts']['schedule']['nextPayout']
-assert 'driver-g10.md:6' in np_['note'] and 'never works the schedule out' in np_['note'], 'nextPayout note'
-for f in ('DriverPayoutPage.nextPayoutAt', 'DriverPayoutPage.nextPayoutLocal', 'DriverPayoutPage.nextPayoutTimeZone', 'GET /driver/payouts only'):
-    assert f in np_['fields'], 'nextPayout fields ' + f
-assert 'payoutHold' in np_['rule'] and 'absent, never null' in np_['rule'] and 'anchorWeek' in np_['rule'], 'nextPayout rule'
-assert set(np_['examples']) == {'SE', 'FR', 'TN'} and 'nextPayoutLocal 2026-11-16T08:00' in np_['examples']['SE'] and 'Africa/Tunis' in np_['examples']['TN'], 'nextPayout examples'
-for w in ('contract', 'server', 'admin', 'driver app', 'rider app'):
-    assert w in np_['apps'], 'nextPayout Rule 0 part ' + w
-spec = yaml.safe_load(open('openapi.yaml'))
-S = spec['components']['schemas']
-props = S['DriverPayoutPage']['allOf'][1]['properties']
-assert set(props) == {'nextPayoutAt', 'nextPayoutLocal', 'nextPayoutTimeZone'}, 'DriverPayoutPage fields'
-assert spec['paths']['/driver/payouts']['get']['responses']['200']['content']['application/json']['schema'] == {'$ref': '#/components/schemas/DriverPayoutPage'}, 'driver payouts schema'
-assert spec['paths']['/admin/payouts']['get']['responses']['200']['content']['application/json']['schema'] == {'$ref': '#/components/schemas/PayoutPage'}, 'admin payouts unchanged'
-t = open('CONTRACT.md', encoding='utf-8').read()
-assert t.startswith('# Movera shared contract v' + c['version']) and '\nv0.18.94 (job A5' in t and 'nextPayoutLocal' in t, 'CONTRACT.md v0.18.94'
-assert t.count('\n') <= 1500, 'CONTRACT.md over 1,500 lines'
-assert spec['info']['version'] == c['version'], 'openapi version'
+# v0.18.101: every version's own checks are in scripts/verify_v<major>_<minor>_<patch>.py (Rule 25) and all run here, in
+# version order (numeric sort). A new version adds its file and no line here. v0.18.94 and v0.18.97: their blocks, moved word for
+# word from here in v0.18.101 (Rule 25). v0.18.99 BQ-M25b: verify_v0_18_99.py (cash 0 on a
+# trip not paid in the car; refund room wording). v0.18.100 BQ-V37: verify_v0_18_100.py (ride-check scan cadence per zone). v0.18.101 §92 BQ-V34: verify_v0_18_101.py (the driver's SOS texts his contacts).
+vfiles=$(python3 - <<'PY'
+import glob, re
+fs = sorted(glob.glob('scripts/verify_v*.py'))
+bad = [f for f in fs if not re.fullmatch(r'scripts/verify_v\d+_\d+_\d+\.py', f)]
+assert not bad, 'verify_v*.py not named verify_v<major>_<minor>_<patch>.py: ' + ' '.join(bad)
+key = lambda f: tuple(int(x) for x in re.findall(r'\d+', f))
+print('\n'.join(sorted(fs, key=key)))
 PY
-# v0.18.99 BQ-M25b (M25 supervisor F1 + F2, Rules audits/impact/m25-card-cash-supervisor.md): on a trip not paid in the
-# car the cash numbers are 0 (cashDue, TripFinish.cashToCollect, TripProjection.cashToCollect); refund room wording.
-python3 scripts/verify_v0_18_99.py
-python3 scripts/verify_v0_18_100.py  # v0.18.100 BQ-V37 (owner W1 Q66 = Q-B6): ride-check scan cadence per zone
-python3 scripts/verify_v0_18_101.py  # v0.18.101 §92 (BQ-V34): the asserts live in scripts/verify_v0_18_101.py (Rule 25)
+)
+for f in scripts/verify_v0_18_94.py scripts/verify_v0_18_97.py scripts/verify_v0_18_99.py scripts/verify_v0_18_100.py scripts/verify_v0_18_101.py; do
+  printf '%s\n' "$vfiles" | grep -qx "$f" || { echo "$f is not in the verify_v*.py list"; exit 1; }
+done
+ran=0
+for f in $vfiles; do python3 "$f"; ran=$((ran + 1)); done
+found=$(find scripts -maxdepth 1 -name 'verify_v*.py' -type f | wc -l)
+[ "$ran" -eq "$found" ] || { echo "verify_v*.py: ran $ran of $found files"; exit 1; }
+echo "verify_v*.py: $ran files ran in version order"
