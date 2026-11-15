@@ -60,7 +60,8 @@ assert 'not_at_stop' in d and 'v0.18.108' in d, 'stop arrive path description'
 d = ' '.join(spec['paths']['/driver/trips/{tripId}/stops/{stopIndex}/leave']['post']['description'].split())
 assert 'away.since' in d and 'v0.18.108' in d, 'stop leave path description'
 t = open('CONTRACT.md', encoding='utf-8').read()
-assert t.startswith('# Movera shared contract v' + c['version']) and '\nv0.18.108 (job C9b' in t and '## 93. Auto arrived and the waiting clock at middle stops' in t and 'Round 2 (M1)' in t and '**Ride check** (M2)' in t and 'Middle stops keep their taps in this version.' not in t, 'CONTRACT.md v0.18.108'
+tc = t + open('CHANGELOG.md', encoding='utf-8').read()  # v0.18.110: the v0.18.97-v0.18.108 notes moved to CHANGELOG.md (Rule 25 size, Rule 21 kept word for word)
+assert t.startswith('# Movera shared contract v' + c['version']) and '\nv0.18.108 (job C9b' in tc and '## 93. Auto arrived and the waiting clock at middle stops' in t and 'Round 2 (M1)' in t and '**Ride check** (M2)' in t and 'Middle stops keep their taps in this version.' not in t, 'CONTRACT.md v0.18.108'
 ch = open('CHANGELOG.md', encoding='utf-8').read()
 assert 'Middle stops keep their taps in this version.' in ch and 'Older version notes (v0.18.70 and before)' in ch and '\nv0.18.70 (server S4 B1.23' in ch and '\nv0.18.71 (wording fix' in ch, 'Rule 21: moved lines are in CHANGELOG.md'
 assert 'Older version notes (v0.18.69 and before) are in `CHANGELOG.md`.' in ch.split('\n') and 'Older version notes (v0.18.69 and before)' not in t, 'Rule 21: the pre-v0.18.97 pointer line is kept in CHANGELOG.md'

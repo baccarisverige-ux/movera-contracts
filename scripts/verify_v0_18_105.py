@@ -22,7 +22,8 @@ assert 'androidConfig' not in S['PushConfig']['required'], 'androidConfig option
 ps = [p for p in spec['paths']['/push/config']['get']['parameters'] if p.get('name') == 'platform']
 assert len(ps) == 1 and ps[0]['required'] is False and ps[0]['schema']['enum'] == a['platforms'], 'platform query'
 t = open('CONTRACT.md', encoding='utf-8').read()
-assert t.startswith('# Movera shared contract v' + c['version']) and '\nv0.18.105 (BQ-V43' in t and 'androidConfig' in t, 'CONTRACT.md v0.18.105'
+tc = t + open('CHANGELOG.md', encoding='utf-8').read()  # v0.18.110: the v0.18.97-v0.18.108 notes moved to CHANGELOG.md (Rule 25 size, Rule 21 kept word for word)
+assert t.startswith('# Movera shared contract v' + c['version']) and '\nv0.18.105 (BQ-V43' in tc and 'androidConfig' in tc, 'CONTRACT.md v0.18.105'
 assert t.count('\n') <= 1500, 'CONTRACT.md over 1,500 lines'
 assert spec['info']['version'] == c['version'], 'openapi version'
 print("v0.18.105 ok")

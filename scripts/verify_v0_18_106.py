@@ -28,7 +28,8 @@ d400 = op['responses']['400']['description']
 assert all(k in d400 for k in ('invalid_amount', 'currency_mismatch', 'paid_above_owed', 'reason_required', 'v0.18.106')), 'openapi paid-movera 400 reasons'
 assert op['responses']['400']['content']['application/json']['schema']['$ref'] == '#/components/schemas/Error', 'openapi paid-movera 400 schema'
 t = open('CONTRACT.md', encoding='utf-8').read()
-assert t.startswith('# Movera shared contract v' + c['version']) and '\nv0.18.106 (contract text batch' in t, 'CONTRACT.md v0.18.106'
+tc = t + open('CHANGELOG.md', encoding='utf-8').read()  # v0.18.110: the v0.18.97-v0.18.108 notes moved to CHANGELOG.md (Rule 25 size, Rule 21 kept word for word)
+assert t.startswith('# Movera shared contract v' + c['version']) and '\nv0.18.106 (contract text batch' in tc, 'CONTRACT.md v0.18.106'
 ch = open('CHANGELOG.md', encoding='utf-8').read()
 assert '\nv0.18.71 (wording fix, live bug 2026-11-12' not in t and '\nv0.18.71 (wording fix, live bug 2026-11-12' in ch and 'Older version notes (v0.18.71 and before) are in `CHANGELOG.md`.' in t + ch, 'v0.18.71 note moved to CHANGELOG.md (Rule 21)'
 assert '\nOlder version notes (v0.18.70 and before) are in `CHANGELOG.md`.\n' in ch, 'old pointer line kept in CHANGELOG.md (Rule 21)'

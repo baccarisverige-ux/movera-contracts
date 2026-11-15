@@ -14,5 +14,6 @@ for f in ('fixtures/config/driver_app_config.json', 'fixtures/config/rider_app_c
 p = spec['components']['schemas']['RideCheck']['properties']['scanEverySeconds']
 assert (p['minimum'], p['maximum'], p['default'], p['type']) == (10, 60, 30, 'integer'), 'openapi RideCheck.scanEverySeconds'
 t = open('CONTRACT.md', encoding='utf-8').read()
-assert '\nv0.18.100 (BQ-V37' in t and 'scanEverySeconds (30' in t, 'CONTRACT.md v0.18.100'
+tc = t + open('CHANGELOG.md', encoding='utf-8').read()  # v0.18.110: the v0.18.97-v0.18.108 notes moved to CHANGELOG.md (Rule 25 size, Rule 21 kept word for word)
+assert '\nv0.18.100 (BQ-V37' in tc and 'scanEverySeconds (30' in t, 'CONTRACT.md v0.18.100'
 print("v0.18.100 ride-check cadence ok")

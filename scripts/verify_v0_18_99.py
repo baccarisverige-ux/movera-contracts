@@ -31,7 +31,8 @@ assert 'the cash taken, or the card part, plus the wallet part' in d, 'refund pa
 d = ' '.join(spec['paths']['/driver/trips/{tripId}/complete-preview']['get']['description'].split())
 assert 'v0.18.99' in d, 'complete-preview path description'
 t = open('CONTRACT.md', encoding='utf-8').read()
-assert t.startswith('# Movera shared contract v' + c['version']) and '\nv0.18.99 (BQ-M25b' in t and 'the cash taken, or the card part, plus the wallet part' in t, 'CONTRACT.md v0.18.99'
+tc = t + open('CHANGELOG.md', encoding='utf-8').read()  # v0.18.110: the v0.18.97-v0.18.108 notes moved to CHANGELOG.md (Rule 25 size, Rule 21 kept word for word)
+assert t.startswith('# Movera shared contract v' + c['version']) and '\nv0.18.99 (BQ-M25b' in tc and 'the cash taken, or the card part, plus the wallet part' in tc, 'CONTRACT.md v0.18.99'
 ch = open('CHANGELOG.md', encoding='utf-8').read()
 tc = t + open('CHANGELOG.md', encoding='utf-8').read(); assert '\nv0.18.71 (wording fix' in ch and 'Older version notes (v0.18.70 and before)' in ch and 'Older version notes (v0.18.71 and before)' in tc, 'Rule 21: moved lines are in CHANGELOG.md'  # v0.18.101: this pointer line moved to CHANGELOG.md (Rule 21 kept word for word)
 assert t.count('\n') <= 1500, 'CONTRACT.md over 1,500 lines'
