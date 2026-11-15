@@ -875,7 +875,7 @@ assert 'debtCollected' in S['TripProjection']['properties']['commission']['descr
 assert S['KpiDay']['properties']['gross']['description'].startswith('v0.18.82'), 'J3 openapi KPI gross'
 md = open('CONTRACT.md').read()
 assert md.startswith('# Movera shared contract v' + c['version'] + '\n') or tuple(map(int, c['version'].split('.'))) > (0, 18, 82), 'CONTRACT.md title'
-assert '\nv0.18.82 (S5 J3 money fixes' in md and '**money fixes**' in md and '`driverPay` on adjust / complete' in md and 'Q-S5-8, open' not in md, 'CONTRACT.md v0.18.82 note'
+mdc = md + open('CHANGELOG.md').read(); assert '\nv0.18.82 (S5 J3 money fixes' in mdc and '**money fixes**' in mdc and '`driverPay` on adjust / complete' in mdc and 'Q-S5-8, open' not in mdc, 'CONTRACT.md v0.18.82 note'  # v0.18.108: this note moved to CHANGELOG.md (Rule 21 kept word for word)
 assert '  //         commission = Movera\'s share of the fare: fare − debtCollected − driverEarnings − pickupPay − driverBonus' in md and '(fare − driverEarnings)' not in md, 'CONTRACT.md one commission'
 # Third commit (owner values re-confirmed 2026-11-13 + supervisor M1-M3, S1-S4): 150 DT is the J7 cash-owed limit, never in J3.
 oa = open('openapi.yaml').read()
@@ -951,7 +951,7 @@ ps = [p for p in P['/admin/trips']['get']['parameters'] if p.get('name') == 'sch
 assert len(ps) == 1 and ps[0]['schema'] == {'$ref': '#/components/schemas/Timestamp'} and 'scheduledAt' in ps[0]['description'], 'A2 openapi scheduledBefore'
 md = open('CONTRACT.md').read()
 assert md.startswith('# Movera shared contract v' + c['version'] + '\n') or tuple(map(int, c['version'].split('.'))) > (0, 18, 83), 'CONTRACT.md title'
-assert '\nv0.18.83 (G34 fix plan' in md and '**busy-server fixes**' in md and '`GET /rider/trips/active` is never refused' in md and '`scheduledBefore`' in md and '`total=false`' in md, 'CONTRACT.md v0.18.83 note'
+mdc = md + open('CHANGELOG.md').read(); assert '\nv0.18.83 (G34 fix plan' in mdc and '**busy-server fixes**' in mdc and '`GET /rider/trips/active` is never refused' in mdc and '`scheduledBefore`' in mdc and '`total=false`' in mdc, 'CONTRACT.md v0.18.83 note'  # v0.18.108: this note moved to CHANGELOG.md (Rule 21 kept word for word)
 assert md.count('\n') <= 1500, 'CONTRACT.md over 1,500 lines'
 PY
 # v0.18.84 (S5 J7 debt model; owner Sitting 3 2026-11-12 Q-M1, Q-M2, Q-M4, Q-S5-1..5 + 2026-11-13 14:22/14:32 "150 DT ... admin can change",
@@ -1080,7 +1080,7 @@ assert 'paid_to_movera' in S['PayoutLine']['properties']['code']['enum'], 'opena
 assert 'v0.18.84' in P['/admin/riders/{riderId}/fees/{tripId}/mark-paid']['post']['description'] and 'v0.18.84' in P['/quotes']['post']['description'], 'openapi mark-paid / quotes'
 md = open('CONTRACT.md').read()
 assert md.startswith('# Movera shared contract v' + c['version'] + '\n') or tuple(map(int, c['version'].split('.'))) > (0, 18, 84), 'CONTRACT.md title'
-assert '\nv0.18.84 (S5 J7 debt model' in md and '**an unpaid fee is a negative wallet balance, read when the trip is paid**' in md, 'CONTRACT.md v0.18.84 note'
+mdc = md + open('CHANGELOG.md').read(); assert '\nv0.18.84 (S5 J7 debt model' in mdc and '**an unpaid fee is a negative wallet balance, read when the trip is paid**' in mdc, 'CONTRACT.md v0.18.84 note'  # v0.18.108: this note moved to CHANGELOG.md (Rule 21 kept word for word)
 assert 'while the rider owes one, the `outstanding_fee` line is added after the rounding; `Quote.total` and `fare` include it' not in md, 'CONTRACT.md §3.5 step 8 rewritten'
 assert 'While it is open, every quote and the next trip carry it' not in md and 'v0.18.84 (`debtModel.readAtPayment`' in md, 'CONTRACT.md §3.7 rewritten'
 assert '`walletApplied = max(0, min(balance in the trip\'s currency, fare))`' in md, 'M2 CONTRACT.md walletApplied'
@@ -1173,7 +1173,7 @@ for m, p in (('put', '/admin/config/{doc}'), ('post', '/admin/config/{doc}/publi
     assert 'commission_steps_invalid' in P[p][m]['responses']['400']['description'], p
 md = open('CONTRACT.md').read()
 assert md.startswith('# Movera shared contract v' + c['version']), 'CONTRACT.md heading'
-assert 'v0.18.86' in md and 'commissionSteps' in md and 'commission_steps_invalid' in md, 'CONTRACT.md text'
+mdc = md + open('CHANGELOG.md').read(); assert 'v0.18.86' in mdc and 'commissionSteps' in mdc and 'commission_steps_invalid' in mdc, 'CONTRACT.md text'  # v0.18.108: this note moved to CHANGELOG.md (Rule 21 kept word for word)
 assert md.count('\n') <= 1500, 'CONTRACT.md over 1,500 lines'
 PY
 # v0.18.87 (BQ-M19, owner 107 + approved B2.4 plan; owner 2026-11-13 "Movera commission is how much movera keep"): bonus
@@ -1497,3 +1497,4 @@ PY
 # v0.18.99 BQ-M25b (M25 supervisor F1 + F2, Rules audits/impact/m25-card-cash-supervisor.md): on a trip not paid in the
 # car the cash numbers are 0 (cashDue, TripFinish.cashToCollect, TripProjection.cashToCollect); refund room wording.
 python3 scripts/verify_v0_18_99.py
+python3 scripts/verify_v0_18_108.py  # v0.18.108 job C9b (auto arrived + the waiting clock at middle stops, Rules decisions/driver-g7.md:84); own file, Rule 25
