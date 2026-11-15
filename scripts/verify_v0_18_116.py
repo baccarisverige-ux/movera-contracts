@@ -21,6 +21,11 @@ assert pub['fields'] == ['state', 'phase', 'car', 'eta', 'position', 'updatedAt'
 assert pub['car'] == ['make', 'model', 'color', 'plate'] and pub['eta'] == ['minutes', 'target', 'arriveAround'] and pub['position'] == ['lat', 'lng', 'at'], 'public sub-fields'
 assert pub['refreshSeconds'] == 20 and pub['positionLink'] == c['sosContactsSms']['positionLink'], 'refresh 20 s (owner Q1); the Maps link form'
 assert [s for p in pub['phases'].values() for s in p] == st['statuses'], 'every share status has one phase'
+# Supervisor MF-1 / SF-1: a queued trip never shows the car's spot; no driver = "searching", not ended.
+assert pub['queuedPhase'] == 'queued' and 'next_after_trip_id' in pub['positionRule'] and 'position is always null' in pub['positionRule'], 'queued trip: no position'
+assert "state: 'searching'" in pub['searching'] and 'NOT ended' in pub['searching'], 'no driver = searching'
+assert 'load-shed 503' in pub['headers'], 'headers on every answer of the share paths'
+assert 'fixed label' in st['link']['token'], 'the link key is derived' 
 never = ' '.join(pub['never'])
 for w in ('phone number', 'name', 'addresses', 'destination', 'fare', 'rating', 'photo', 'tripId'):
     assert w in never, 'never list: ' + w
@@ -66,6 +71,10 @@ FORBIDDEN = re.compile(r'phone|name|address|pickup|dropoff|destination|stops|far
 bad = [x for x in names if FORBIDDEN.search(x)]
 assert not bad, 'forbidden field in the public answer: ' + str(bad)
 assert set(re.findall(r'#/components/schemas/(\w+)', json.dumps(ps))) <= {'Timestamp'}, 'the public schema refers to no other schema'
+assert ps['properties']['phase']['enum'] == list(pub['phases']) + ['queued'], 'phase enum'
+se = S['PublicTripShareSearching']
+assert list(se['properties']) == ['state', 'updatedAt', 'refreshSeconds'] == se['required'] and se['additionalProperties'] is False, 'searching body: no trip data'
+assert P['/share/{token}']['get']['responses']['200']['content']['application/json']['schema'] == {'oneOf': [{'$ref': '#/components/schemas/PublicTripShare'}, {'$ref': '#/components/schemas/PublicTripShareSearching'}]}, '200 = live or searching'
 assert list(S['PublicTripShareEnded']['properties']) == ['state', 'reason'] and S['PublicTripShareEnded']['additionalProperties'] is False, 'ended body'
 for path, ok in (('/share/{token}', 'application/json'), ('/s/{token}', 'text/html')):
     o = P[path]['get']
