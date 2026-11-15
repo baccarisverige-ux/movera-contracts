@@ -1,6 +1,6 @@
 {
   "contract": "movera",
-  "version": "0.18.102",
+  "version": "0.18.105",
   "note": "Canonical cross-app contract for Rider, Driver and Admin. Frontend-only today; a future single backend implements it. Every app ships an identical copy under contracts/ and runs contract tests against it.",
   "wire": {
     "ids": {
@@ -957,7 +957,7 @@
         "tap": "A tap on the push opens the app at data.deepLink (the bell list when empty)."
       },
       "config": {
-        "note": "v0.18.3 (R7): GET /push/config?app=driver|rider needs no token and gives the public Firebase web settings so no key is kept in the apps' code: { provider: fcm, enabled, projectId?, webConfig? { apiKey, appId, messagingSenderId, projectId, authDomain? } }. The server reads the web app (display name 'Movera Driver web' / 'Movera Rider web') from the Firebase Management API with its service account once and keeps it in memory. enabled false (no projectId, no webConfig) when the server has no Firebase settings; the app then skips push.",
+        "note": "v0.18.3 (R7): GET /push/config?app=driver|rider needs no token and gives the public Firebase web settings so no key is kept in the apps' code: { provider: fcm, enabled, projectId?, webConfig? { apiKey, appId, messagingSenderId, projectId, authDomain? } }. The server reads the web app (display name 'Movera Driver web' / 'Movera Rider web') from the Firebase Management API with its service account once and keeps it in memory. enabled false (no projectId, no webConfig) when the server has no Firebase settings; the app then skips push. v0.18.105: &platform=android gives androidConfig instead (auth.devices.config.android).",
         "path": "GET /push/config",
         "apps": [
           "driver",
@@ -966,6 +966,27 @@
         "webAppNames": {
           "driver": "Movera Driver web",
           "rider": "Movera Rider web"
+        },
+        "android": {
+          "note": "v0.18.105 (BQ-V43; G4 decision 1 \"Push + sound + vibration\", owner R7 \"Set up Firebase now\", Rules decisions/driver-g4.md:2, driver-g2.md:61): GET /push/config?app=driver|rider&platform=android gives { provider: fcm, enabled, projectId?, androidConfig? { apiKey, appId, messagingSenderId, projectId } }: the public settings of the project's Firebase Android app with the app's package name (androidPackages), read once with the server's service account from the Firebase Management API (the app's google-services.json: mobilesdk_app_id, the current api key, project_number) and kept in memory. They are public (inside every APK), never a secret, so no google-services.json, no Google services Gradle plugin and no key is kept in any app repository or CI. enabled false (no androidConfig) when the server has no Firebase settings or the project has no Android app with that package; the app then skips push and says so in its log. Without platform, or platform=web, the answer is the v0.18.3 one (webConfig), unchanged. A failed read is tried again after 5 minutes.",
+          "platforms": [
+            "web",
+            "android",
+            "ios"
+          ],
+          "androidPackages": {
+            "driver": "se.movera.driver",
+            "rider": "com.movera.rider"
+          },
+          "ios": "v0.18.105: platform=ios answers enabled false for now: iOS push needs the Apple Developer account and an APNs auth key uploaded to Firebase (Rules plan/REMINDERS.md 7, at store launch). Then a later version adds iosConfig the same way.",
+          "appStart": "The Android app starts Firebase at run time with androidConfig (FirebaseOptions apiKey, appId, messagingSenderId, projectId), then follows appFlow: explains, asks POST_NOTIFICATIONS on Android 13+, gets the FCM token, POST /push/devices { provider: fcm, platform: android }, registers again when FCM changes the token, unregisters on sign-out. It never shows a push that comes while it is open (the offer stream and the bell list show it). The offer channels driverOffers.push.native.androidChannel / androidQuietChannel (sound soundFile) are made by the app at start; a channel the driver changed in Android settings keeps his choice. The in-app Vibrate setting cannot change a notice Android shows (the channel decides): a known gap on native, the web keeps E6 in full.",
+          "apps": {
+            "Contract": "this key, PushConfig.androidConfig and the platform query in openapi.yaml.",
+            "Server": "GET /push/config platform=android|ios (src/push/config.ts, routes.ts); sending to android fcm devices exists since v0.18.3 / v0.18.6 (android.notification.channel_id, sound, priority HIGH).",
+            "Admin": "nothing to set: no adjustable value (the Firebase project is the owner's; push on/off is the server's FIREBASE_SERVICE_ACCOUNT). Unchanged.",
+            "Driver app": "Android: firebase_core + firebase_messaging, NativePushPlatform (lib/core/push/native_push_platform.dart) started from androidConfig, the two offer channels and res/raw/movera_offer in MainActivity.kt. iOS: off until the APNs key.",
+            "Rider app": "unchanged in this version: its native builds start Firebase from build settings (MOVERA_FIREBASE_*); it may read androidConfig the same way later (no change needed to keep working)."
+          }
         }
       },
       "appFlow": "v0.18.3 (R7): after sign-in the app explains why (sv / fr / en) before the operating system asks for the notification permission once; when allowed it gets the FCM token (on the web with the settings from GET /push/config and the service worker firebase-messaging-sw.js, which loads the same settings), registers it with POST /push/devices, registers again when the token changes and unregisters it on sign-out."
