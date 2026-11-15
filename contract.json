@@ -1,6 +1,6 @@
 {
   "contract": "movera",
-  "version": "0.18.101",
+  "version": "0.18.102",
   "note": "Canonical cross-app contract for Rider, Driver and Admin. Frontend-only today; a future single backend implements it. Every app ships an identical copy under contracts/ and runs contract tests against it.",
   "wire": {
     "ids": {
@@ -8411,7 +8411,13 @@
       "automatic",
       "manual"
     ],
-    "default": "automatic"
+    "default": "automatic",
+    "approveGuard": {
+      "note": "v0.18.102 BQ-V38 (owner item 105 / Q-M8 2026-11-12 'Refresh, approve again (Rec.)', Rules decisions/session-2026-11-06.md:1119: if the numbers changed while the admin looked, Approve refreshes the card and asks for Approve again; Movera never pays a total the admin did not see; Q-M8 :1107 'refuse approval if the total changed'): POST /admin/payouts/runs/approve carries what the admin saw: { country, periodEnd, reason, expectedCount, expectedTotal }. expectedCount = how many payouts of the run he saw (integer >= 1); expectedTotal = the run's Payout.amount summed per currency, one Money per currency (kr, € and DT are never added; minor units, TND 3 decimals). Under the payouts' row lock the server reads the run it would approve (every pending_approval payout of that country and period inside the admin's zones) and compares: the same number of payouts and, per currency, the same total (the same set of currencies, none missing, none extra). Any difference (a payout joined or left the run, an amount changed, e.g. a carried rest) = 409 conflict, reason run_changed, projection = the fresh PayoutRunCard { country, periodEnd, count, total: Money[] }; nothing is approved and nothing is written to the audit. The admin shows why (the fresh count and total), reloads the run and the admin approves again with the fresh numbers. expectedCount or expectedTotal missing (an admin older than v0.18.102) = 400 invalid_request, reason expected_total_required: a run is never approved blind. A match approves as before (answer PayoutRunApproved, total = what he saw; audit payout.run_approve also keeps expectedCount and expectedTotal). A second click after a success still gets 409 nothing_to_approve. The other checks keep their order: reason_required, nothing_to_approve, zone_out_of_scope, then this guard.",
+      "card": "PayoutRunCard { country, periodEnd, count, total: Money[] } — the server's numbers of the run at that moment (count = the payouts the admin would approve; total = their Payout.amount per currency). The admin shows count and total exactly as the server sent them.",
+      "apps": "Admin (Payouts › Runs waiting for approval): Approve run sends expectedCount and expectedTotal of the run it shows (its card; after a run_changed, the server's fresh card); on run_changed it shows the reason with the fresh count and total, reloads the list and keeps the button for a new Approve (with the reason again). Driver and rider apps: no change (they never approve runs; a pending_approval payout stays 'pending' in GET /driver/payouts).",
+      "adminSetting": "None: the guard is always on (a money safety rule, not adjustable)."
+    }
   },
   "moneyBase": {
     "note": "v0.18.82 (S5 J3, owner Sitting 3 2026-11-12: items 106 and 107, Q-M7, Q-S5-6, Q-S5-7; plan handover/build-plans-2026-11-12/S5-money.md J3): the money fixes. Sweden, France and Tunisia alike; amounts in minor units of the trip's or the rider's currency (TND has 3 decimals, moneyDisplay.formats.TND). X-Api-Version stays 0.5; no migration in the contract.",
