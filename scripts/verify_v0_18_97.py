@@ -36,6 +36,7 @@ assert fe in P['/driver/fleet/earnings']['get']['description'], 'openapi fleet e
 pm = P['/admin/drivers/{driverId}/paid-movera']['post']['description']
 assert pmv in pm and 'v0.18.97' in pm and 'frozen in the same step' in pm and 'never in driverGets or moveraGets' in pm, 'openapi paid-movera op'
 t = open('CONTRACT.md', encoding='utf-8').read()
-assert t.startswith('# Movera shared contract v' + c['version']) and '\nv0.18.97 (J8 wording' in t and 'is frozen in the same step' in t and '**paid-movera settles the carried rest first**' in t, 'CONTRACT.md v0.18.97'
+ch = open('CHANGELOG.md', encoding='utf-8').read()  # v0.18.111: the v0.18.97 note moved to CHANGELOG.md (Rule 21 / Rule 25)
+assert t.startswith('# Movera shared contract v' + c['version']) and '\nv0.18.97 (J8 wording' in t + ch and 'is frozen in the same step' in t + ch and '**paid-movera settles the carried rest first**' in t + ch, 'CONTRACT.md v0.18.97'
 assert '\nv0.18.70 (server S4 B1.23' not in t and '\nv0.18.70 (server S4 B1.23' in open('CHANGELOG.md', encoding='utf-8').read(), 'v0.18.70 note moved to CHANGELOG.md (Rule 21)'
 assert t.count('\n') <= 1500, 'CONTRACT.md over 1,500 lines'

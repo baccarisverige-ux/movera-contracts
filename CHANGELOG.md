@@ -2,6 +2,12 @@
 
 Moved from CONTRACT.md (Rule 25: file size); nothing removed. Newer notes stay at the top of CONTRACT.md.
 
+v0.18.111 (BQ-M28 + BQ-M29; Rule 21 / Rule 25: moved from CONTRACT.md word for word, nothing removed): the v0.18.97 note and the pointer line as it was before v0.18.111 (below).
+
+v0.18.97 (J8 wording, Rules audits/impact/j8-rebase-money-fix-supervisor.md §6; owner s06:1277 "Driver gets" = his earnings, Q-M3 the negative rest carries; X-Api-Version stays `0.5`; wording only; no API shape change; no migration; no admin setting; follows v0.18.96): **a "Driver paid Movera" entry is never in the payout summary** — an earnings entry kind `paid_to_movera` (`POST /admin/drivers/{driverId}/paid-movera`) is money from the driver, never in `Payout.summary` driverGets or moveraGets, in the payout it closes or in the next one; so driverGets = `Payout.amount` + the cash he collected − his `paid_to_movera` entries in that amount (`contract.json#priceDisplay.payoutSummary.rule`, `.paidToMovera`). A payout that paid-movera closes as paid (its carried rest covered in full) is frozen in the same step, as with Mark as paid (`.frozenWhenPaid`). `GET /driver/fleet/earnings`: a `paid_to_movera` entry is not earnings (`#debtModel.driverOwes.fleetEarnings`). **paid-movera settles the carried rest first** (`#debtModel.driverOwes.paidMovera`): entries are linked to his open payouts below 0, oldest first; a payout covered in full is closed as paid (audit `payout.paid`) and its summary frozen in the same step; any amount left over is one unlinked entry, counted in the next payout's amount and lines. The server already does this (J8); the apps change nothing.
+
+Older version notes are in `CHANGELOG.md`: v0.18.96 and before (the v0.18.82–v0.18.96 notes moved in v0.18.101), except the v0.5.0 and v0.4.1–v0.4.4 notes below.
+
 v0.18.108 (job C9b; Rule 21 / Rule 25: moved from CONTRACT.md word for word, nothing removed): the last §91 line as it was before v0.18.108, and the pointer line as it was before v0.18.97 (the v0.18.82–v0.18.96 notes and the v0.18.71 pointer line were moved in v0.18.101, below).
 
 The pointer line as it was before v0.18.97 (#140 replaced it in CONTRACT.md; kept here word for word, Rule 21):
