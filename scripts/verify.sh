@@ -507,7 +507,7 @@ d = ' '.join(spec['paths']['/trips/{tripId}/messages/translate']['post']['descri
 tm = ' '.join(spec['components']['schemas']['TranslatedMessage']['description'].split())
 for x in (d, tm):
     assert 'Message.quickReplyId or Message.auto present' in x and 'Typed text whose Message.lang equals to' in x, 'openapi sameLanguage v0.18.71'
-md = open('CONTRACT.md').read()
+md = open('CONTRACT.md').read() + open('CHANGELOG.md').read()  # v0.18.99: this note moved to CHANGELOG.md (Rule 25 size, Rule 21 kept word for word)
 assert '**§85 same-language shortcut**' in md and 'typed text with `Message.lang` = `to` is translated like any other' in md, 'CONTRACT.md v0.18.71 wording'
 PY
 # v0.18.72 §89 (G17, live bug 2026-11-12, server 165fb9c): the driver's config and stream follow the zone he works in, wording + additive key.
@@ -1494,3 +1494,6 @@ assert t.startswith('# Movera shared contract v' + c['version']) and '\nv0.18.94
 assert t.count('\n') <= 1500, 'CONTRACT.md over 1,500 lines'
 assert spec['info']['version'] == c['version'], 'openapi version'
 PY
+# v0.18.99 BQ-M25b (M25 supervisor F1 + F2, Rules audits/impact/m25-card-cash-supervisor.md): on a trip not paid in the
+# car the cash numbers are 0 (cashDue, TripFinish.cashToCollect, TripProjection.cashToCollect); refund room wording.
+python3 scripts/verify_v0_18_99.py
