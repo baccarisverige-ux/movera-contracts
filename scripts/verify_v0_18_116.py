@@ -9,7 +9,7 @@ assert tuple(map(int, c['version'].split('.'))) >= (0, 18, 116), 'version 0.18.1
 assert c['configDefaults']['shareTripOn'] is True, 'configDefaults.shareTripOn is true (owner Q6: default on)'
 st = c['shareTrip']
 assert 'driver-g14.md:11' in st['note'] and 'Build it for real' in st['note'] and 'migration 0114' in st['note'], 'shareTrip owner decision'
-assert sorted(st['owner'].keys()) == ['Q1', 'Q2', 'Q3', 'Q4', 'Q5', 'Q6', 'Q7'], 'the 7 owner answers'
+assert sorted(st['owner'].keys()) == ['Q-A', 'Q-B', 'Q1', 'Q2', 'Q3', 'Q4', 'Q5', 'Q6', 'Q7'], 'the 7 owner answers + Q-A, Q-B'
 assert st['statuses'] == c['safety']['sos']['riderStatuses'] == c['tripStatus']['driverAssigned'], 'share only while a driver is assigned'
 assert st['maxHours'] == 6 and st['retentionDays'] == 30, '6 h cap, rows kept 30 days (owner Q7)'
 assert 'tripStatus.terminal' in st['ends'] and 'zone' in st['ends'] and 'stops sharing' in st['ends'] and '410' in st['ends'], 'the four ends'
@@ -22,7 +22,12 @@ assert pub['car'] == ['make', 'model', 'color', 'plate'] and pub['eta'] == ['min
 assert pub['refreshSeconds'] == 20 and pub['positionLink'] == c['sosContactsSms']['positionLink'], 'refresh 20 s (owner Q1); the Maps link form'
 assert [s for p in pub['phases'].values() for s in p] == st['statuses'], 'every share status has one phase'
 # Supervisor MF-1 / SF-1: a queued trip never shows the car's spot; no driver = "searching", not ended.
-assert pub['queuedPhase'] == 'queued' and 'next_after_trip_id' in pub['positionRule'] and 'position is always null' in pub['positionRule'], 'queued trip: no position'
+assert pub['queuedPhase'] == 'queued' and 'next_after_trip_id' in pub['positionRule'] and 'position is null by rule (1)' in pub['positionRule'], 'queued trip: no position'
+# Owner Q-A / Q-B (2026-11-15): no position before the rider is in the car, none within 500 m of the drop-off.
+assert pub['hideWithinMetersOfDropoff'] == 500 and 'hideWithinMetersOfDropoff' in pub['positionRule'], 'Q-B: hide the last 500 m'
+assert "Hide until rider is in" in pub['positionRule'] and 'tripStatus.riderOnboard' in pub['positionRule'] and pub['phases']['on_trip'] == c['tripStatus']['riderOnboard'], 'Q-A: position only with the rider in the car'
+assert 'the drop-off and the distance are never sent' in pub['positionRule'], 'Q-B: nothing about the drop-off is sent'
+assert all('noPosition' not in st['texts'][l] for l in ('sv', 'fr', 'en')), 'no position line when the position is hidden' 
 assert "state: 'searching'" in pub['searching'] and 'NOT ended' in pub['searching'], 'no driver = searching'
 assert 'load-shed 503' in pub['headers'], 'headers on every answer of the share paths'
 assert 'fixed label' in st['link']['token'], 'the link key is derived' 
