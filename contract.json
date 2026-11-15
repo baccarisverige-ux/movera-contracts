@@ -1,6 +1,6 @@
 {
   "contract": "movera",
-  "version": "0.18.99",
+  "version": "0.18.100",
   "note": "Canonical cross-app contract for Rider, Driver and Admin. Frontend-only today; a future single backend implements it. Every app ships an identical copy under contracts/ and runs contract tests against it.",
   "wire": {
     "ids": {
@@ -3729,7 +3729,8 @@
       "endFarMeters": 500,
       "noAnswerSeconds": 120,
       "repeatMinutes": 10,
-      "noAnswerAlarm": false
+      "noAnswerAlarm": false,
+      "scanEverySeconds": 30
     },
     "routeChange": {
       "on": true,
@@ -6701,7 +6702,8 @@
           "endFarMeters": "Unexpected end: the driver ended the trip (complete, or cancel with the rider on board) farther than this from the drop-off (default 500; 100–5000).",
           "noAnswerSeconds": "Nobody answered within this many seconds → the safety team is alerted (an open ride_check incident) (default 120; 30–600). Also used for the apps' own checks.",
           "repeatMinutes": "The same reason does not ask again within this many minutes of the trip (default 10; 1–120).",
-          "noAnswerAlarm": "true = a no-answer case also rings the admin alarm and escalates like an SOS; false (default, as v0.12.0) = it shows in the safety list without sound."
+          "noAnswerAlarm": "true = a no-answer case also rings the admin alarm and escalates like an SOS; false (default, as v0.12.0) = it shows in the safety list without sound.",
+          "scanEverySeconds": "v0.18.100 (BQ-V37, owner W1 Q66 \"Yes\" = Q-B6): the server looks at a trip's GPS for a ride check at most once every this many seconds (default 30; 10–60, owner 2026-11-15: at most 60 s). Per zone, like the other ride-check settings. Server only: the apps ignore it (their own checks keep their own timing)."
         },
         "ranges": {
           "stopMinutes": [
@@ -6723,12 +6725,17 @@
           "repeatMinutes": [
             1,
             120
+          ],
+          "scanEverySeconds": [
+            10,
+            60
           ]
         },
         "invalid": "A missing field or one outside its range reads as the default."
       },
       "detection": {
         "when": "From every POST /driver/location batch while the trip is rider_onboard, in_trip or approaching_dropoff (a server job, a few seconds later), and at the driver's complete / cancel.",
+        "cadence": "v0.18.100 (BQ-V37, owner W1 Q66 \"Yes\" = Q-B6 \"at most every 30 s per trip instead of after every GPS batch\"): one scan per trip at most every scanEverySeconds (DriverAppConfig.rideCheck.scanEverySeconds of the trip's zone, default 30). A GPS batch that comes sooner books the scan for the end of that time instead of now (the newest fixes are read then); a pending scan keeps its due time (never later). The first scan of a trip is not delayed. An admin change applies from the trip's next scan. The trigger rules, repeatMinutes, the complete / cancel check (dropped_far) and the apps are unchanged.",
         "long_stop": "The trip boarded at least stopMinutes ago and every fix (accuracy ≤ 50 m) of the last stopMinutes is within 50 m of the newest one, the fixes cover the whole stopMinutes, the car is not at a middle stop the driver tapped arrived at, and not within 300 m of the drop-off.",
         "off_route": "The newest fix (accuracy ≤ 50 m) is farther than offRouteKm from the trip's route: the server's road route pickup → stops → drop-off (kept on the trip, made again after a route change), straight lines between those points when the road route has no shape.",
         "dropped_far": "Unexpected end: the driver completes or cancels with the rider on board farther than endFarMeters from the drop-off (the driver's latest fix). The trip still ends; the rider may answer up to safety.rideCheck.completedWithinMinutes (30) after it.",
