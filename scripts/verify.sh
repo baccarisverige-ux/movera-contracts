@@ -1468,6 +1468,7 @@ assert t.startswith('# Movera shared contract v' + c['version']) and '\nv0.18.97
 assert '\nv0.18.70 (server S4 B1.23' not in t and '\nv0.18.70 (server S4 B1.23' in open('CHANGELOG.md', encoding='utf-8').read(), 'v0.18.70 note moved to CHANGELOG.md (Rule 21)'
 assert t.count('\n') <= 1500, 'CONTRACT.md over 1,500 lines'
 PY
+python3 scripts/verify_v0_18_106.py  # v0.18.106 (contract text batch, wording only): asserts in their own file (verify.sh stays under 1,500 lines, Rule 25)
 echo "contract ok"
 # v0.18.94 job A5 / BQ-M13 (owner G10-2 "Admin sets day and time (Recommended)" ... "driver app shows next payout",
 # Rules decisions/driver-g10.md:6): GET /driver/payouts sends the driver's next payout moment.

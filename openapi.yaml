@@ -1,11 +1,11 @@
-# Movera API v0.18.99 — generated from contract.json (+ CONTRACT.md §7). PROPOSED; no backend exists.
+# Movera API v0.18.106 — generated from contract.json (+ CONTRACT.md §7). PROPOSED; no backend exists.
 openapi: 3.1.0
 info:
   title: Movera API
-  version: 0.18.99
+  version: 0.18.106
   description: '**Proposed contract — no backend exists yet.** One future backend serves the Rider (Flutter), Driver (Flutter)
     and Admin (React/TS) apps. Source of truth for names, enums, transitions, realtime and errors is `contract.json` + `CONTRACT.md`
-    v0.18.99 in this folder; this file must agree with them.
+    v0.18.106 in this folder; this file must agree with them.
 
 
     Wire rules: ids match `^[A-Za-z0-9_-]{1,64}$`; times are RFC 3339 UTC with `Z`; durations are integer seconds; money is
@@ -84,7 +84,7 @@ tags:
 - name: Admin · Finance
 x-contract:
   name: movera
-  version: 0.18.99
+  version: 0.18.106
   source: contract.json
 paths:
   /auth/otp/request:
@@ -18285,9 +18285,12 @@ paths:
         the payout it is linked to. No entry is ever in Payout.summary (priceDisplay.payoutSummary.paidToMovera). Stale expectedOwed
         → 409 conflict, reason owed_changed with the fresh OwingDriver (a second click adds nothing, owner 106 rule); amount
         above the owed now → 400 invalid_request, reason paid_above_owed; reason 1..300 characters (else 400 reason_required).
-        Answer: the fresh OwingDriver. v0.18.97 (priceDisplay.payoutSummary.frozenWhenPaid, paidToMovera): a payout below
-        0 whose carried rest this money covers in full is closed as paid (note "Driver paid Movera", audit payout.paid) and
-        its Payout.summary is frozen in the same step; the paid_to_movera entry is never in driverGets or moveraGets.'
+        v0.18.106 (wording only, J8 supervisor W1, Rules audits/impact/j8-rebase-money-fix-supervisor.md; server src/admin/driversOwing.ts):
+        an amount ≤ 0 → 400 invalid_request, reason invalid_amount; an amount in another currency than expectedOwed → 400
+        invalid_request, reason currency_mismatch. Answer: the fresh OwingDriver. v0.18.97 (priceDisplay.payoutSummary.frozenWhenPaid,
+        paidToMovera): a payout below 0 whose carried rest this money covers in full is closed as paid (note "Driver paid
+        Movera", audit payout.paid) and its Payout.summary is frozen in the same step; the paid_to_movera entry is never in
+        driverGets or moveraGets.'
       tags:
       - Admin · People
       x-actor:
@@ -18317,7 +18320,18 @@ paths:
               schema:
                 $ref: '#/components/schemas/OwingDriver'
         '400':
-          $ref: '#/components/responses/BadRequest'
+          description: 'invalid_request: malformed body, unknown enum, wrong reasonCode group, bad PIN. v0.18.106 (debtModel.driverOwes.paidMovera):
+            reason invalid_amount (amount ≤ 0), currency_mismatch (amount in another currency than expectedOwed), paid_above_owed
+            (amount above the owed now), reason_required (reason not 1..300 characters).'
+          headers:
+            X-Request-Id:
+              description: Echo of the request id (server-generated if absent).
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         '401':
           $ref: '#/components/responses/Unauthenticated'
         '403':
@@ -34197,9 +34211,11 @@ components:
         = the server''s route distance / route duration of the driver''s leg to the pickup, else dispatch''s pickup speed).
         It runs with the server ETA, every pickupWaiting.eta.everySeconds (30 s), from accept until arrived, for the whole
         wait, not only once. DriverAppConfig.headingCheck { on, headingPct, notHeadingMinutes, reassign } per zone (or the
-        country standard); defaults configDefaults.headingCheck (on, 80 %, 2 min, reassign on). The admin''s ''Smart cancel
-        check'' / ''Came closer by'' controls map to on / headingPct. v0.18.35: + notice (default true) and noticeEveryMin
-        (default 1, range 1-10); reassign default false and read-only (live rides are never taken back).'
+        country standard); defaults configDefaults.headingCheck (on, 80 %, 2 min, reassign false). The admin''s ''Smart cancel
+        check'' / ''Heading to the pickup (%)'' controls map to on / headingPct. v0.18.35: + notice (default true) and noticeEveryMin
+        (default 1, range 1-10); reassign default false and read-only (live rides are never taken back). v0.18.106 (wording
+        only, Rules audits/impact/v35-v36-safety.md): the defaults read reassign false (as since v0.18.35) and the admin control
+        is named ''Heading to the pickup (%)'' (was ''Came closer by''); no shape change.'
       properties:
         'on':
           type: boolean
