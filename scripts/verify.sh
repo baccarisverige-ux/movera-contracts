@@ -1431,7 +1431,7 @@ echo "contract ok"
 # v0.18.101: every version's own checks are in scripts/verify_v<major>_<minor>_<patch>.py (Rule 25) and all run here, in
 # version order (numeric sort). A new version adds its file and no line here. v0.18.94 and v0.18.97: their blocks, moved word for
 # word from here in v0.18.101 (Rule 25). v0.18.99 BQ-M25b: verify_v0_18_99.py (cash 0 on a
-# trip not paid in the car; refund room wording). v0.18.100 BQ-V37: verify_v0_18_100.py (ride-check scan cadence per zone). v0.18.101 §92 BQ-V34: verify_v0_18_101.py (the driver's SOS texts his contacts). v0.18.102 BQ-V38: verify_v0_18_102.py (approving a payout run carries what the admin saw). v0.18.105 BQ-V43: verify_v0_18_105.py (the driver's Android offer push config). v0.18.106 contract text batch: verify_v0_18_106.py (heading-check setting wording; paid-movera 400 reasons). v0.18.108 C9b: verify_v0_18_108.py (auto arrived and the waiting clock at middle stops, §93). v0.18.109 BQ-FLEETCUR: verify_v0_18_109.py (a fleet works in one country). v0.18.110 BQ-V44: verify_v0_18_110.py (bonus campaigns; renumbered from 0.18.103, stall exit). v0.18.111 BQ-M28 + BQ-M29: verify_v0_18_111.py (a later bonus or pay change moves Movera gets once; renumbered from 0.18.107, stall exit).
+# trip not paid in the car; refund room wording). v0.18.100 BQ-V37: verify_v0_18_100.py (ride-check scan cadence per zone). v0.18.101 §92 BQ-V34: verify_v0_18_101.py (the driver's SOS texts his contacts). v0.18.102 BQ-V38: verify_v0_18_102.py (approving a payout run carries what the admin saw). v0.18.105 BQ-V43: verify_v0_18_105.py (the driver's Android offer push config). v0.18.106 contract text batch: verify_v0_18_106.py (heading-check setting wording; paid-movera 400 reasons). v0.18.108 C9b: verify_v0_18_108.py (auto arrived and the waiting clock at middle stops, §93). v0.18.109 BQ-FLEETCUR: verify_v0_18_109.py (a fleet works in one country). v0.18.110 BQ-V44: verify_v0_18_110.py (bonus campaigns; renumbered from 0.18.103, stall exit). v0.18.111 BQ-M28 + BQ-M29: verify_v0_18_111.py (a later bonus or pay change moves Movera gets once; renumbered from 0.18.107, stall exit). v0.18.112 BQ-A04: verify_v0_18_112.py (support inbox oldest waiting first; follows v0.18.111).
 vfiles=$(python3 - <<'PY'
 import glob, re
 fs = sorted(glob.glob('scripts/verify_v*.py'))
@@ -1441,7 +1441,7 @@ key = lambda f: tuple(int(x) for x in re.findall(r'\d+', f))
 print('\n'.join(sorted(fs, key=key)))
 PY
 )
-for f in scripts/verify_v0_18_94.py scripts/verify_v0_18_97.py scripts/verify_v0_18_99.py scripts/verify_v0_18_100.py scripts/verify_v0_18_101.py scripts/verify_v0_18_102.py scripts/verify_v0_18_105.py scripts/verify_v0_18_106.py scripts/verify_v0_18_108.py scripts/verify_v0_18_109.py scripts/verify_v0_18_110.py scripts/verify_v0_18_111.py; do
+for f in scripts/verify_v0_18_94.py scripts/verify_v0_18_97.py scripts/verify_v0_18_99.py scripts/verify_v0_18_100.py scripts/verify_v0_18_101.py scripts/verify_v0_18_102.py scripts/verify_v0_18_105.py scripts/verify_v0_18_106.py scripts/verify_v0_18_108.py scripts/verify_v0_18_109.py scripts/verify_v0_18_110.py scripts/verify_v0_18_111.py scripts/verify_v0_18_112.py; do
   printf '%s\n' "$vfiles" | grep -qx "$f" || { echo "$f is not in the verify_v*.py list"; exit 1; }
 done
 ran=0
