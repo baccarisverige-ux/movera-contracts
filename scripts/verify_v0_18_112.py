@@ -33,8 +33,9 @@ assert 'waitingSince' not in S['SupportTicket'].get('required', []), 'waitingSin
 names = {q.get('name') for q in P['/admin/tickets']['get']['parameters'] if 'name' in q}
 assert not ({'sort', 'order', 'orderBy'} & names), 'no new sort query key'
 t = open('CONTRACT.md', encoding='utf-8').read()
-assert t.startswith('# Movera shared contract v' + c['version']) and '\nv0.18.112 (BQ-A04' in t, 'CONTRACT.md v0.18.112 note'
-assert 'follows v0.18.111)' in t and 'which is not merged yet' not in t, 'CONTRACT.md: follows note'
+tc = t + open('CHANGELOG.md', encoding='utf-8').read()  # v0.18.117: the v0.18.109-v0.18.115 notes moved to CHANGELOG.md (Rule 25 size, Rule 21 kept word for word)
+assert t.startswith('# Movera shared contract v' + c['version']) and '\nv0.18.112 (BQ-A04' in tc, 'CONTRACT.md v0.18.112 note'
+assert 'follows v0.18.111)' in tc and 'which is not merged yet' not in t, 'CONTRACT.md: follows note'
 s37 = t[t.index('## 37.'):t.index('## 38.')]
 assert '**Inbox order** (v0.18.112, `inboxOrder`' in s37 and 'waitingSince' in s37, 'CONTRACT.md §37 inbox order'
 assert t.count('\n') <= 1500, 'CONTRACT.md over 1,500 lines'
