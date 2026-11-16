@@ -35,7 +35,8 @@ assert S['CountryRules']['properties']['sosContactsSms']['type'] == 'boolean', '
 assert set(S['DriverAppConfig']['properties']['sosContactsSms']['required']) == {'on', 'connected'}, 'DriverAppConfig.sosContactsSms'
 assert 'sosContactsSms' not in S['RiderAppConfig']['properties'], 'rider config unchanged'
 t = open('CONTRACT.md', encoding='utf-8').read()
-assert t.startswith('# Movera shared contract v' + c['version']) and '\nv0.18.101 (BQ-V34' in t and '## 92. The driver\'s SOS texts his emergency contacts' in t, 'CONTRACT.md v0.18.101'
+tc = t + open('CHANGELOG.md', encoding='utf-8').read()  # v0.18.110: the v0.18.97-v0.18.108 notes moved to CHANGELOG.md (Rule 25 size, Rule 21 kept word for word)
+assert t.startswith('# Movera shared contract v' + c['version']) and '\nv0.18.101 (BQ-V34' in tc and '## 92. The driver\'s SOS texts his emergency contacts' in t, 'CONTRACT.md v0.18.101'
 assert t.count('\n') <= 1500, 'CONTRACT.md over 1,500 lines'
 assert spec['info']['version'] == c['version'], 'openapi version'
 print('v0.18.101 ok')
