@@ -125,14 +125,15 @@ assert {'trips_sek_rider_limit_and_zone'} <= {x['id'] for x in fx['trips']} and 
 assert {'se_area_outside_zone', 'se_area_partly_outside_zone', 'se_area_on_zone_edge'} <= {x['id'] for x in fx['validate']}, 'fixtures MF6'
 # CONTRACT.md: the note, size, the v0.18.71 note moved word for word (Rule 21).
 t = open('CONTRACT.md', encoding='utf-8').read()
+tc = t + open('CHANGELOG.md', encoding='utf-8').read()  # v0.18.117: the v0.18.109-v0.18.115 notes moved to CHANGELOG.md (Rule 25 size, Rule 21 kept word for word)
 cl = open('CHANGELOG.md', encoding='utf-8').read()
-assert t.startswith('# Movera shared contract v' + c['version']) and '\nv0.18.110 (BQ-V44' in t and '**bonus campaigns**' in t, 'CONTRACT.md v0.18.110'
-assert 'Driver gets + amount, Movera gets − amount in both views' in t and 'decisions/driver-g10.md:9' in t, 'CONTRACT.md money line'
+assert t.startswith('# Movera shared contract v' + c['version']) and '\nv0.18.110 (BQ-V44' in tc and '**bonus campaigns**' in tc, 'CONTRACT.md v0.18.110'
+assert 'Driver gets + amount, Movera gets − amount in both views' in tc and 'decisions/driver-g10.md:9' in tc, 'CONTRACT.md money line'
 assert '\nv0.18.71 (wording fix, live bug 2026-11-12' not in t and '\nv0.18.71 (wording fix, live bug 2026-11-12' in cl, 'v0.18.71 note moved to CHANGELOG.md'
 assert 'Older version notes (v0.18.71 and before) are in `CHANGELOG.md`.' in t + cl, 'pointer line'
 for n in ('v0.18.108 (job C9b', 'v0.18.106 (contract text batch', 'v0.18.105 (BQ-V43', 'v0.18.102 (BQ-V38', 'v0.18.101 (BQ-V34', 'v0.18.100 (BQ-V37', 'v0.18.99 (BQ-M25b', 'v0.18.97 (J8 wording'):
     assert '\n' + n not in t and '\n' + n in cl, 'v0.18.110 note move (Rule 25 / Rule 21): ' + n
-assert '\nOlder version notes are in `CHANGELOG.md`: v0.18.96 and before (the v0.18.82–v0.18.96 notes moved in v0.18.101), except the v0.5.0 and v0.4.1–v0.4.4 notes below.\n' in cl and 'v0.18.108 and before (the v0.18.97–v0.18.108 notes moved in v0.18.110' in t, 'v0.18.110 pointer line (old one kept in CHANGELOG.md)'
+assert '\nOlder version notes are in `CHANGELOG.md`: v0.18.96 and before (the v0.18.82–v0.18.96 notes moved in v0.18.101), except the v0.5.0 and v0.4.1–v0.4.4 notes below.\n' in cl and 'v0.18.108 and before (the v0.18.97–v0.18.108 notes moved in v0.18.110' in tc, 'v0.18.110 pointer line (old one kept in CHANGELOG.md)'
 assert t.count('\n') <= 1500, 'CONTRACT.md over 1,500 lines'
 assert open('scripts/verify.sh', encoding='utf-8').read().count('\n') <= 1500, 'verify.sh over 1,500 lines'
 print('v0.18.110 bonus campaigns ok')

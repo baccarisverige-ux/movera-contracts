@@ -44,8 +44,9 @@ d = S['PayoutSummary']['description']
 assert lb in d and lp in d and r in d and fz in d, 'openapi PayoutSummary wording'
 assert S['PayoutSummary']['required'] == ['driverGets', 'moveraGets'], 'shape unchanged'
 t = open('CONTRACT.md', encoding='utf-8').read()
-assert t.startswith('# Movera shared contract v' + c['version']) and '\nv0.18.111 (server BQ-M28' in t and '**a later bonus lowers Movera gets in the payout that pays it**' in t, 'CONTRACT.md v0.18.111 note'
-assert 'v0.18.111: a later bonus counts in the payout that pays it, `payoutSummary.laterBonus`' in t, 'CONTRACT.md payouts line'
-assert '**a later pay change moves Movera gets in the payout that pays it**' in t and 'so does a later pay change, `payoutSummary.laterPayChange`' in t, 'CONTRACT.md BQ-M29 wording'
+tc = t + open('CHANGELOG.md', encoding='utf-8').read()  # v0.18.117: the v0.18.109-v0.18.115 notes moved to CHANGELOG.md (Rule 25 size, Rule 21 kept word for word)
+assert t.startswith('# Movera shared contract v' + c['version']) and '\nv0.18.111 (server BQ-M28' in tc and '**a later bonus lowers Movera gets in the payout that pays it**' in tc, 'CONTRACT.md v0.18.111 note'
+assert 'v0.18.111: a later bonus counts in the payout that pays it, `payoutSummary.laterBonus`' in tc, 'CONTRACT.md payouts line'
+assert '**a later pay change moves Movera gets in the payout that pays it**' in tc and 'so does a later pay change, `payoutSummary.laterPayChange`' in tc, 'CONTRACT.md BQ-M29 wording'
 assert t.count('\n') <= 1500, 'CONTRACT.md over 1,500 lines'
 print("v0.18.111 ok")

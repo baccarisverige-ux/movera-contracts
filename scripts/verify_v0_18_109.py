@@ -30,7 +30,8 @@ assert 'v0.18.109 reason: fleet_other_country' in S['Error']['properties']['reas
 assert 'v0.18.109' in S['FleetEarnings']['description'], 'FleetEarnings description'
 assert 'v0.18.109' in P['/driver/fleet/earnings']['get']['description'], '/driver/fleet/earnings description'
 t = open('CONTRACT.md', encoding='utf-8').read()
-assert t.startswith('# Movera shared contract v' + c['version']) and '\nv0.18.109 (server BQ-FLEETCUR' in t, 'CONTRACT.md v0.18.109 note'
+tc = t + open('CHANGELOG.md', encoding='utf-8').read()  # v0.18.117: the v0.18.109-v0.18.115 notes moved to CHANGELOG.md (Rule 25 size, Rule 21 kept word for word)
+assert t.startswith('# Movera shared contract v' + c['version']) and '\nv0.18.109 (server BQ-FLEETCUR' in tc, 'CONTRACT.md v0.18.109 note'
 j = t.index('- **Joining is an invitation**'); fv = t.index('- **Fleet view.**')
 assert 'fleet_other_country' in t[j:fv] and 'oneCountry' in t[j:fv], 'CONTRACT.md §14 joining line'
 fl = t[fv:t.index('\n', fv)]
