@@ -26,7 +26,8 @@ assert 'callOpenUntil' not in S['TripProjection']['required'], 'callOpenUntil op
 assert 'callOpenUntil' in spec['paths']['/trips/{tripId}']['get']['description'], 'GET /trips/{tripId} names callOpenUntil'
 assert 'callOpenUntil' in spec['paths']['/rider/trips']['get']['description'], 'GET /rider/trips names callOpenUntil'
 t = open('CONTRACT.md', encoding='utf-8').read()
-assert t.startswith('# Movera shared contract v' + c['version']) and '\nv0.18.113 (BQ-S13' in t, 'CONTRACT.md v0.18.113 note'
+tc = t + open('CHANGELOG.md', encoding='utf-8').read()  # v0.18.117: the v0.18.109-v0.18.115 notes moved to CHANGELOG.md (Rule 25 size, Rule 21 kept word for word)
+assert t.startswith('# Movera shared contract v' + c['version']) and '\nv0.18.113 (BQ-S13' in tc, 'CONTRACT.md v0.18.113 note'
 w = t[t.index('## 62. In-app calls'):t.index('## 63.')]
 assert '`TripProjection.callOpenUntil`' in w and 'v0.18.113' in w, 'CONTRACT.md §62 names callOpenUntil'
 assert t.count('\n') <= 1500, 'CONTRACT.md over 1,500 lines'

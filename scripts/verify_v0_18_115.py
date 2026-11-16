@@ -23,7 +23,8 @@ assert rb['pickupSpots']['properties']['on']['default'] is True, 'openapi pickup
 assert 'v0.18.115' in rb['pickupSpots']['description'] and 'invalid_document' in rb['pickupSpots']['description'], 'openapi pickupSpots description'
 assert 'pickupSpots' not in S['DriverAppConfig']['properties']['booking']['properties'], 'driver document has no pickupSpots'
 t = open('CONTRACT.md', encoding='utf-8').read()
-assert t.startswith('# Movera shared contract v' + c['version']) and '\nv0.18.115 (BQ-V21' in t, 'CONTRACT.md v0.18.115 note'
+tc = t + open('CHANGELOG.md', encoding='utf-8').read()  # v0.18.117: the v0.18.109-v0.18.115 notes moved to CHANGELOG.md (Rule 25 size, Rule 21 kept word for word)
+assert t.startswith('# Movera shared contract v' + c['version']) and '\nv0.18.115 (BQ-V21' in tc, 'CONTRACT.md v0.18.115 note'
 assert 'pickupSpots: { on } },   // v0.18.115' in t, 'CONTRACT.md §6 RiderAppConfig booking line'
 assert '| Pickup entrance chips, approximate (Dispatch › Rides; v0.18.115' in t, 'CONTRACT.md §5 control matrix row'
 assert t.count('\n') <= 1500, 'CONTRACT.md over 1,500 lines'
