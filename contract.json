@@ -794,7 +794,8 @@
       "drivers": 1,
       "exclusive": true,
       "timer": "driver.offers.exclusiveSeconds",
-      "note": "Exclusive offer to one chosen driver: accept or decline. Counts as an exclusive offer for acceptance rate and auto-offline (v0.18.6, owner G4-E3 'Count them': a declined or missed hand-sent offer counts toward the in-a-row limit like an Exclusive one; contract.json#autoOffline)."
+      "note": "Exclusive offer to one chosen driver: accept or decline. Counts as an exclusive offer for acceptance rate and auto-offline (v0.18.6, owner G4-E3 'Count them'; v0.18.120, owner 2026-11-16: a hand-sent offer the driver let expire counts toward the in-a-row limit like an Exclusive one, a declined one never counts and does not reset it; contract.json#autoOffline).",
+      "noteBefore0_18_120": "Exclusive offer to one chosen driver: accept or decline. Counts as an exclusive offer for acceptance rate and auto-offline (v0.18.6, owner G4-E3 'Count them': a declined or missed hand-sent offer counts toward the in-a-row limit like an Exclusive one; contract.json#autoOffline)."
     },
     "radarGroup": {
       "offerKind": "radar",
@@ -4219,15 +4220,20 @@
     ]
   },
   "autoOffline": {
-    "note": "v0.8.0 (owner 2026-10-27), v0.18.6 (owner G4-E3 2026-10-30 'Count them', decision 6 'Both count'): a driver goes offline after offers.autoOffline.missedExclusive (default 10, owner G4-E2 'Set 10 everywhere') Exclusive or hand-sent (assigned, admin Dispatch › send offer) offers of live trips in a row that were declined or expired (missed). Only kind=exclusive and kind=assigned offers of live trips sent while the driver was free count; an offer sent while the driver is on a trip never counts; Radar offers (automatic or an admin radar group) and reservation (scheduled) offers declined or expired never count. ANY accepted offer (any kind) and going online set the count back to 0. Both the server (it sets onlineStatus offline and marks the offer event driverOffline: true) and the driver app enforce it; no warning before (decision 7), the island shows a short line when it happens. Works the same in SE and FR. fixtures/settings_flow.json#autoOffline.",
+    "note": "v0.18.120 (owner 2026-11-16 \"It's not when driver decline ! It count when driver ignore\" + \"Yes, only ignored count\" + \"And only exclusive / And it's about exclusive ride not radar\"; corrects v0.18.6 decision 6 'Both count'; first rule v0.8.0, owner 2026-10-27): a driver goes offline after offers.autoOffline.missedExclusive (default 10, owner G4-E2 'Set 10 everywhere') Exclusive offers of live trips in a row that the driver let expire (ignored). Exclusive = kind=exclusive, and kind=assigned (admin Dispatch › send offer: an Exclusive offer hand-sent to one chosen driver, G4-E3). Only such offers sent while the driver was free count. A declined offer never counts and does not reset the count: it is skipped (autoOffline.declined). An offer sent while the driver is on a trip never counts; Radar offers (several drivers see them; automatic or an admin radar group) and reservation (scheduled) offers, ignored or declined, never count and never reset the count. ANY accepted offer (any kind) and going online set the count back to 0. Both the server (it sets onlineStatus offline and marks the offer event driverOffline: true) and the driver app enforce it; no warning before (decision 7), the island shows a short line when it happens. Works the same in SE and FR. fixtures/settings_flow.json#autoOffline.",
+    "noteBefore0_18_120": "v0.8.0 (owner 2026-10-27), v0.18.6 (owner G4-E3 2026-10-30 'Count them', decision 6 'Both count'): a driver goes offline after offers.autoOffline.missedExclusive (default 10, owner G4-E2 'Set 10 everywhere') Exclusive or hand-sent (assigned, admin Dispatch › send offer) offers of live trips in a row that were declined or expired (missed). Only kind=exclusive and kind=assigned offers of live trips sent while the driver was free count; an offer sent while the driver is on a trip never counts; Radar offers (automatic or an admin radar group) and reservation (scheduled) offers declined or expired never count. ANY accepted offer (any kind) and going online set the count back to 0. Both the server (it sets onlineStatus offline and marks the offer event driverOffline: true) and the driver app enforce it; no warning before (decision 7), the island shows a short line when it happens. Works the same in SE and FR. fixtures/settings_flow.json#autoOffline.",
     "counts": [
       "exclusive",
       "assigned"
     ],
     "countsStatuses": [
+      "expired"
+    ],
+    "countsStatusesBefore0_18_120": [
       "declined",
       "expired"
     ],
+    "declined": "v0.18.120 (owner 2026-11-16 \"It's not when driver decline ! It count when driver ignore\" + \"Yes, only ignored count\" + \"And only exclusive / And it's about exclusive ride not radar\"): a declined offer (any kind) is skipped by the in-a-row count: it neither counts nor ends the run, and it never sets the driver offline. Example with a limit of 3: expired, declined, expired = 2 in a row (not 3, and not back to 1); with a limit of 2 the second expired one sets him offline. The same holds for a hand-sent (assigned) offer: an ignored one counts, a declined one does not. The same rule gives DispatchDriverFacts.missedInRow (the admin 'Missed in a row'). Not changed: the acceptance rate (a decline still lowers it, Driver.performance) and DispatchDocument.reaskLimit. No setting.",
     "resets": [
       "any offer accepted",
       "driver goes online"
@@ -4235,14 +4241,20 @@
     "neverCounts": [
       "radar",
       "reservation",
-      "any offer sent while on a trip"
+      "any offer sent while on a trip",
+      "any declined offer"
     ],
-    "outage": "v0.18.120 (S4 B1.16 Q-B13, owner W1 Q78 'Do not count it', 2026-11-11): an Exclusive or hand-sent (assigned) offer that EXPIRED while the live link (LISTEN) of a server copy was down does not count toward the in-a-row limit: it is skipped (it neither counts nor ends the run). While down = the offer's time from sent to expiry overlaps an outage window that any server copy recorded, from the copy's last proof that its link worked (connect, ping or notification) to its reconnect; a window still open counts until 60 s after the copy last reported it still down. A declined offer always counts (the driver answered it). The same rule gives DispatchDriverFacts.missedInRow. Driver app: no change (a live app counts nothing itself; it follows the server's driverOffline). No setting.",
+    "outage": "v0.18.120 (S4 B1.16 Q-B13, owner W1 Q78 'Do not count it', 2026-11-11): an Exclusive or hand-sent (assigned) offer that EXPIRED while the live link (LISTEN) of a server copy was down does not count toward the in-a-row limit: it is skipped (it neither counts nor ends the run). While down = the offer's time from sent to expiry overlaps an outage window that any server copy recorded, from the copy's last proof that its link worked (connect, ping or notification) to its reconnect; a window still open counts until 60 s after the copy last reported it still down. A declined offer never counts either (autoOffline.declined). The same rule gives DispatchDriverFacts.missedInRow. Driver app: no change (a live app counts nothing itself; it follows the server's driverOffline). No setting.",
     "changes": {
       "v0.18.6": "assigned (hand-sent) offers now count (G4-E3); every zone whose published driver_app_config had another limit than 10 (Z001, FR-PC were at 3 since 25 Oct) is set to 10 by server migration 0039 (G4-E2); the admin can still change it per zone.",
-      "v0.18.120": "Q-B13: an offer that expired while a server copy's live link was down never counts (autoOffline.outage)."
+      "v0.18.120": "Q-B13: an offer that expired while a server copy's live link was down never counts (autoOffline.outage). Owner 2026-11-16: only Exclusive (also hand-sent to one driver) offers the driver let expire count; a decline never counts and does not reset the count (autoOffline.declined); Radar never counts nor resets; the texts of the admin and of the set_offline notice say it. Replaced texts kept under ...Before0_18_120."
     },
     "adminText": {
+      "sv": "Föraren går offline efter {n} Exklusiva erbjudanden i rad som han lät gå ut (även manuellt skickade). Ett nekat erbjudande räknas aldrig och nollställer inte räkningen. Radar räknas aldrig.",
+      "fr": "Le chauffeur passe hors ligne après {n} offres Exclusives d’affilée qu’il a laissé expirer (aussi celles envoyées à la main). Un refus ne compte jamais et ne remet pas le compteur à zéro. Le Radar ne compte jamais.",
+      "en": "The driver goes offline after {n} Exclusive offers in a row that he let run out (hand-sent ones too). A decline never counts and does not reset the count. Radar never counts."
+    },
+    "adminTextBefore0_18_120": {
       "sv": "Föraren går offline efter {n} missade eller nekade Exklusiva eller manuellt skickade erbjudanden i rad (Radar räknas inte).",
       "fr": "Le chauffeur passe hors ligne après {n} offres Exclusives ou envoyées à la main manquées ou refusées d’affilée (le Radar ne compte pas).",
       "en": "The driver goes offline after {n} missed or declined Exclusive or hand-sent offers in a row (Radar does not count)."
@@ -5802,10 +5814,14 @@
           "en": "Your phone sent no position for {minutes} min"
         },
         "missed_offers": {
-          "note": "offers.autoOffline.missedExclusive misses or declines in a row (contract.json#autoOffline); data.count",
-          "sv": "Du missade eller nekade {count} erbjudanden i rad",
-          "fr": "Vous avez manqué ou refusé {count} offres d’affilée",
-          "en": "You missed or declined {count} offers in a row"
+          "note": "v0.18.120 (owner 2026-11-16): offers.autoOffline.missedExclusive Exclusive offers in a row the driver let expire; declines do not count (contract.json#autoOffline); data.count",
+          "noteBefore0_18_120": "offers.autoOffline.missedExclusive misses or declines in a row (contract.json#autoOffline); data.count",
+          "sv": "Du lät {count} Exklusiva erbjudanden gå ut i rad",
+          "svBefore0_18_120": "Du missade eller nekade {count} erbjudanden i rad",
+          "fr": "Vous avez laissé expirer {count} offres Exclusives d’affilée",
+          "frBefore0_18_120": "Vous avez manqué ou refusé {count} offres d’affilée",
+          "en": "You let {count} Exclusive offers run out in a row",
+          "enBefore0_18_120": "You missed or declined {count} offers in a row"
         },
         "app_restart": {
           "note": "the app was restarted while online (driver app only, decision 3; the server never sets it)",
@@ -8089,7 +8105,8 @@
       "cancelPct": "Driver.performance.cancellationPct (null below minTrips).",
       "idleMin": "Whole minutes since the driver was last free (drivers.last_free_at, the §3.6 idle factor); null on a trip or when unknown.",
       "categoryIds": "The categories the driver may take (Driver.categoryIds).",
-      "missedInRow": "Exclusive or assigned offers of live trips missed in a row since going online, counted exactly as contract.json#autoOffline (an accept resets it).",
+      "missedInRow": "Exclusive (also hand-sent, assigned) offers of live trips the driver let expire in a row since going online, counted exactly as contract.json#autoOffline (an accept resets it; v0.18.120: declined ones are skipped, they neither count nor reset it; Radar never counts).",
+      "missedInRowBefore0_18_120": "Exclusive or assigned offers of live trips missed in a row since going online, counted exactly as contract.json#autoOffline (an accept resets it).",
       "ridesThisHour": "Trips of this driver that ended completed in the last 60 minutes.",
       "restNeeded": "true when the driving-time limit is reached (contract.json#drivingLimits)."
     },
