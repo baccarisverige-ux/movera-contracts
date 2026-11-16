@@ -15,13 +15,21 @@ S, P = spec['components']['schemas'], spec['paths']
 do = c['debtModel']['driverOwes']
 pm = do['paidMovera']
 assert "Any amount left over becomes one UNLINKED entry, counted in the next payout's amount and lines" in pm, 'v0.18.97 text kept (Rule 21)'
-assert pm.endswith(' Answer: the fresh OwingDriver.') and 'j8b-supervisor.md' in pm and '336b1dc' in pm, 'paidMovera v0.18.118 source'
+assert pm.endswith(' Answer: the fresh OwingDriver.') and 'j8b-supervisor.md' in pm and '3591e8a' in pm, 'paidMovera v0.18.118 source'
 assert 'linked to that payout AFTER it was made' in pm and 'less its own paid_to_movera line' in pm, 'paidMovera: rest = money linked after the payout was made'
 assert 'the next payout MADE for him' in pm and 'dated at or after its period end, oldest first (time, then entry id), up to what brings it to 0' in pm, 'paidMovera: the next payout made pulls later entries'
 assert 'may be split in two' in pm and 'same time' in pm and 'whole minor units, same total' in pm, 'paidMovera: the split'
+assert 'entries (entries [{ entryId, amountMinor, payoutId }]: the entries this payment wrote; payoutId null = unlinked)' in pm, 'paidMovera: driver.paid_movera audit entries (J8b R2.4 1)'
+assert 'Each split is audited: driver.paid_movera_split, target the driver, actor the admin for Create payout and the system for the scheduled run, detail { entryId (the payment\'s entry, found in one driver.paid_movera entries list), currency, amountBeforeMinor, amountTakenMinor, amountLeftMinor, partEntryId, payoutId, source weekly | manual }; amountBefore = amountTaken + amountLeft.' in pm, 'paidMovera: split audit (J8b R2.4 2)'
+assert 'The payout step, Create payout, Mark as paid (POST /admin/payouts/{payoutId}/paid) and this command take the driver\'s row lock first (order driver → payouts)' in pm and 'a Mark as paid that lost gets invalid_transition already_paid, a click that lost gets 409 owed_changed.' in pm, 'paidMovera: locks (J8b R2.4 3)'
+assert "as the click does, so a click and a step never settle the same money twice" not in pm, 'paidMovera: round-1 lock sentence replaced'
+assert '3591e8a' in pm and 'merge commit at ship time' in pm and '336b1dc' not in pm and '3591e8a' in do['owed'] and '336b1dc' not in do['owed'], 'server reference 3591e8a'
+pb = do['paidMoveraBefore0_18_118']
+assert pb.startswith('Replaced in v0.18.118 (kept, Rule 21): ') and 'audit driver.paid_movera with amount, owedBefore, owedAfter and reason)' in pb and 'v0.18.118' not in pb[len('Replaced in v0.18.118'):], 'released paidMovera kept (Rule 21)'
 assert 'v0.18.118' in do['owed'] and 'linked to it after it was made' in do['owed'] and 'less its own paid_to_movera line' in do['owed'], 'owed: the carried rest'
-assert set(do) == {'note', 'owed', 'limit', 'cashOffers', 'homeLine', 'adminList', 'paidMovera', 'paidMoveraBefore0_18_106', 'paidMoveraBefore0_18_97', 'fleetEarnings', 'reasonMax'}, 'driverOwes: no key added'
-assert 'the next payout MADE for him' in P['/admin/drivers/{driverId}/paid-movera']['post']['description'], 'openapi paid-movera text'
+assert set(do) == {'note', 'owed', 'limit', 'cashOffers', 'homeLine', 'adminList', 'paidMovera', 'paidMoveraBefore0_18_118', 'paidMoveraBefore0_18_106', 'paidMoveraBefore0_18_97', 'fleetEarnings', 'reasonMax'}, 'driverOwes: no key added'
+_pmd = P['/admin/drivers/{driverId}/paid-movera']['post']['description'].replace('\n', ' ')
+assert 'the next payout MADE for him' in _pmd and 'driver.paid_movera_split' in _pmd and 'already_paid' in _pmd, 'openapi paid-movera text'
 
 # --- long stop on the same fix (S7 SF-2 round 2, SF-R2-3)
 rc = c['onTrip']['rideCheck']
