@@ -9,7 +9,7 @@ assert tuple(map(int, c['version'].split('.'))) >= (0, 18, 116), 'version 0.18.1
 assert c['configDefaults']['shareTripOn'] is True, 'configDefaults.shareTripOn is true (owner Q6: default on)'
 st = c['shareTrip']
 assert 'driver-g14.md:11' in st['note'] and 'Build it for real' in st['note'] and 'migration 0114' in st['note'], 'shareTrip owner decision'
-assert sorted(st['owner'].keys()) == ['Q-A', 'Q-B', 'Q1', 'Q2', 'Q3', 'Q4', 'Q5', 'Q6', 'Q7'], 'the 7 owner answers + Q-A, Q-B'
+assert sorted(st['owner'].keys()) == ['Q-A', 'Q-B', 'Q-D', 'Q1', 'Q2', 'Q3', 'Q4', 'Q5', 'Q6', 'Q7', 'stops'], 'the 7 owner answers + Q-A, Q-B, stops (3b), Q-D (3c)'
 assert st['statuses'] == c['safety']['sos']['riderStatuses'] == c['tripStatus']['driverAssigned'], 'share only while a driver is assigned'
 assert st['maxHours'] == 6 and st['retentionDays'] == 30, '6 h cap, rows kept 30 days (owner Q7)'
 assert 'tripStatus.terminal' in st['ends'] and 'zone' in st['ends'] and 'stops sharing' in st['ends'] and '410' in st['ends'], 'the four ends'
@@ -27,8 +27,12 @@ assert pub['queuedPhase'] == 'queued' and 'next_after_trip_id' in pub['positionR
 assert pub['hideWithinMetersOfDropoff'] == 500 and 'hideWithinMetersOfDropoff' in pub['positionRule'], 'Q-B: hide the last 500 m'
 assert "Hide until rider is in" in pub['positionRule'] and 'tripStatus.riderOnboard' in pub['positionRule'] and pub['phases']['on_trip'] == c['tripStatus']['riderOnboard'], 'Q-A: position only with the rider in the car'
 assert 'the pickup, the drop-off, the stops and the distances are never sent' in pub['positionRule'], 'Q-B: nothing about the pickup, the drop-off or the stops is sent'
-assert "around the trip's PICKUP (Q-D, a session decision" in pub['positionRule'] and 'Rule 43(2)' in pub['positionRule'], 'Q-D: the pickup is a hide zone too (session decision, owner to review)'
-assert 'every middle stop' in pub['positionRule'] and 'session decision' in pub['positionRule'] and 'no finite coordinates for hides the position' in pub['positionRule'], 'the same 500 m around every middle stop (session decision, not an owner answer)'
+# Supervisor SF-C1: the owner confirmed both session decisions on 2026-11-16 05:24 UTC (decisions/driver-g14.md:40-41).
+assert "around the trip's PICKUP (Q-D: owner 2026-11-16 05:24 UTC 'Keep 500 m at pickup'" in pub['positionRule'], 'Q-D: the pickup is a hide zone too (owner 2026-11-16)'
+assert "every middle stop of the trip (the same 500 m around each stop: owner 2026-11-16 05:24 UTC 'Keep 500 m at stops'" in pub['positionRule'] and 'no finite coordinates for hides the position' in pub['positionRule'], 'the same 500 m around every middle stop (owner 2026-11-16)'
+assert 'for the owner to review' not in pub['positionRule'] and 'morning review' not in pub['positionRule'] and 'Rule 43(2)' not in pub['positionRule'], 'SF-C1: no longer "for the owner to review"'
+assert "Keep 500 m at stops" in st['owner']['stops'] and "Keep 500 m at pickup" in st['owner']['Q-D'], 'the two owner answers are listed'
+assert 'owner to review' not in open('CONTRACT.md', encoding='utf-8').read(), 'CONTRACT.md: no "owner to review" left'
 assert all('noPosition' not in st['texts'][l] for l in ('sv', 'fr', 'en')), 'no position line when the position is hidden' 
 assert "state: 'searching'" in pub['searching'] and 'NOT ended' in pub['searching'], 'no driver = searching'
 assert 'load-shed 503' in pub['headers'], 'headers on every answer of the share paths'
