@@ -35,7 +35,7 @@ assert 'kind=assigned' in n and 'one chosen driver' in n and 'an admin radar gro
 assert ao['noteBefore0_18_120'].startswith('v0.8.0 (owner 2026-10-27), v0.18.6') and 'that were declined or expired (missed)' in ao['noteBefore0_18_120'], 'released note kept (Rule 21)'
 d = ao['declined']
 assert 'neither counts nor ends the run' in d and 'expired, declined, expired' in d and '2' in d and 'DispatchDriverFacts.missedInRow' in d and 'acceptance' in d, 'declined: rule, example, admin count, acceptance untouched'
-for lang, old, new in (('sv', 'missade eller nekade', 'lät gå ut'), ('fr', 'manquées ou refusées', 'laissé expirer'), ('en', 'missed or declined', 'let run out')):
+for lang, old, new in (('sv', 'missade eller nekade', 'låtit {n} Exklusiva erbjudanden i rad gå ut'), ('fr', 'manquées ou refusées', 'laissé expirer'), ('en', 'missed or declined', 'letting {n} Exclusive offers in a row run out')):
     assert old in ao['adminTextBefore0_18_120'][lang] and old not in ao['adminText'][lang] and new in ao['adminText'][lang] and '{n}' in ao['adminText'][lang], 'adminText ' + lang
     m = c['driverHome']['setOffline']['reasons']['missed_offers']
     was = {'sv': 'Du missade eller nekade {count} erbjudanden i rad', 'fr': 'Vous avez manqué ou refusé {count} offres d’affilée', 'en': 'You missed or declined {count} offers in a row'}[lang]
@@ -72,3 +72,9 @@ assert 'Missed or declined exclusive offers in a row' not in y and 'this decline
 assert t.count('realtime.reconnectClose`') >= 3, 'CONTRACT.md P21 + driver stream + note'
 assert t.count('\n') <= 1500, 'CONTRACT.md over 1,500 lines'
 print('v0.18.120 Q-B13 outage rule and B1.18 reconnect close ok')
+# Neutral wording (owner rule: the driver, not he/him; sv "föraren"): the admin rule text names no "he"/"han"/"il".
+import re as _re
+for _lang, _bad in (('sv', r'\bhan\b'), ('fr', r"\bqu.il\b"), ('en', r'\b(he|him|his)\b')):
+    assert not _re.search(_bad, ao['adminText'][_lang]), 'adminText neutral ' + _lang
+assert 'sets the driver offline' in ao['declined'], 'declined example neutral'
+print('v0.18.120 neutral wording: OK')
