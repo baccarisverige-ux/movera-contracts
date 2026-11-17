@@ -28,7 +28,7 @@ for p in kk['country_rules']: has('CountryRules', p)
 for p in kk['dispatch']: has('DispatchDocument', p)
 
 r = c['pricingHistory']['restoreKeeps']
-assert 'No, keep current (Rec.)' in r and 'payoutMode, payoutSchedule, maxRiderDebt or driverOwesLimit' in r and 'left out of the restored document' in r, 'restoreKeeps'
+assert 'No, keep current (Rec.)' in r and 'payoutMode, payoutSchedule, maxRiderDebt or driverOwesLimit' in r and 'left out of the restored document' in r and 'calls.adminCallRoles or calls.phoneProvider' in r, 'restoreKeeps'
 a = c['alertDesk']['commands']['settingsKeepKinds']
 assert '(job 6)' in a and 'settings.kinds' in a and 'never refused' in a and 'keptKinds' in a, 'settingsKeepKinds'
 
