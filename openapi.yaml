@@ -19361,20 +19361,21 @@ paths:
         both halves: offers after that sequence are replayed exactly once in order (as ?after= on the offer feed); the newest
         published driver document is sent when its version is higher than the given one, else nothing. A plain number is read
         as the offer sequence with config version 0; a value that is not one or two whole numbers is 400 invalid_request.
-        Without it: no offer replay and the current document is sent, as on the two old streams. The server closes it as it
-        closes the config stream (realtime.reconnectClose after a LISTEN reconnect; realtime.streamClose after failed reads);
-        the app reconnects with its id and the offer half loses nothing. Heartbeats as on every stream; it is never shed (the
-        path ends in /stream). One open stream counts once in the live-streams count. zoneId as on GET /driver/config/stream
-        (driverConfigZone): the stream keeps the zone it opened with; the app reopens it on a zone change, with its id. PUT
-        /admin/config/driver_app_config: a realtime that is not an object, or a oneStream that is not true / false, is 400
-        invalid_request with reason invalid_document. GET /driver/config always serves realtime { oneStream }: the document''s
-        value, false when it is missing (a document published before v0.18.122). GET /driver/stream is served whatever the
-        switch says (the switch only tells the app which to open). One handler over the two existing feeds; no new table,
-        no migration. realtime.oneStream true: open GET /driver/stream (off-trip and on a trip; the trip stream as before)
-        and give its events to the two existing readers (offers by sequence, settings by kind); do not open the two old streams.
-        false or missing, or GET /driver/stream answers 404 (an older server): the two streams as before, and after a 404
-        the app does not try the one stream again until it restarts. When the switch changes, the app closes what it holds
-        and opens the other within one settings update.'
+        Without it: each half as on its old stream (offers from the newest event before this Go online, so everything since
+        Go online is sent; config from the live version, nothing sent), and an id: line with no data gives the app its first
+        cursor. The server closes it as it closes the config stream (realtime.reconnectClose after a LISTEN reconnect; realtime.streamClose
+        after failed reads); the app reconnects with its id and the offer half loses nothing. Heartbeats as on every stream;
+        it is never shed (the path ends in /stream). One open stream counts once in the live-streams count. zoneId as on GET
+        /driver/config/stream (driverConfigZone): the stream keeps the zone it opened with; the app reopens it on a zone change,
+        with its id. PUT /admin/config/driver_app_config: a realtime that is not an object, or a oneStream that is not true
+        / false, is 400 invalid_request with reason invalid_document. GET /driver/config always serves realtime { oneStream
+        }: the document''s value, false when it is missing (a document published before v0.18.122). GET /driver/stream is
+        served whatever the switch says (the switch only tells the app which to open). One handler over the two existing feeds;
+        no new table, no migration. realtime.oneStream true: open GET /driver/stream (off-trip and on a trip; the trip stream
+        as before) and give its events to the two existing readers (offers by sequence, settings by kind); do not open the
+        two old streams. false or missing, or GET /driver/stream answers 404 (an older server): the two streams as before,
+        and after a 404 the app does not try the one stream again until it restarts. When the switch changes, the app closes
+        what it holds and opens the other within one settings update.'
       tags:
       - Realtime
       x-actor:
