@@ -35,7 +35,7 @@ assert not ({'sort', 'order', 'orderBy'} & names), 'no new sort query key'
 t = open('CONTRACT.md', encoding='utf-8').read()
 tc = t + open('CHANGELOG.md', encoding='utf-8').read()  # v0.18.117: the v0.18.109-v0.18.115 notes moved to CHANGELOG.md (Rule 25 size, Rule 21 kept word for word)
 assert t.startswith('# Movera shared contract v' + c['version']) and '\nv0.18.112 (BQ-A04' in tc, 'CONTRACT.md v0.18.112 note'
-assert 'follows v0.18.111)' in tc and 'which is not merged yet' not in t, 'CONTRACT.md: follows note'
+assert 'follows v0.18.111)' in tc and 'which is not merged yet' not in tc, 'CONTRACT.md: follows note'  # v0.18.118: tc (contract chain supervisor 2026-11-16 SF4)
 s37 = t[t.index('## 37.'):t.index('## 38.')]
 assert '**Inbox order** (v0.18.112, `inboxOrder`' in s37 and 'waitingSince' in s37, 'CONTRACT.md §37 inbox order'
 assert t.count('\n') <= 1500, 'CONTRACT.md over 1,500 lines'
