@@ -70,6 +70,10 @@ assert "the rider's early end (POST /trips/{tripId}/end-early, status cancelled_
 v112 = open('scripts/verify_v0_18_112.py', encoding='utf-8').read()
 assert "'which is not merged yet' not in tc" in v112 and "'which is not merged yet' not in t," not in v112, 'verify_v0_18_112.py uses tc (SF4)'
 
+# --- contract chain supervisor PM1 / SF3: the alert cap (server #254) and Q114 (server #265) are merged
+_cj = open('contract.json', encoding='utf-8').read()
+assert 'not merged yet' not in _cj and 'ccb26e4, PR #254' in _cj and 'ed918f9a, PR #265' in _cj, 'contract.json: merged server lines'
+
 # --- CONTRACT.md
 t = open('CONTRACT.md', encoding='utf-8').read()
 assert t.startswith('# Movera shared contract v' + c['version']) and '\nv0.18.118 (the contract text recent jobs owed' in t and 'follows v0.18.117)' in t, 'CONTRACT.md v0.18.118 note'
