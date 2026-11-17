@@ -19,6 +19,7 @@ assert 'limit 1-50, default 20' in h['endpoint'] and 'nextCursor' in h['endpoint
 assert 'reason invalid_status' in h['statusRule'], 'bad status reason'
 for k in ('trip', 'pickup_pay', 'fee_share', 'tip', 'adjustment', 'bonus'):
     assert k in h['earned'], 'earned kind ' + k
+assert 'endedAt' in h['item'] and 'distanceMeters' in h['item'], 'item: endedAt, distanceMeters'
 assert 'GET /driver/earnings' in h['earned'] and "Never the rider's fare" in h['earned'], 'earned = earnings net'
 assert 'Rule 33' in h['scale'], 'Rule 33'
 g = P['/driver/trips']['get']
@@ -31,7 +32,7 @@ assert g['parameters'][2]['schema']['items']['enum'] == h['statuses'], 'status e
 assert g['responses']['200']['content']['application/json']['schema'] == {'$ref': '#/components/schemas/DriverTripHistoryPage'}, 'page'
 item = S['DriverTripHistoryItem']['allOf']
 assert item[0] == {'$ref': '#/components/schemas/TripProjection'} and item[1]['required'] == ['earned'], 'item'
-assert set(item[1]['properties']) == {'earned', 'cashCollected'}, 'item fields'
+assert set(item[1]['properties']) == {'earned', 'cashCollected', 'endedAt', 'distanceMeters'}, 'item fields'
 md = open('CONTRACT.md').read()
 assert md.startswith('# Movera shared contract v0.18.') and '**`GET /driver/trips`**' in md and 'contract.json#driverTripHistory' in md, 'CONTRACT.md note'
 print('v0.18.124 ok')
