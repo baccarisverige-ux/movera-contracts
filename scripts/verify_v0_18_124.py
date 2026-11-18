@@ -35,4 +35,16 @@ assert item[0] == {'$ref': '#/components/schemas/TripProjection'} and item[1]['r
 assert set(item[1]['properties']) == {'earned', 'cashCollected', 'endedAt', 'distanceMeters'}, 'item fields'
 md = open('CONTRACT.md').read()
 assert md.startswith('# Movera shared contract v0.18.') and '**`GET /driver/trips`**' in md and 'contract.json#driverTripHistory' in md, 'CONTRACT.md note'
+assert 'follows v0.18.123' in md.split('\n')[2], 'CONTRACT.md v0.18.124 note follows v0.18.123'
+# the move (Rule 25 size, Rule 21 word for word): the v0.18.117 note and the old pointer line now only in CHANGELOG.md
+import hashlib
+ch = open('CHANGELOG.md', encoding='utf-8').read()
+cl = ch.split('\n')
+n117 = next(l for l in cl if l.startswith('v0.18.117 (S7 notes + alert-cap MF3; owner'))
+assert '\n' + n117 not in md and hashlib.sha256(n117.encode()).hexdigest() == '6e6548f72978dcdf782046930753121e1aca1c8aad76e69b8feb6ee0667a4cde', 'v0.18.117 note moved word for word'
+j = cl.index(n117)
+assert cl[j - 2].startswith('v0.18.124 (C10; Rule 21 / Rule 25: moved from CONTRACT.md word for word'), 'CHANGELOG.md move line'
+assert cl[j + 2].startswith('Older version notes are in `CHANGELOG.md`: v0.18.116 and before'), 'old pointer line kept in CHANGELOG.md'
+assert 'Older version notes are in `CHANGELOG.md`: v0.18.117 and before (the v0.18.117 note moved in v0.18.124, the v0.18.116 note in v0.18.123,' in md, 'new pointer line'
+assert md.count('\n') <= 1500, 'CONTRACT.md over 1,500 lines'
 print('v0.18.124 ok')
