@@ -33,6 +33,6 @@ assert '\n' + n119 not in t and hashlib.sha256(n119.encode()).hexdigest() == '9c
 j = cl.index(n119)
 assert cl[j - 2].startswith('v0.18.126 (S7 W2 Q126; Rule 21 / Rule 25: moved from CONTRACT.md word for word'), 'CHANGELOG.md move line'
 assert cl[j + 2].startswith('Older version notes are in `CHANGELOG.md`: v0.18.118 and before (the v0.18.118 note moved in v0.18.125,'), 'old pointer line kept in CHANGELOG.md'
-assert 'Older version notes are in `CHANGELOG.md`: v0.18.119 and before (the v0.18.119 note moved in v0.18.126, the v0.18.118 note in v0.18.125, the v0.18.117 note in v0.18.124,' in t, 'new pointer line'
+assert 'Older version notes are in `CHANGELOG.md`: v0.18.119 and before (the v0.18.119 note moved in v0.18.126, the v0.18.118 note in v0.18.125, the v0.18.117 note in v0.18.124,' in t + ch, 'the v0.18.126 pointer line (kept in CHANGELOG.md since v0.18.127)'
 assert t.count('\n') <= 1500, 'CONTRACT.md over 1,500 lines'
 print('v0.18.126 incident feed open start ok')
