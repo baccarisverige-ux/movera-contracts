@@ -12,7 +12,7 @@ S, P = spec['components']['schemas'], spec['paths']
 kk = c['configDocs']['keptKeys']
 assert kk['country_rules'] == ['payoutMode', 'payoutSchedule', 'maxRiderDebt', 'driverOwesLimit', 'calls.adminCallRoles', 'calls.phoneProvider'], 'country_rules kept keys'
 assert kk['dispatch'] == ['radar.reaskAfterSeconds', 'exclusive.reaskAfterSeconds'], 'dispatch kept keys'
-assert set(kk) == {'note', 'country_rules', 'dispatch', 'removeKeys'}, 'keptKeys: only the two documents'
+assert set(kk) - {'driver_app_config', 'driverAppConfigNote'} == {'note', 'country_rules', 'dispatch', 'removeKeys'}, 'keptKeys: the two documents (v0.18.130 adds driver_app_config, verify_v0_18_130.py)'
 n = kk['note']
 assert n.startswith('v0.18.123 (SF-F1-3') and 'Keep values, save rest (Rec.)' in n and 'never refused' in n and 'keeps nothing' in n and 'details.kept' in n, 'keptKeys.note'
 assert 'unknown_kept_key' in kk['removeKeys'], 'removeKeys reason'
@@ -33,7 +33,7 @@ a = c['alertDesk']['commands']['settingsKeepKinds']
 assert '(job 6)' in a and 'settings.kinds' in a and 'never refused' in a and 'keptKinds' in a, 'settingsKeepKinds'
 
 u = S['ConfigDraftUpdate']['properties']['removeKeys']
-assert u['type'] == 'array' and sorted(u['items']['enum']) == sorted(kk['country_rules'] + kk['dispatch']) and 'removeKeys' not in S['ConfigDraftUpdate']['required'], 'openapi removeKeys'
+assert u['type'] == 'array' and sorted(u['items']['enum']) == sorted(kk['country_rules'] + kk['dispatch'] + kk.get('driver_app_config', [])) and 'removeKeys' not in S['ConfigDraftUpdate']['required'], 'openapi removeKeys'
 assert S['ConfigDraft']['properties']['keptKeys']['type'] == 'array' and 'keptKeys' not in S['ConfigDraft']['required'], 'openapi keptKeys'
 assert 'v0.18.123 (configDocs.keptKeys' in P['/admin/config/{doc}']['put']['description'], 'openapi PUT'
 assert 'v0.18.123 (pricingHistory.restoreKeeps)' in P['/admin/config/{doc}/restore']['post']['description'], 'openapi restore'
