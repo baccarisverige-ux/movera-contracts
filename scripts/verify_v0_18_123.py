@@ -40,7 +40,8 @@ assert 'v0.18.123 (pricingHistory.restoreKeeps)' in P['/admin/config/{doc}/resto
 assert 'v0.18.123 (alertDesk.commands.settingsKeepKinds)' in P['/admin/alerts/settings']['put']['description'], 'openapi alert settings'
 
 t = open('CONTRACT.md', encoding='utf-8').read()
-assert t.startswith('# Movera shared contract v' + c['version']) and '\nv0.18.123 (SF-F1-3 safe config saves;' in t and 'follows v0.18.122' in t, 'CONTRACT.md v0.18.123 note'
+tc = t + open('CHANGELOG.md', encoding='utf-8').read()  # v0.18.129: the v0.18.123 note moved to CHANGELOG.md (Rule 25 size, Rule 21 kept word for word)
+assert t.startswith('# Movera shared contract v' + c['version']) and '\nv0.18.123 (SF-F1-3 safe config saves;' in tc and 'follows v0.18.122' in tc, 'CONTRACT.md v0.18.123 note'
 assert '**Kept keys** (v0.18.123' in t and 'unknown_kept_key' in t, 'CONTRACT.md §6.5 kept keys'
 assert t.count('\n') <= 1500, 'CONTRACT.md over 1,500 lines'
 print('v0.18.123 safe config saves ok')
