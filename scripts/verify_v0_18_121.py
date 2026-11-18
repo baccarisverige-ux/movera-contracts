@@ -36,9 +36,10 @@ for k in ('pickupWaiting', 'riderTripPush', 'bookedTakeBack'):
 assert 'driver_arriving' in json.dumps(c['riderTripPush']), 'riderTripPush has driver_arriving'
 
 t = open('CONTRACT.md', encoding='utf-8').read()
-assert t.startswith('# Movera shared contract v' + c['version']) and '\nv0.18.121 (S4 B1.1 SF-1 + SF-2;' in t and 'follows v0.18.120)' in t, 'CONTRACT.md v0.18.121 note'
-assert '`ruleBefore0_18_121`' in t, 'CONTRACT.md names the kept text'
-n121 = next(l for l in t.split('\n') if l.startswith('v0.18.121 ('))
+tc = t + open('CHANGELOG.md', encoding='utf-8').read()  # v0.18.128: the v0.18.121 note moved to CHANGELOG.md (Rule 25 size, Rule 21 kept word for word)
+assert t.startswith('# Movera shared contract v' + c['version']) and '\nv0.18.121 (S4 B1.1 SF-1 + SF-2;' in tc and 'follows v0.18.120)' in tc, 'CONTRACT.md v0.18.121 note'
+assert '`ruleBefore0_18_121`' in tc, 'CONTRACT.md names the kept text'
+n121 = next(l for l in tc.split('\n') if l.startswith('v0.18.121 ('))
 assert 'a parked `trip_eta` job' in n121 and "a session decision under the owner's night rule" in n121 and 'never doubles the tick' in n121, 'CONTRACT.md note: round 4 trip_eta'
 assert t.count('\n') <= 1500, 'CONTRACT.md over 1,500 lines'
 print('v0.18.121 pickup_geofence and trip_eta restart-once and loud ok')

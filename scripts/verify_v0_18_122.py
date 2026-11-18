@@ -40,6 +40,7 @@ assert rt['properties']['oneStream']['type'] == 'boolean' and rt['properties']['
 assert 'realtime' not in s['components']['schemas']['RiderAppConfig']['properties'], 'rider document unchanged'
 
 t = open('CONTRACT.md', encoding='utf-8').read()
-assert t.startswith('# Movera shared contract v' + c['version']) and '\nv0.18.122 (L20 stream;' in t and 'follows v0.18.121)' in t, 'CONTRACT.md v0.18.122 note'
+tc = t + open('CHANGELOG.md', encoding='utf-8').read()  # v0.18.128: the v0.18.122 note moved to CHANGELOG.md (Rule 25 size, Rule 21 kept word for word)
+assert t.startswith('# Movera shared contract v' + c['version']) and '\nv0.18.122 (L20 stream;' in tc and 'follows v0.18.121)' in tc, 'CONTRACT.md v0.18.122 note'
 assert len(t.split('\n')) <= 1501, 'CONTRACT.md at most 1500 lines'
 print('v0.18.122 ok')

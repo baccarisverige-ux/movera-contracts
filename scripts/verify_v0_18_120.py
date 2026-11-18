@@ -55,7 +55,7 @@ assert not any(o in ('xd', 'ad') for x in sf['autoOffline'] if x['expectOfflineA
 assert len(sf['autoOfflineBefore0_18_120']) == 10 and sf['autoOfflineBefore0_18_120'][0]['offers'][0] == 'xd', 'released fixture cases kept (Rule 21)'
 
 rt = c['realtime']
-assert list(rt) == ['envelope', 'optional', 'kinds', 'afterTerminal', 'rules', 'streamClose', 'reconnectClose', 'connectedRule', 'sessionEnd'], 'realtime: only reconnectClose added'
+assert list(rt)[:9] == ['envelope', 'optional', 'kinds', 'afterTerminal', 'rules', 'streamClose', 'reconnectClose', 'connectedRule', 'sessionEnd'], 'realtime: only reconnectClose added (later versions add keys after sessionEnd; v0.18.128 checks the full list)'
 r = rt['reconnectClose']
 assert r.startswith("v0.18.120 (S4 B1.18, owner W1 Q80 = Q-B1 'Yes'") and 'GET /rider/config/stream, GET /driver/config/stream' in r, 'reconnectClose: source and streams'
 assert 'random 0–STREAM_CLOSE_SPREAD_MS delay (default 30 s; 0 = at once)' in r and 'at most 2 min' in r, 'reconnectClose: spread and hold'

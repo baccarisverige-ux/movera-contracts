@@ -36,6 +36,6 @@ assert '\n' + n120 not in t and hashlib.sha256(n120.encode()).hexdigest() == '8a
 j = cl.index(n120)
 assert cl[j - 2].startswith('v0.18.127 (S7 W2 Q119; Rule 21 / Rule 25: moved from CONTRACT.md word for word'), 'CHANGELOG.md move line'
 assert cl[j + 2].startswith('Older version notes are in `CHANGELOG.md`: v0.18.119 and before (the v0.18.119 note moved in v0.18.126,'), 'old pointer line kept in CHANGELOG.md'
-assert 'Older version notes are in `CHANGELOG.md`: v0.18.120 and before (the v0.18.120 note moved in v0.18.127, the v0.18.119 note in v0.18.126, the v0.18.118 note in v0.18.125,' in t, 'new pointer line'
+assert 'Older version notes are in `CHANGELOG.md`: v0.18.120 and before (the v0.18.120 note moved in v0.18.127, the v0.18.119 note in v0.18.126, the v0.18.118 note in v0.18.125,' in t + ch, 'new pointer line (kept in CHANGELOG.md since v0.18.128)'
 assert t.count('\n') <= 1500, 'CONTRACT.md over 1,500 lines'
 print('v0.18.127 rider hint without GPS updates ok')
