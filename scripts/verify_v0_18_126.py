@@ -24,5 +24,15 @@ assert [p.get('$ref') for p in P['/admin/incidents/stream']['get']['parameters']
 t = open('CONTRACT.md', encoding='utf-8').read()
 assert t.startswith('# Movera shared contract v' + c['version']) and '\nv0.18.126 (S7 W2 Q126 = Q-B4;' in t and 'follows v0.18.125)' in t, 'CONTRACT.md v0.18.126 note'
 assert 'v0.18.126 (`safety.feedStart`): with no cursor' in t and 'closed incidents are not replayed' in t, 'CONTRACT.md §15 alarm feed'
+# the move (Rule 25 size, Rule 21 word for word): the v0.18.119 note and the old pointer line now only in CHANGELOG.md
+import hashlib
+ch = open('CHANGELOG.md', encoding='utf-8').read()
+cl = ch.split('\n')
+n119 = next(l for l in cl if l.startswith('v0.18.119 (S7 W2 Q117 + Q118;'))
+assert '\n' + n119 not in t and hashlib.sha256(n119.encode()).hexdigest() == '9ca22b1cdcecd90fcbfa8fec0054cdf4a274b2bfae2600a6b4b8a23a53338774', 'v0.18.119 note moved word for word'
+j = cl.index(n119)
+assert cl[j - 2].startswith('v0.18.126 (S7 W2 Q126; Rule 21 / Rule 25: moved from CONTRACT.md word for word'), 'CHANGELOG.md move line'
+assert cl[j + 2].startswith('Older version notes are in `CHANGELOG.md`: v0.18.118 and before (the v0.18.118 note moved in v0.18.125,'), 'old pointer line kept in CHANGELOG.md'
+assert 'Older version notes are in `CHANGELOG.md`: v0.18.119 and before (the v0.18.119 note moved in v0.18.126, the v0.18.118 note in v0.18.125, the v0.18.117 note in v0.18.124,' in t, 'new pointer line'
 assert t.count('\n') <= 1500, 'CONTRACT.md over 1,500 lines'
 print('v0.18.126 incident feed open start ok')

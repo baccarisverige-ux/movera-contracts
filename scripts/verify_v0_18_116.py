@@ -101,7 +101,8 @@ assert rc['shareTrip']['properties']['on']['type'] == 'boolean' and rc['shareTri
 assert rc['features']['properties']['shareTrip']['type'] == 'boolean', 'features.shareTrip stays'
 assert 'shareTrip' not in S['DriverAppConfig']['properties'], 'the driver document has no shareTrip'
 t = open('CONTRACT.md', encoding='utf-8').read()
-assert t.startswith('# Movera shared contract v' + c['version']) and '\nv0.18.116 (BQ-S10' in t and 'follows v0.18.115)' in t, 'CONTRACT.md v0.18.116 note'
+tc = t + open('CHANGELOG.md', encoding='utf-8').read()  # v0.18.123: the v0.18.116 note moved to CHANGELOG.md (Rule 25 size, Rule 21 kept word for word)
+assert t.startswith('# Movera shared contract v' + c['version']) and '\nv0.18.116 (BQ-S10' in tc and 'follows v0.18.115)' in tc, 'CONTRACT.md v0.18.116 note'
 assert '\n## 94. Share my trip' in t and 'shareTrip: { on },   // v0.18.116' in t and '`rider.shareTrip.on`' in t, 'CONTRACT.md §94, §6, §5'
 assert t.count('\n') <= 1500, 'CONTRACT.md over 1,500 lines'
 print("v0.18.116 share my trip ok")

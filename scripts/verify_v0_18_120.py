@@ -66,8 +66,8 @@ t = open('CONTRACT.md', encoding='utf-8').read()
 assert t.startswith('# Movera shared contract v' + c['version']) and '\nv0.18.120 (S4 wave B1;' in t and 'follows v0.18.119)' in t, 'CONTRACT.md v0.18.120 note'
 assert 'No warning before; a short line on the island when it happens (decision 7). SE and FR alike. v0.18.120 (Q-B13' in t and '(`autoOffline.outage`)' in t, 'CONTRACT.md §6.7'
 assert 'that the driver **let expire** (ignored)' in t and 'a decline never counts and does not reset the count' in t and 'declined or let expire, the driver goes offline' not in t, 'CONTRACT.md §6.7 expired only'
-_n120 = next(l for l in t.split('\n') if l.startswith('v0.18.120 ('))  # the 0.18.120 note, wherever newer notes put it
-assert 'owner 2026-11-16' in _n120 and 'only Exclusive offers the driver let expire count' in _n120, 'CONTRACT.md 0.18.120 note'
+n120 = next(l for l in t.split('\n') if l.startswith('v0.18.120 ('))  # its own note, wherever later versions put theirs (was line 3; changed by 0.18.121)
+assert 'owner 2026-11-16' in n120 and 'only Exclusive offers the driver let expire count' in n120, 'CONTRACT.md top note'
 y = open('openapi.yaml', encoding='utf-8').read()
 assert 'Missed or declined exclusive offers in a row' not in y and 'this declined or expired Exclusive offer was the last' not in y, 'openapi wording'
 assert t.count('realtime.reconnectClose`') >= 3, 'CONTRACT.md P21 + driver stream + note'

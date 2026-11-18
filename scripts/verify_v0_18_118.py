@@ -76,7 +76,8 @@ assert 'not merged yet' not in _cj and 'ccb26e4, PR #254' in _cj and 'ed918f9a, 
 
 # --- CONTRACT.md
 t = open('CONTRACT.md', encoding='utf-8').read()
-assert t.startswith('# Movera shared contract v' + c['version']) and '\nv0.18.118 (the contract text recent jobs owed' in t and 'follows v0.18.117)' in t, 'CONTRACT.md v0.18.118 note'
+tc = t + open('CHANGELOG.md', encoding='utf-8').read()  # v0.18.125: the v0.18.118 note moved to CHANGELOG.md (Rule 25 size, Rule 21 kept word for word)
+assert t.startswith('# Movera shared contract v' + c['version']) and '\nv0.18.118 (the contract text recent jobs owed' in tc and 'follows v0.18.117)' in tc, 'CONTRACT.md v0.18.118 note'
 assert 'v0.18.118: only while the rider is on board' in t, 'CONTRACT.md §12 scan on board'
 assert 'v0.18.118: both name exactly one of `zoneId` or `country`' in t, 'CONTRACT.md §16 History / Restore'
 assert 'found only when `stopMinutes` is below about 10' in t and 'skipped if the fix said the car was moving' in t, 'CONTRACT.md §35 long stop'
