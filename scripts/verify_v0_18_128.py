@@ -15,7 +15,7 @@ n = a['note']
 assert n.startswith('v0.18.128 (S7 W2 Q125') and '"A) count and log above N = 3, refuse later"' in n, 'appStreamsPerSession: source'
 assert 'still answered 200 (nothing is refused in this step)' in n and 'fixed in the server (no admin setting)' in n, 'appStreamsPerSession: log only, fixed'
 assert 'Admin streams keep their own caps' in n and 'B3.11b' in n, 'appStreamsPerSession: admin caps kept, later step named'
-assert list(rt) == ['envelope', 'optional', 'kinds', 'afterTerminal', 'rules', 'streamClose', 'connectedRule', 'sessionEnd', 'appStreamsPerSession'], 'realtime: only appStreamsPerSession added'
+assert list(rt) == ['envelope', 'optional', 'kinds', 'afterTerminal', 'rules', 'streamClose', 'reconnectClose', 'connectedRule', 'sessionEnd', 'appStreamsPerSession'], 'realtime: only appStreamsPerSession added'
 
 for p in ['/rider/config/stream', '/driver/config/stream', '/driver/offers/stream']:
     d = spec['paths'][p]['get']['description'].replace('\n', ' ')
