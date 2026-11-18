@@ -24,4 +24,16 @@ assert 'Critical' in ll and 'system_health:lane_late:<group>:<country>' in ll an
 assert not any(k.startswith('lane') for k in sd), 'no new alert kind'
 t = open('CONTRACT.md', encoding='utf-8').read()
 assert t.startswith('# Movera shared contract v' + c['version']) and '\nv0.18.125 (L20-6 health' in t and '`/readyz` (the hosting health check) stays **200**' in t, 'CONTRACT.md v0.18.125 note'
+n125 = next(l for l in t.split('\n') if l.startswith('v0.18.125 ('))
+assert 'follows v0.18.124)' in n125 and 'restack' not in n125, 'CONTRACT.md v0.18.125 note follows v0.18.124'
+# the move (Rule 25 size, Rule 21 word for word): the v0.18.118 note and the old pointer line now only in CHANGELOG.md
+import hashlib
+ch = open('CHANGELOG.md', encoding='utf-8').read()
+cl = ch.split('\n')
+n118 = next(l for l in cl if l.startswith('v0.18.118 (the contract text recent jobs owed'))
+assert '\n' + n118 not in t and hashlib.sha256(n118.encode()).hexdigest() == 'ee5d741198818b7126dd250d60e060feedffe4a982cb0d1911e63193e6103a86', 'v0.18.118 note moved word for word'
+j = cl.index(n118)
+assert cl[j - 2].startswith('v0.18.125 (L20-6 health; Rule 21 / Rule 25: moved from CONTRACT.md word for word'), 'CHANGELOG.md move line'
+assert cl[j + 2].startswith('Older version notes are in `CHANGELOG.md`: v0.18.117 and before (the v0.18.117 note moved in v0.18.124,'), 'old pointer line kept in CHANGELOG.md'
+assert 'Older version notes are in `CHANGELOG.md`: v0.18.118 and before (the v0.18.118 note moved in v0.18.125, the v0.18.117 note in v0.18.124, the v0.18.116 note in v0.18.123,' in t, 'new pointer line'
 assert t.count('\n') <= 1500, 'CONTRACT.md over 1,500 lines'
