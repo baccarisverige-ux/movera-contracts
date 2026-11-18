@@ -23,5 +23,19 @@ for p in ['/rider/config/stream', '/driver/config/stream', '/driver/offers/strea
 
 t = open('CONTRACT.md', encoding='utf-8').read()
 assert '\nv0.18.128 (S7 W2 Q125' in t and '- **Streams per session** (v0.18.128, S7 W2 Q125)' in t, 'CONTRACT.md v0.18.128 note and line'
+# the move (Rule 25 size, Rule 21 word for word): the v0.18.122 and v0.18.121 notes and the old pointer line now only in CHANGELOG.md
+import hashlib
+assert 'follows v0.18.127)' in next(l for l in t.split('\n') if l.startswith('v0.18.128 (')), 'CONTRACT.md v0.18.128 note follows v0.18.127'
+ch = open('CHANGELOG.md', encoding='utf-8').read()
+cl = ch.split('\n')
+n122 = next(l for l in cl if l.startswith('v0.18.122 (L20 stream;'))
+n121 = next(l for l in cl if l.startswith('v0.18.121 (S4 B1.1 SF-1 + SF-2;'))
+assert '\n' + n122 not in t and hashlib.sha256(n122.encode()).hexdigest() == '63792cc44377e8e61378cb315a92b439d79f294b42fe8629e6963b88a9f28c06', 'v0.18.122 note moved word for word'
+assert '\n' + n121 not in t and hashlib.sha256(n121.encode()).hexdigest() == '0a67a1876c65d982eba976c70d33eac6f1b92b93daae40f4e2b75bf93d5c77e7', 'v0.18.121 note moved word for word'
+j = cl.index(n122)
+assert cl[j - 2].startswith('v0.18.128 (S7 W2 Q125; Rule 21 / Rule 25: moved from CONTRACT.md word for word'), 'CHANGELOG.md move line'
+assert cl[j + 2] == n121, 'CHANGELOG.md keeps the CONTRACT.md order'
+assert cl[j + 4].startswith('Older version notes are in `CHANGELOG.md`: v0.18.120 and before (the v0.18.120 note moved in v0.18.127,'), 'old pointer line kept in CHANGELOG.md'
+assert 'Older version notes are in `CHANGELOG.md`: v0.18.122 and before (the v0.18.122 and v0.18.121 notes moved in v0.18.128, the v0.18.120 note in v0.18.127, the v0.18.119 note in v0.18.126,' in t, 'new pointer line'
 assert t.count('\n') <= 1500, 'CONTRACT.md over 1,500 lines'
 print('v0.18.128 app streams per session ok')
