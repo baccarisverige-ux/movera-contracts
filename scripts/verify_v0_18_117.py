@@ -53,12 +53,13 @@ assert sorted(spec['components']['schemas']['DriverLocationAck']['properties'].k
 t = open('CONTRACT.md', encoding='utf-8').read()
 ch = open('CHANGELOG.md', encoding='utf-8').read()
 assert t.startswith('# Movera shared contract v' + c['version']), 'CONTRACT.md title'
-assert '\nv0.18.117 (S7 notes + alert-cap MF3;' in t and 'follows v0.18.116)' in t and 'Q126' in t and 'its own job' in t, 'CONTRACT.md v0.18.117 note (Q126 left out)'
+tc = t + ch  # v0.18.124: the v0.18.117 note moved to CHANGELOG.md (Rule 25 size, Rule 21 kept word for word)
+assert '\nv0.18.117 (S7 notes + alert-cap MF3;' in tc and 'follows v0.18.116)' in tc and 'Q126' in tc and 'its own job' in tc, 'CONTRACT.md v0.18.117 note (Q126 left out)'
 assert 'v0.18.117 exception, owner W2 Q114: `POST /driver/location` checks the key but never stores it' in t, 'CONTRACT.md §1 Headers exception'
 assert 'v0.18.117 (`driverHome.locationSend`, owner W2 Q113): on a trip a GPS batch writes a `location` event only when' in t, 'CONTRACT.md §12 GPS send'
 s44 = t[t.index('\n## 44. '):t.index('\n## 46. ')]
 assert 'v0.18.117 (`serverDetection.liveList`)' in s44 and 'no limit, never cut' in s44 and 'a "more" marker is not built yet' in s44, 'CONTRACT.md §44 alert list'
-assert '\nv0.18.116 (BQ-S10' in t, 'the v0.18.116 note stays in CONTRACT.md'
+assert '\nv0.18.116 (BQ-S10' in t + ch, 'the v0.18.116 note kept (moved to CHANGELOG.md in v0.18.123, word for word)'
 # the move: the 13 lines of k116 (cc4b769 CONTRACT.md lines 5-17), word for word, now only in CHANGELOG.md
 for v in ('v0.18.115 (BQ-V21', 'v0.18.113 (BQ-S13', 'v0.18.112 (BQ-A04', 'v0.18.111 (server BQ-M28', 'v0.18.110 (BQ-V44', 'v0.18.109 (server BQ-FLEETCUR'):
     assert '\n' + v not in t and '\n' + v in ch, v + ' note moved to CHANGELOG.md'
@@ -68,7 +69,7 @@ cl = ch.split('\n')
 i = cl.index(next(l for l in cl if l.startswith('v0.18.115 (BQ-V21')))
 assert hashlib.sha256('\n'.join(cl[i:i + 13]).encode()).hexdigest() == 'de936be97c49c3534cdfe64043d59add82008e562b8dae6c44e1e7f8d0676c61', 'moved block is word for word (Rule 21)'
 assert cl[i - 2].startswith('v0.18.117 (S7 notes + alert-cap MF3; Rule 21 / Rule 25: moved from CONTRACT.md word for word'), 'CHANGELOG.md move line'
-assert 'Older version notes are in `CHANGELOG.md`: v0.18.115 and before (the v0.18.109–v0.18.115 notes moved in v0.18.117, the v0.18.97–v0.18.108 notes in v0.18.110' in t, 'new pointer line'
+assert 'Older version notes are in `CHANGELOG.md`: v0.18.116 and before (the v0.18.116 note moved in v0.18.123, the v0.18.109–v0.18.115 notes moved in v0.18.117, the v0.18.97–v0.18.108 notes in v0.18.110' in tc, 'the v0.18.117 pointer line (kept in CHANGELOG.md since v0.18.124)'
 assert t.count('\n') <= 1500, 'CONTRACT.md over 1,500 lines'
 for f in sorted(glob.glob('scripts/*')):
     assert open(f, encoding='utf-8').read().count('\n') <= 1500, f + ' over 1,500 lines'

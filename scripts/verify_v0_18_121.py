@@ -11,7 +11,8 @@ c = json.load(open('contract.json'))
 assert tuple(map(int, c['version'].split('.'))) >= (0, 18, 121), 'version 0.18.121 or later'
 
 sh = c['alertDesk']['serverDetection']['kindDefaults']['system_health']
-assert list(sh) == ['level', 'rule', 'ruleBefore0_18_121'], 'system_health: only ruleBefore0_18_121 added'
+# A later version may add its own key after these three (its text starts with its version, > 0.18.121; e.g. 0.18.125 laneLate).
+assert list(sh)[:3] == ['level', 'rule', 'ruleBefore0_18_121'] and all(isinstance(sh[k], str) and sh[k].startswith('v0.18.') and int(sh[k][len('v0.18.'):].split(' ')[0]) > 121 for k in list(sh)[3:]), 'system_health: only ruleBefore0_18_121 added (later versions add their own keys after it)'
 assert sh['level'] == 'important', 'system_health level unchanged'
 r, before = sh['rule'], sh['ruleBefore0_18_121']
 assert 'withdraw_driver_offers, dispatch_round, pickup_geofence, trip_eta), otherwise critical from 10.' in r, 'pickup_geofence and trip_eta critical (loud) when parked'
