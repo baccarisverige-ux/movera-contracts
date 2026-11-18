@@ -41,6 +41,6 @@ assert '\n' + n123 not in t and hashlib.sha256(n123.encode()).hexdigest() == '0a
 j = cl.index(n123)
 assert cl[j - 2].startswith('v0.18.129 (saved-places design; Rule 21 / Rule 25: moved from CONTRACT.md word for word'), 'CHANGELOG.md move line'
 assert cl[j + 2].startswith('Older version notes are in `CHANGELOG.md`: v0.18.122 and before (the v0.18.122 and v0.18.121 notes moved in v0.18.128,'), 'old pointer line kept in CHANGELOG.md'
-assert 'Older version notes are in `CHANGELOG.md`: v0.18.123 and before (the v0.18.123 note moved in v0.18.129, the v0.18.122 and v0.18.121 notes in v0.18.128, the v0.18.120 note in v0.18.127,' in t, 'new pointer line'
+assert 'Older version notes are in `CHANGELOG.md`: v0.18.123 and before (the v0.18.123 note moved in v0.18.129, the v0.18.122 and v0.18.121 notes in v0.18.128, the v0.18.120 note in v0.18.127,' in t + ch, 'the v0.18.129 pointer line (kept in CHANGELOG.md since v0.18.130)'
 assert t.count('\n') <= 1500, 'CONTRACT.md over 1,500 lines'
 print('v0.18.129 saved place fixed category ok')

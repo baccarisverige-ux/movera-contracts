@@ -34,8 +34,9 @@ item = S['DriverTripHistoryItem']['allOf']
 assert item[0] == {'$ref': '#/components/schemas/TripProjection'} and item[1]['required'] == ['earned'], 'item'
 assert set(item[1]['properties']) == {'earned', 'cashCollected', 'endedAt', 'distanceMeters'}, 'item fields'
 md = open('CONTRACT.md').read()
-assert md.startswith('# Movera shared contract v0.18.') and '**`GET /driver/trips`**' in md and 'contract.json#driverTripHistory' in md, 'CONTRACT.md note'
-n124 = next(l for l in md.split('\n') if l.startswith('v0.18.124 ('))  # its own note, wherever later versions put theirs (was line 3; changed by 0.18.125)
+mdc = md + open('CHANGELOG.md', encoding='utf-8').read()  # v0.18.130: the v0.18.124 note moved to CHANGELOG.md (Rule 25 size, Rule 21 word for word)
+assert md.startswith('# Movera shared contract v0.18.') and '**`GET /driver/trips`**' in mdc and 'contract.json#driverTripHistory' in mdc, 'CONTRACT.md note (in CHANGELOG.md since v0.18.130)'
+n124 = next(l for l in mdc.split('\n') if l.startswith('v0.18.124 ('))  # its own note, wherever later versions put theirs (was line 3; changed by 0.18.125)
 assert 'follows v0.18.123' in n124, 'CONTRACT.md v0.18.124 note follows v0.18.123'
 # the move (Rule 25 size, Rule 21 word for word): the v0.18.117 note and the old pointer line now only in CHANGELOG.md
 import hashlib
