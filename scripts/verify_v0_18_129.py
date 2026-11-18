@@ -32,5 +32,15 @@ for path, m in (('/rider/places', 'post'), ('/rider/places/{placeId}', 'put'), (
     assert 'v0.18.129' in spec['paths'][path][m]['description'], path
 t = open('CONTRACT.md', encoding='utf-8').read()
 assert t.startswith('# Movera shared contract v' + c['version']) and '\nv0.18.129 (saved-places design' in t and 'follows v0.18.128' in t, 'CONTRACT.md v0.18.129 note'
+# the move (Rule 25 size, Rule 21 word for word): the v0.18.123 note and the old pointer line now only in CHANGELOG.md
+import hashlib
+ch = open('CHANGELOG.md', encoding='utf-8').read()
+cl = ch.split('\n')
+n123 = next(l for l in cl if l.startswith('v0.18.123 (SF-F1-3 safe config saves;'))
+assert '\n' + n123 not in t and hashlib.sha256(n123.encode()).hexdigest() == '0ad117477514a5add533027140aec837bd8ed8baf057f0882effea56032478d7', 'v0.18.123 note moved word for word'
+j = cl.index(n123)
+assert cl[j - 2].startswith('v0.18.129 (saved-places design; Rule 21 / Rule 25: moved from CONTRACT.md word for word'), 'CHANGELOG.md move line'
+assert cl[j + 2].startswith('Older version notes are in `CHANGELOG.md`: v0.18.122 and before (the v0.18.122 and v0.18.121 notes moved in v0.18.128,'), 'old pointer line kept in CHANGELOG.md'
+assert 'Older version notes are in `CHANGELOG.md`: v0.18.123 and before (the v0.18.123 note moved in v0.18.129, the v0.18.122 and v0.18.121 notes in v0.18.128, the v0.18.120 note in v0.18.127,' in t, 'new pointer line'
 assert t.count('\n') <= 1500, 'CONTRACT.md over 1,500 lines'
 print('v0.18.129 saved place fixed category ok')

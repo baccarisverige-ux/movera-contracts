@@ -54,7 +54,8 @@ assert "the number's ceiling over all addresses" in S['CountryLimits']['properti
 
 # --- CONTRACT.md
 t = open('CONTRACT.md', encoding='utf-8').read()
-assert t.startswith('# Movera shared contract v' + c['version']) and '\nv0.18.119 (S7 W2 Q117 + Q118;' in t and 'follows v0.18.118)' in t, 'CONTRACT.md v0.18.119 note'
+tc = t + open('CHANGELOG.md', encoding='utf-8').read()  # v0.18.126: the v0.18.119 note moved to CHANGELOG.md (Rule 25 size, Rule 21 kept word for word)
+assert t.startswith('# Movera shared contract v' + c['version']) and '\nv0.18.119 (S7 W2 Q117 + Q118;' in tc and 'follows v0.18.118)' in tc, 'CONTRACT.md v0.18.119 note'
 assert 'v0.18.119 (S7 W2 Q117 + Q118, `rateLimit.key`): an access token that ran out but is rightly signed' in t and 'the answer stays **401**' in t, 'CONTRACT.md §47 expired token'
 assert '`POST /auth/refresh` and `/admin/auth/refresh` → the refresh token\'s session + address' in t and 'per number for every address at 4 × `wrongCodesPerDay` in 24 h' in t, 'CONTRACT.md §47 keys and lock'
 assert t.count('\n') <= 1500, 'CONTRACT.md over 1,500 lines'
