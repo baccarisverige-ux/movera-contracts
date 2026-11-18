@@ -1728,9 +1728,9 @@ paths:
         SavedPlaceRequest.preferredCategoryId (optional, CategoryId | null): on POST a new place without it gets null; a POST
         that replaces home / work and a PUT without the field keep the stored value (older apps never clear it by accident);
         null clears it; a category id sets it. An item of POST /rider/places/import may carry it too, checked the same way.
-        The id must be a category in the admin Pricing catalog (contract.json#categories, aliases resolved to their id); an
-        unknown id is 400 invalid_request, reason unknown_category (as driverPreferences.categoriesOff). A category deactivated
-        or removed later is NOT cleared by the server: the read still answers the id, and the rider app treats it as not available
+        The id must be a category in the admin Pricing catalog (contract.json#categories; the exact id, no alias); an unknown
+        id is 400 invalid_request, reason unknown_category (as driverPreferences.categoriesOff). A category deactivated or
+        removed later is NOT cleared by the server: the read still answers the id, and the rider app treats it as not available
         (step 6).'
   /rider/places/{placeId}:
     delete:
@@ -1778,9 +1778,9 @@ paths:
         SavedPlaceRequest.preferredCategoryId (optional, CategoryId | null): on POST a new place without it gets null; a POST
         that replaces home / work and a PUT without the field keep the stored value (older apps never clear it by accident);
         null clears it; a category id sets it. An item of POST /rider/places/import may carry it too, checked the same way.
-        The id must be a category in the admin Pricing catalog (contract.json#categories, aliases resolved to their id); an
-        unknown id is 400 invalid_request, reason unknown_category (as driverPreferences.categoriesOff). A category deactivated
-        or removed later is NOT cleared by the server: the read still answers the id, and the rider app treats it as not available
+        The id must be a category in the admin Pricing catalog (contract.json#categories; the exact id, no alias); an unknown
+        id is 400 invalid_request, reason unknown_category (as driverPreferences.categoriesOff). A category deactivated or
+        removed later is NOT cleared by the server: the read still answers the id, and the rider app treats it as not available
         (step 6).'
       tags:
       - Rider · Account
@@ -17338,9 +17338,9 @@ paths:
         SavedPlaceRequest.preferredCategoryId (optional, CategoryId | null): on POST a new place without it gets null; a POST
         that replaces home / work and a PUT without the field keep the stored value (older apps never clear it by accident);
         null clears it; a category id sets it. An item of POST /rider/places/import may carry it too, checked the same way.
-        The id must be a category in the admin Pricing catalog (contract.json#categories, aliases resolved to their id); an
-        unknown id is 400 invalid_request, reason unknown_category (as driverPreferences.categoriesOff). A category deactivated
-        or removed later is NOT cleared by the server: the read still answers the id, and the rider app treats it as not available
+        The id must be a category in the admin Pricing catalog (contract.json#categories; the exact id, no alias); an unknown
+        id is 400 invalid_request, reason unknown_category (as driverPreferences.categoriesOff). A category deactivated or
+        removed later is NOT cleared by the server: the read still answers the id, and the rider app treats it as not available
         (step 6).'
       tags:
       - Rider · Account
@@ -22740,9 +22740,9 @@ components:
             CategoryId | null, always sent by a v0.18.129 server (left optional in the schema so older answers still validate)
             in reads (GET /rider/places, POST / PUT answers, POST /rider/places/import answer, GET /admin/riders/{riderId}/saved-places);
             null = no fixed category (every place saved before v0.18.129). The id must be a category in the admin Pricing
-            catalog (contract.json#categories, aliases resolved to their id); an unknown id is 400 invalid_request, reason
-            unknown_category (as driverPreferences.categoriesOff). A category deactivated or removed later is NOT cleared
-            by the server: the read still answers the id, and the rider app treats it as not available (step 6).'
+            catalog (contract.json#categories; the exact id, no alias); an unknown id is 400 invalid_request, reason unknown_category
+            (as driverPreferences.categoriesOff). A category deactivated or removed later is NOT cleared by the server: the
+            read still answers the id, and the rider app treats it as not available (step 6).'
           oneOf:
           - $ref: '#/components/schemas/CategoryId'
           - type: 'null'
@@ -30265,7 +30265,7 @@ components:
             (optional, CategoryId | null): on POST a new place without it gets null; a POST that replaces home / work and
             a PUT without the field keep the stored value (older apps never clear it by accident); null clears it; a category
             id sets it. An item of POST /rider/places/import may carry it too, checked the same way. The id must be a category
-            in the admin Pricing catalog (contract.json#categories, aliases resolved to their id); an unknown id is 400 invalid_request,
+            in the admin Pricing catalog (contract.json#categories; the exact id, no alias); an unknown id is 400 invalid_request,
             reason unknown_category (as driverPreferences.categoriesOff). A category deactivated or removed later is NOT cleared
             by the server: the read still answers the id, and the rider app treats it as not available (step 6).'
           oneOf:
