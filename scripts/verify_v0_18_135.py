@@ -4,7 +4,7 @@ audits/impact/sms-sign-in.md): checks contract.json#smsSignIn (default OFF, dail
 without a link, one GSM-7 SMS part), CountryRules.smsSignIn in openapi.yaml, auth.signInErrors left as released, the
 CONTRACT.md note and section 8 line, and the v0.18.127 note moved word for word to CHANGELOG.md (Rule 25). Run by
 scripts/verify.sh (own file, Rule 25)."""
-import json, re, yaml
+import hashlib, json, re, yaml
 c = json.load(open('contract.json'))
 assert tuple(map(int, c['version'].split('.'))) >= (0, 18, 135), 'version 0.18.135 or later'
 s = c['smsSignIn']
@@ -16,15 +16,17 @@ assert s['serverKeys'] == ['ELKS_API_USERNAME', 'ELKS_API_PASSWORD'], 'server ke
 assert s['countries'] == {'+46': 'SE', '+33': 'FR', '+216': 'TN'}, 'calling codes of the served countries'
 m = s['mobileNumbers']
 assert set(m) == {'SE', 'FR', 'TN'}, 'one mobile pattern per served country'
-for number, country, ok in (('+46701234567', 'SE', True), ('+4681234567', 'SE', False), ('+46900123456', 'SE', False), ('+467012345678', 'SE', False),
+for number, country, ok in (('+46701234567', 'SE', True), ('+46721234567', 'SE', True), ('+46731234567', 'SE', True), ('+46761234567', 'SE', True), ('+46791234567', 'SE', True),
+                            ('+46771234567', 'SE', False), ('+46751234567', 'SE', False), ('+46741234567', 'SE', False), ('+46711234567', 'SE', False), ('+46781234567', 'SE', False),
+                            ('+46701234567\n', 'SE', False), ('x+46701234567', 'SE', False), ('+4681234567', 'SE', False), ('+46900123456', 'SE', False), ('+467012345678', 'SE', False),
                             ('+33612345678', 'FR', True), ('+33712345678', 'FR', True), ('+33123456789', 'FR', False), ('+33899123456', 'FR', False),
                             ('+21620123456', 'TN', True), ('+21671123456', 'TN', False), ('+21688123456', 'TN', False)):
-    assert bool(re.fullmatch(m[country], number)) is ok, 'mobile rule ' + number
-    assert number.startswith(next(k for k, v in s['countries'].items() if v == country)), 'calling code ' + number
+    assert bool(re.fullmatch(m[country], number)) is ok, 'mobile rule ' + repr(number)
+    assert number.lstrip('x').startswith(next(k for k, v in s['countries'].items() if v == country)), 'calling code ' + number
 assert re.fullmatch(r'[A-Za-z][A-Za-z0-9]{2,10}', s['sender']), 'sender name 46elks accepts (3-11 letters and digits)'
 assert set(s['errors']) == {'sign_in_restricted', 'sms_daily_limit', 'sms_not_sent'}, 'reasons'
 assert s['errors']['sms_daily_limit'].startswith('503 unavailable') and s['errors']['sms_not_sent'].startswith('503 unavailable'), 'both retryable 503'
-assert 'did not answer in time' in s['dailyCap'] and 'only an SMS the company refused is not counted' in s['dailyCap'], 'a time-out counts on the daily limit'
+assert 'every hand-over the company did not answer or answered with a server error' in s['dailyCap'] and 'only an SMS the company answered with a refusal (a 4xx answer) is not counted' in s['dailyCap'], 'a time-out or a 5xx counts on the daily limit'
 assert 'fail closed' in s['dailyCap'] and 'exactly as before' in s['active'] and 'never gets an SMS' in s['active'], 'fail closed / unchanged until active'
 # GSM 03.38 basic set (one SMS part = 160 of these)
 GSM7 = set("@£$¥èéùìòÇ\nØø\rÅåΔ_ΦΓΛΩΠΨΣΘΞÆæßÉ !\"#¤%&'()*+,-./0123456789:;<=>?¡ABCDEFGHIJKLMNOPQRSTUVWXYZÄÖÑÜ§¿abcdefghijklmnopqrstuvwxyzäöñüà")
@@ -40,6 +42,8 @@ a = s['alert']
 assert a['nearPercent'] == 80 and '{0}' in a['titles']['near'] and '{1}' in a['titles']['reached'] and 'system_health' in a['rule'], 'alert'
 assert 'never hold the code' in s['logs'], 'logs'
 assert list(c['auth']['signInErrors']) == ['note', 'invalid_otp_code', 'invalid_otp_session', 'otp_expired', 'otp_too_many_attempts', 'otp_resend_too_soon', 'otp_too_many', 'sign_in_restricted', 'otp_locked_today', 'account_suspended'], 'auth.signInErrors kept as released (Rule 21)'
+assert hashlib.sha256(json.dumps(c['auth']['signInErrors'], ensure_ascii=False, sort_keys=True).encode()).hexdigest() == 'c88d73625146cb119597368447cbf8bc7601263a8f7f6f102ea8428a96cc2712', 'auth.signInErrors texts kept word for word (Rule 21)'
+assert 'never signs one in, in any environment' in s['code'] and 'in one step per country' in s['dailyCap'] and 'do not ask again by themselves' in s['errors']['sms_not_sent'], 'test code / atomic limit / no auto retry'
 assert c['auth']['otp']['codeLength'] == 4, 'owner 2026-11-02 "Keep 4 digits"'
 spec = yaml.safe_load(open('openapi.yaml'))
 p = spec['components']['schemas']['CountryRules']['properties']['smsSignIn']
@@ -53,6 +57,7 @@ ch = open('CHANGELOG.md', encoding='utf-8').read()
 cl = ch.split('\n')
 n127 = next(l for l in cl if l.startswith('v0.18.127 (S7 W2 Q119, plan 0.21;'))
 assert '\n' + n127 not in t and cl.count(n127) == 1, 'v0.18.127 note moved once'
+assert hashlib.sha256(n127.encode()).hexdigest() == 'b51a0ff2ebb7016f49c9a557fb973e2a146ceaece339a99b3829d3760b5e644e', 'v0.18.127 note moved word for word'
 j = cl.index(n127)
 assert cl[j - 2].startswith('v0.18.135 (real SMS sign-in codes; Rule 21 / Rule 25: moved from CONTRACT.md word for word'), 'CHANGELOG.md move line'
 assert cl[j + 2].startswith('Older version notes are in `CHANGELOG.md`: v0.18.126 and before (the v0.18.126 note moved in v0.18.132,'), 'old pointer line kept'
