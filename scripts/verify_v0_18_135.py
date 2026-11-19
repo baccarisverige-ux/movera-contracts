@@ -24,6 +24,7 @@ for number, country, ok in (('+46701234567', 'SE', True), ('+4681234567', 'SE', 
 assert re.fullmatch(r'[A-Za-z][A-Za-z0-9]{2,10}', s['sender']), 'sender name 46elks accepts (3-11 letters and digits)'
 assert set(s['errors']) == {'sign_in_restricted', 'sms_daily_limit', 'sms_not_sent'}, 'reasons'
 assert s['errors']['sms_daily_limit'].startswith('503 unavailable') and s['errors']['sms_not_sent'].startswith('503 unavailable'), 'both retryable 503'
+assert 'did not answer in time' in s['dailyCap'] and 'only an SMS the company refused is not counted' in s['dailyCap'], 'a time-out counts on the daily limit'
 assert 'fail closed' in s['dailyCap'] and 'exactly as before' in s['active'] and 'never gets an SMS' in s['active'], 'fail closed / unchanged until active'
 # GSM 03.38 basic set (one SMS part = 160 of these)
 GSM7 = set("@£$¥èéùìòÇ\nØø\rÅåΔ_ΦΓΛΩΠΨΣΘΞÆæßÉ !\"#¤%&'()*+,-./0123456789:;<=>?¡ABCDEFGHIJKLMNOPQRSTUVWXYZÄÖÑÜ§¿abcdefghijklmnopqrstuvwxyzäöñüà")
