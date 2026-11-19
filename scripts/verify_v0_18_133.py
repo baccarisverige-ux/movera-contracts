@@ -33,4 +33,12 @@ assert cl[j - 2].startswith('v0.18.133 (S5 payout lines + carry; Rule 21 / Rule 
 assert hashlib.sha256(cl[j + 2].encode()).hexdigest() == '500ff2fd72593fe8c33c06d0cb1634754ea5da6aa47af9bb54ceee2fa8ded620', 'old pointer line moved word for word'
 assert 'Older version notes are in `CHANGELOG.md`: v0.18.127 and before (the v0.18.127 note moved in v0.18.133, the v0.18.126 note in v0.18.132,' in t, 'new pointer line'
 assert t.count('\n') <= 1500, 'CONTRACT.md over 1,500 lines'
+# Review M1 / M2 / S2.
+kk = c['configDocs']['keptKeys']
+assert kk['country_rules'] == ['payoutMode', 'payoutSchedule', 'maxRiderDebt', 'driverOwesLimit', 'calls.adminCallRoles', 'calls.phoneProvider', 'payoutLinesOn'], 'M1: payoutLinesOn kept key'
+assert 'payoutLinesOn' in S['ConfigDraftUpdate']['properties']['removeKeys']['items']['enum'], 'M1: removeKeys names payoutLinesOn'
+assert 'CountryRules.payoutLinesOn is kept' in c['pricingHistory']['restoreKeeps'], 'M1: Restore keeps payoutLinesOn'
+assert 'configDocs.keptKeys.country_rules' in pl['switch'], 'M1: switch note'
+assert 'order they were made (created_at, then period_end, then payout_id' in pl['carry'], 'M2: carry order'
+assert c['payouts']['lines'][-2:] == ['carried_in', 'carried_out'] and S['PayoutLine']['properties']['code']['enum'][-2:] == ['carried_in', 'carried_out'], 'S2: carry lines'
 print('v0.18.133 payout lines + carry ok')
