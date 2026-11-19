@@ -28,6 +28,6 @@ cl = ch.split('\n')
 j = next(i for i, l in enumerate(cl) if l.startswith('v0.18.125 (L20-6 health'))
 assert cl[j - 2].startswith('v0.18.131 (S7 alert-cap MF3; Rule 21 / Rule 25: moved from CONTRACT.md word for word'), 'CHANGELOG.md move line'
 assert cl[j + 2].startswith('Older version notes are in `CHANGELOG.md`: v0.18.124 and before (the v0.18.124 note moved in v0.18.130,'), 'old pointer line kept'
-assert 'Older version notes are in `CHANGELOG.md`: v0.18.125 and before (the v0.18.125 note moved in v0.18.131, the v0.18.124 note in v0.18.130,' in t, 'new pointer line'
+assert 'Older version notes are in `CHANGELOG.md`: v0.18.125 and before (the v0.18.125 note moved in v0.18.131, the v0.18.124 note in v0.18.130,' in t + ch, 'new pointer line (kept in CHANGELOG.md since v0.18.132)'
 assert t.count('\n') <= 1500, 'CONTRACT.md over 1,500 lines'
 print('v0.18.131 alert book more marker ok')

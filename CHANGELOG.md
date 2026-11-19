@@ -2,6 +2,12 @@
 
 Moved from CONTRACT.md (Rule 25: file size); nothing removed. Newer notes stay at the top of CONTRACT.md.
 
+v0.18.132 (Q117 + Q118 follow-up wording; Rule 21 / Rule 25: moved from CONTRACT.md word for word, nothing removed): the v0.18.126 note and the old pointer line (below).
+
+v0.18.126 (S7 W2 Q126 = Q-B4; owner 2026-11-15 "Yes, open ones only (Rec.)", Rules decisions/session-2026-11-06.md; Rule 0, Rule 33; X-Api-Version stays `0.5`; no API shape change; server migration 0117 (index only); no admin setting; follows v0.18.125): **the admin alarm feed with no cursor starts from the open incidents**, not the whole history (§15 Alarm feed, `contract.json#safety.feedStart`).
+
+Older version notes are in `CHANGELOG.md`: v0.18.125 and before (the v0.18.125 note moved in v0.18.131, the v0.18.124 note in v0.18.130, the v0.18.123 note in v0.18.129, the v0.18.122 and v0.18.121 notes in v0.18.128, the v0.18.120 note in v0.18.127, the v0.18.119 note in v0.18.126, the v0.18.118 note in v0.18.125, the v0.18.117 note in v0.18.124, the v0.18.116 note in v0.18.123, the v0.18.109–v0.18.115 notes moved in v0.18.117, the v0.18.97–v0.18.108 notes in v0.18.110, the v0.18.82–v0.18.96 notes in v0.18.101), except the v0.5.0 and v0.4.1–v0.4.4 notes below.
+
 v0.18.131 (S7 alert-cap MF3; Rule 21 / Rule 25: moved from CONTRACT.md word for word, nothing removed): the v0.18.125 note and the old pointer line (below).
 
 v0.18.125 (L20-6 health, load test 20k, Rules audits/load/load-20k-2026-11-16.md and audits/impact/l20-6-health.md; Rule 0; X-Api-Version stays `0.5`; wording only, no new API field, alert kind or setting; no migration; follows v0.18.124): `/healthz` and `/readyz` report `database` `ok` | `busy` | `unavailable` | `not_configured`; `/readyz` (the hosting health check) stays **200** with `database: busy` when the database is only slow or full and answers **503** `database_unavailable` only when it is down (`contract.json#fastDispatch.health`); a trip-timer lane ≥ 60 s or dispatch lane ≥ 30 s late now also raises a **critical** `system_health` alert, solved by itself when the lane catches up (`alertDesk.serverDetection.kindDefaults.system_health.laneLate`; `fastDispatch.lateAlarm.rule`, old text kept as `ruleBefore0_18_125`).

@@ -22,7 +22,9 @@ assert 'v0.18.126 (contract.json#safety.feedStart)' in d and 'starts from the OP
 assert [p.get('$ref') for p in P['/admin/incidents/stream']['get']['parameters']][:2] == ['#/components/parameters/After', '#/components/parameters/LastEventId'], 'openapi: no parameter change'
 
 t = open('CONTRACT.md', encoding='utf-8').read()
-assert t.startswith('# Movera shared contract v' + c['version']) and '\nv0.18.126 (S7 W2 Q126 = Q-B4;' in t and 'follows v0.18.125)' in t, 'CONTRACT.md v0.18.126 note'
+tc = t + open('CHANGELOG.md', encoding='utf-8').read()  # v0.18.132: the v0.18.126 note moved to CHANGELOG.md word for word
+n126 = next(l for l in tc.split('\n') if l.startswith('v0.18.126 (S7 W2 Q126 = Q-B4;'))
+assert t.startswith('# Movera shared contract v' + c['version']) and 'follows v0.18.125)' in n126, 'CONTRACT.md v0.18.126 note'
 assert 'v0.18.126 (`safety.feedStart`): with no cursor' in t and 'closed incidents are not replayed' in t, 'CONTRACT.md §15 alarm feed'
 # the move (Rule 25 size, Rule 21 word for word): the v0.18.119 note and the old pointer line now only in CHANGELOG.md
 import hashlib
