@@ -23,9 +23,9 @@ ll = sh['laneLate']
 assert 'Critical' in ll and 'system_health:lane_late:<group>:<country>' in ll and "'Server trip timers are running {0} s late'" in ll and "'{0} dispatch rounds overdue'" in ll and 'solved by itself' in ll and 'No new kind or setting' in ll, 'laneLate text'
 assert not any(k.startswith('lane') for k in sd), 'no new alert kind'
 t = open('CONTRACT.md', encoding='utf-8').read()
-ch0 = open('CHANGELOG.md', encoding='utf-8').read()  # v0.18.132: the v0.18.125 note moved to CHANGELOG.md
-assert t.startswith('# Movera shared contract v' + c['version']) and '\nv0.18.125 (L20-6 health' in t + ch0 and '`/readyz` (the hosting health check) stays **200**' in t + ch0, 'CONTRACT.md v0.18.125 note'
-n125 = next(l for l in (t + '\n' + ch0).split('\n') if l.startswith('v0.18.125 ('))
+tc = t + open('CHANGELOG.md', encoding='utf-8').read()  # v0.18.131: the v0.18.125 note moved to CHANGELOG.md word for word
+assert t.startswith('# Movera shared contract v' + c['version']) and '\nv0.18.125 (L20-6 health' in tc and '`/readyz` (the hosting health check) stays **200**' in tc, 'CONTRACT.md v0.18.125 note'
+n125 = next(l for l in tc.split('\n') if l.startswith('v0.18.125 ('))
 assert 'follows v0.18.124)' in n125 and 'restack' not in n125, 'CONTRACT.md v0.18.125 note follows v0.18.124'
 # the move (Rule 25 size, Rule 21 word for word): the v0.18.118 note and the old pointer line now only in CHANGELOG.md
 import hashlib
