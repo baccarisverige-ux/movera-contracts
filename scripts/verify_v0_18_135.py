@@ -48,7 +48,7 @@ assert c['auth']['otp']['codeLength'] == 4 and re.fullmatch(r'[0-9]{4}', c['auth
 assert s['codeLength'] == 6, 'owner 2026-11-19 "6 digits (Rec.)": a real SMS code is 6 digits'
 assert 'smsSignIn.codeLength digits' in s['code'] and 'auth.otp.codeLength digits' not in s['code'], 'code wording says 6'
 n = s['codeLengthNote']
-assert '"6 digits (Rec.)"' in n and 'stay 4 digits' in n and 'An answer without the field' in n and 'never guess the length from the phone number' in n and 'counts as a try' in n and 'cannot enter an SMS code' in n, 'codeLengthNote'
+assert '"6 digits (Rec.)"' in n and 'stay 4 digits' in n and 'An answer without the field' in n and 'never guess the length from the phone number' in n and 'counts as a try' in n and 'cannot enter an SMS code' in n and 'this note decides the shape of a code' in n and 'checks the WHOLE code' in n and 'it is a sign-in code' in n, 'codeLengthNote'
 spec = yaml.safe_load(open('openapi.yaml'))
 p = spec['components']['schemas']['CountryRules']['properties']['smsSignIn']
 assert p['properties']['enabled']['default'] is False and p['properties']['dailyCap']['minimum'] == lo and p['properties']['dailyCap']['maximum'] == hi and p['properties']['dailyCap']['default'] == 200, 'openapi CountryRules.smsSignIn'
