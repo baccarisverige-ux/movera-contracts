@@ -29,6 +29,6 @@ assert '\n' + n124 not in t and hashlib.sha256(n124.encode()).hexdigest() == '9c
 j = cl.index(n124)
 assert cl[j - 2].startswith('v0.18.130 (driver_app_config kept keys; Rule 21 / Rule 25: moved from CONTRACT.md word for word'), 'CHANGELOG.md move line'
 assert cl[j + 2].startswith('Older version notes are in `CHANGELOG.md`: v0.18.123 and before (the v0.18.123 note moved in v0.18.129,'), 'old pointer line kept'
-assert 'Older version notes are in `CHANGELOG.md`: v0.18.124 and before (the v0.18.124 note moved in v0.18.130, the v0.18.123 note in v0.18.129, the v0.18.122 and v0.18.121 notes in v0.18.128,' in t, 'new pointer line'
+assert 'Older version notes are in `CHANGELOG.md`: v0.18.124 and before (the v0.18.124 note moved in v0.18.130, the v0.18.123 note in v0.18.129, the v0.18.122 and v0.18.121 notes in v0.18.128,' in t + ch, 'the v0.18.130 pointer line (kept in CHANGELOG.md since v0.18.132)'
 assert t.count('\n') <= 1500, 'CONTRACT.md over 1,500 lines'
 print('v0.18.130 driver document kept keys ok')

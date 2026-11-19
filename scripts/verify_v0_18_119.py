@@ -24,7 +24,7 @@ assert 'the phone alone and the address alone are only ceilings of 10 × the add
 assert "one address alone never fills a number's ceiling" in k and 'refresh look-ups a minute' in k, 'key: order and look-ups (MF-1 c, SF-3)'
 kb = rl['keyBefore0_18_119']
 assert kb == 'Replaced in v0.18.119 (kept, Rule 21): a valid access token: its actor and user (sub), so many accounts behind one address never share a budget; no or an invalid token: the client address (the address the trusted proxy saw, TRUST_PROXY_HOPS)', 'released key kept (Rule 21)'
-assert list(rl) == ['version', 'note', 'applies', 'safetyWrites', 'ownBudget', 'key', 'keyBefore0_18_119', 'window', 'signInOutsideProduction', 'defaults', 'settings', 'error', 'clients'], 'rateLimit: only keyBefore0_18_119 added'
+assert [x for x in rl if x != 'keyBefore0_18_132'] == ['version', 'note', 'applies', 'safetyWrites', 'ownBudget', 'key', 'keyBefore0_18_119', 'window', 'signInOutsideProduction', 'defaults', 'settings', 'error', 'clients'], 'rateLimit: only keyBefore0_18_119 added (v0.18.132 adds keyBefore0_18_132)'
 
 # --- the number lock over all addresses (Q118 + OQ-1 / OQ-2)
 au = c['auth']
