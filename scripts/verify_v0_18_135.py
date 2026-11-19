@@ -14,6 +14,13 @@ lo, hi = s['dailyCapRange']
 assert (lo, hi) == (10, 100000) and lo <= d['dailyCap'] <= hi and d['dailyCap'] == 200, 'daily cap default inside its range'
 assert s['serverKeys'] == ['ELKS_API_USERNAME', 'ELKS_API_PASSWORD'], 'server key names (names only, never values)'
 assert s['countries'] == {'+46': 'SE', '+33': 'FR', '+216': 'TN'}, 'calling codes of the served countries'
+m = s['mobileNumbers']
+assert set(m) == {'SE', 'FR', 'TN'}, 'one mobile pattern per served country'
+for number, country, ok in (('+46701234567', 'SE', True), ('+4681234567', 'SE', False), ('+46900123456', 'SE', False), ('+467012345678', 'SE', False),
+                            ('+33612345678', 'FR', True), ('+33712345678', 'FR', True), ('+33123456789', 'FR', False), ('+33899123456', 'FR', False),
+                            ('+21620123456', 'TN', True), ('+21671123456', 'TN', False), ('+21688123456', 'TN', False)):
+    assert bool(re.fullmatch(m[country], number)) is ok, 'mobile rule ' + number
+    assert number.startswith(next(k for k, v in s['countries'].items() if v == country)), 'calling code ' + number
 assert re.fullmatch(r'[A-Za-z][A-Za-z0-9]{2,10}', s['sender']), 'sender name 46elks accepts (3-11 letters and digits)'
 assert set(s['errors']) == {'sign_in_restricted', 'sms_daily_limit', 'sms_not_sent'}, 'reasons'
 assert s['errors']['sms_daily_limit'].startswith('503 unavailable') and s['errors']['sms_not_sent'].startswith('503 unavailable'), 'both retryable 503'
