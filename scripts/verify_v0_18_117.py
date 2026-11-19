@@ -11,7 +11,7 @@ assert tuple(map(int, c['version'].split('.'))) >= (0, 18, 117), 'version 0.18.1
 
 # --- contract.json: the alert list
 ll = c['alertDesk']['serverDetection']['liveList']
-assert list(ll.keys()) == ['note', 'open', 'solvedCap', 'solved', 'order', 'more'], 'liveList keys'
+assert [k for k in ll if k not in ('openOtherCap', 'adminLine')] == ['note', 'open', 'solvedCap', 'solved', 'order', 'more'], 'liveList keys (v0.18.131 adds openOtherCap, adminLine)'
 assert ll['solvedCap'] == 1000 and 'alert-cap-safety-supervisor.md' in ll['note'] and 'MF3' in ll['note'], 'liveList note + cap'
 assert 'no limit, never cut' in ll['open'], 'open alerts are never cut'
 assert 'per kind the 1000 newest by solvedAt' in ll['solved'] and 'safety kinds first and then the newest solvedAt' in ll['solved'], 'solved cut'
@@ -19,7 +19,7 @@ safety = sorted(k for k, g in c['alertDesk']['kindGroups'].items() if g == 'safe
 assert safety == ['car_lost', 'ride_check', 'sos', 'sos_slow'] and 'sos, car_lost, ride_check, sos_slow' in ll['order'], 'safety kinds named'
 assert ll['order'].startswith('Open before solved.') and 'then level critical, important, info, then the newest since, then alertId' in ll['order'], 'open order'
 assert 'Solved: the safety kinds first, then the newest solvedAt' in ll['order'], 'solved order'
-assert ll['more'].startswith('Not built yet') and "no 'more' marker" in ll['more'], 'the marker is named as not built'
+assert (ll['more'].startswith('Not built yet') and "no 'more' marker" in ll['more']) or ll['more'].startswith('v0.18.131: AlertBookState.alertsMore'), 'the marker: not built before v0.18.131, built since'
 
 # --- contract.json: the GPS send
 ls = c['driverHome']['locationSend']
@@ -38,7 +38,7 @@ book = spec['paths']['/admin/alerts/book']['get']
 assert 'v0.18.117 (alertDesk.serverDetection.liveList)' in book['description'] and ll['order'] in book['description'] and ll['more'] in book['description'], 'GET /admin/alerts/book text'
 abs_ = spec['components']['schemas']['AlertBookState']
 assert ll['solved'] in abs_['description'], 'AlertBookState text'
-assert sorted(abs_['properties'].keys()) == ['country', 'mutes', 'people', 'quiet', 'records', 'rev', 'rules', 'settings'], 'AlertBookState: no field added (no more marker)'
+assert sorted(k for k in abs_['properties'] if k != 'alertsMore') == ['country', 'mutes', 'people', 'quiet', 'records', 'rev', 'rules', 'settings'], 'AlertBookState: no field added in v0.18.117 (alertsMore is v0.18.131)'
 loc = spec['paths']['/driver/location']['post']
 assert 'v0.18.117 (driverHome.locationSend)' in loc['description'] and ls['newFix'] in loc['description'] and ls['rideCheckScan'] in loc['description'], 'POST /driver/location text'
 hdr = [p for p in loc['parameters'] if p.get('name') == 'Idempotency-Key']
@@ -58,7 +58,7 @@ assert '\nv0.18.117 (S7 notes + alert-cap MF3;' in tc and 'follows v0.18.116)' i
 assert 'v0.18.117 exception, owner W2 Q114: `POST /driver/location` checks the key but never stores it' in t, 'CONTRACT.md §1 Headers exception'
 assert 'v0.18.117 (`driverHome.locationSend`, owner W2 Q113): on a trip a GPS batch writes a `location` event only when' in t, 'CONTRACT.md §12 GPS send'
 s44 = t[t.index('\n## 44. '):t.index('\n## 46. ')]
-assert 'v0.18.117 (`serverDetection.liveList`)' in s44 and 'no limit, never cut' in s44 and 'a "more" marker is not built yet' in s44, 'CONTRACT.md §44 alert list'
+assert 'v0.18.117 (`serverDetection.liveList`)' in s44 and 'no limit, never cut' in s44 and ('a "more" marker is not built yet' in s44 or 'Before v0.18.131 no "more" marker was built.' in s44), 'CONTRACT.md §44 alert list'
 assert '\nv0.18.116 (BQ-S10' in t + ch, 'the v0.18.116 note kept (moved to CHANGELOG.md in v0.18.123, word for word)'
 # the move: the 13 lines of k116 (cc4b769 CONTRACT.md lines 5-17), word for word, now only in CHANGELOG.md
 for v in ('v0.18.115 (BQ-V21', 'v0.18.113 (BQ-S13', 'v0.18.112 (BQ-A04', 'v0.18.111 (server BQ-M28', 'v0.18.110 (BQ-V44', 'v0.18.109 (server BQ-FLEETCUR'):
