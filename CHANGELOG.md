@@ -2,6 +2,18 @@
 
 Moved from CONTRACT.md (Rule 25: file size); nothing removed. Newer notes stay at the top of CONTRACT.md.
 
+v0.18.134 (account deletion; Rule 21 / Rule 25: moved from CONTRACT.md word for word, nothing removed): the v0.18.128 note and the old pointer line (below).
+
+v0.18.128 (S7 W2 Q125, plan B3.11; owner 2026-11-15 Sitting W2 Q125 (Q-B3) "A) count and log above N = 3, refuse later", Rules decisions/session-2026-11-06.md:1388; Rule 0; X-Api-Version stays `0.5`; wording only, no new field, status or reason; no migration, no admin setting; no app change; follows v0.18.127): app streams (rider and driver) are counted per session on each server copy; one opened while the session already has 3 open is still answered 200, logged and counted (§ "Streams per session", `contract.json#realtime.appStreamsPerSession`). Refusing (429 `too_many_streams`) is a later step.
+
+Older version notes are in `CHANGELOG.md`: v0.18.127 and before (the v0.18.127 note moved in v0.18.133, the v0.18.126 note in v0.18.132, the v0.18.125 note in v0.18.131, the v0.18.124 note in v0.18.130, the v0.18.123 note in v0.18.129, the v0.18.122 and v0.18.121 notes in v0.18.128, the v0.18.120 note in v0.18.127, the v0.18.119 note in v0.18.126, the v0.18.118 note in v0.18.125, the v0.18.117 note in v0.18.124, the v0.18.116 note in v0.18.123, the v0.18.109–v0.18.115 notes moved in v0.18.117, the v0.18.97–v0.18.108 notes in v0.18.110, the v0.18.82–v0.18.96 notes in v0.18.101), except the v0.5.0 and v0.4.1–v0.4.4 notes below.
+
+v0.18.133 (real SMS sign-in codes; Rule 21 / Rule 25: moved from CONTRACT.md word for word, nothing removed): the v0.18.127 note and the old pointer line (below).
+
+v0.18.127 (S7 W2 Q119, plan 0.21; owner 2026-11-15 "All except GPS (Rec.)", server only, Rules decisions/session-2026-11-06.md:1381; Rule 0; X-Api-Version stays `0.5`; wording only, no new field, status or reason; no migration, no admin setting; no app change; follows v0.18.126): `rider_trip_changed` on `GET /rider/config/stream` is no longer sent for a GPS update (trip event kind `location`: a position fix or an ETA tick); every other event of the rider's trips still sends it (P21, `bookedRideSeen.riderTripEvent`, the released text kept as `riderTripEventBefore0_18_127`).
+
+Older version notes are in `CHANGELOG.md`: v0.18.126 and before (the v0.18.126 note moved in v0.18.132, the v0.18.125 note in v0.18.131, the v0.18.124 note in v0.18.130, the v0.18.123 note in v0.18.129, the v0.18.122 and v0.18.121 notes in v0.18.128, the v0.18.120 note in v0.18.127, the v0.18.119 note in v0.18.126, the v0.18.118 note in v0.18.125, the v0.18.117 note in v0.18.124, the v0.18.116 note in v0.18.123, the v0.18.109–v0.18.115 notes moved in v0.18.117, the v0.18.97–v0.18.108 notes in v0.18.110, the v0.18.82–v0.18.96 notes in v0.18.101), except the v0.5.0 and v0.4.1–v0.4.4 notes below.
+
 v0.18.132 (Q117 + Q118 follow-up wording; Rule 21 / Rule 25: moved from CONTRACT.md word for word, nothing removed): the v0.18.126 note and the old pointer line (below).
 
 v0.18.126 (S7 W2 Q126 = Q-B4; owner 2026-11-15 "Yes, open ones only (Rec.)", Rules decisions/session-2026-11-06.md; Rule 0, Rule 33; X-Api-Version stays `0.5`; no API shape change; server migration 0117 (index only); no admin setting; follows v0.18.125): **the admin alarm feed with no cursor starts from the open incidents**, not the whole history (§15 Alarm feed, `contract.json#safety.feedStart`).
