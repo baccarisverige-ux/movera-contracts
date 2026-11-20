@@ -8,6 +8,7 @@ assert tuple(map(int, c['version'].split('.'))) >= (0, 18, 143), 'version 0.18.1
 rows = [t for t in c['transitions'] if t['command'] == 'change_route']
 assert len(rows) == 1 and rows[0]['actor'] == 'rider' and rows[0]['from'] == ['requested', 'searching', 'offered'] and rows[0]['to'] == 'searching' and rows[0]['when'] == 'live', 'change_route row'
 ws = c['onTrip']['routeChange']['whileSearching']
+assert "keeps the booked zone's pricing" in ws['zone'] and 'service_not_available' in ws['zone'], 'whileSearching.zone'
 assert ws['statuses'] == rows[0]['from'] and ws['kind'] == 'live', 'whileSearching statuses'
 for key in ('riderConfirmNewPrice', 'adminEvent'):
     assert set(ws['texts'][key]) == {'en', 'sv', 'fr'}, key
