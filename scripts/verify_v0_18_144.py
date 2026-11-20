@@ -31,5 +31,14 @@ assert '\nv0.18.127 (' not in t, 'v0.18.127 note moved'
 ch = open('CHANGELOG.md', encoding='utf-8').read().split('\n')
 n127 = next(l for l in ch if l.startswith('v0.18.127 (S7 W2 Q119, plan 0.21;'))
 assert ch.count(n127) == 1 and ch[ch.index(n127) - 2].startswith('v0.18.144 (live location; Rule 21 / Rule 25'), 'CHANGELOG move'
+ap = ll['adjustPickup']['when']
+assert 'NOT arrived' in ap and 'adjustPickupMeters 0 = the banner is off' in ap, 'no banner at arrived; 0 = off'
+assert 'minus riderOnboard and terminal' in ll['window'] and 'relays nothing after pickup' in ll['window'], 'window ends at pickup'
+assert 'OPT-IN' in ll['driverSide'], 'driver opts in'
+for k in ('riderShareBody', 'privacyNote', 'driverPrivacyNote'):
+    assert 'pickup' in ll['texts'][k]['en'] and 'ride ends' not in ll['texts'][k]['en'], k + ': says it stops at pickup'
+assert sc['RiderAppConfig']['properties']['liveLocation']['properties']['adjustPickupMeters']['minimum'] == 0, '0 = off'
+assert '409' in p['responses'], '409 documented'
+assert "(accepted / driver_to_pickup, not arrived)" in t, 'CONTRACT.md: not at arrived'
 assert t.count('\n') <= 1500, 'CONTRACT.md over 1,500 lines'
 print('v0.18.144 live location ok')
