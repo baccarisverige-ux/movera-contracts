@@ -2,6 +2,8 @@
 
 Moved from CONTRACT.md (Rule 25: file size); nothing removed. Newer notes stay at the top of CONTRACT.md.
 
+v0.18.140 (DRAFT, waits for the new server; debt line M3; owner 2026-11-19 "Yes, build M2 + M3 (Rec.)", Rules decisions/session-2026-11-06.md; Rule 0; X-Api-Version stays `0.5`; additive, two optional fields; display only, no amount changes; no migration, no admin setting; rider app unchanged; number to restack after 0.18.133-0.18.139; note kept here, not in CONTRACT.md, which is at its 1,500-line limit): `CompletePreview.cashDueRide` and `cashDueOutstandingFee` (Money) split a pay-in-car `cashDue` that holds the rider's earlier unpaid fee into the ride and the fee owed to Movera, worked out by the server (their sum is `cashDue`); absent when there is no such fee. The driver collect sheet shows them as two rows under the big amount, never a phone sum (`contract.json#completePreview.cashDueSplit`).
+
 v0.18.132 (Q117 + Q118 follow-up wording; Rule 21 / Rule 25: moved from CONTRACT.md word for word, nothing removed): the v0.18.126 note and the old pointer line (below).
 
 v0.18.126 (S7 W2 Q126 = Q-B4; owner 2026-11-15 "Yes, open ones only (Rec.)", Rules decisions/session-2026-11-06.md; Rule 0, Rule 33; X-Api-Version stays `0.5`; no API shape change; server migration 0117 (index only); no admin setting; follows v0.18.125): **the admin alarm feed with no cursor starts from the open incidents**, not the whole history (§15 Alarm feed, `contract.json#safety.feedStart`).
