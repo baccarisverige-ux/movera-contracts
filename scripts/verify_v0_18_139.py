@@ -43,7 +43,7 @@ r = c['driverPayRequest']
 assert set(r) - {'stripe'} == {'note', 'setting', 'job', 'notice', 'read', 'driver', 'confirm', 'payouts', 'admin', 'rider', 'oldApps'}, 'driverPayRequest keys (stripe: the DRAFT Stripe payment)'
 assert c['configDefaults']['driverPayRequest'] == {'enabled': False, 'dayOfMonth': 1, 'payLink': '', 'minAmount': None}, 'off by default, no link'
 assert 'TEMPORARY' in r['note'] and 'Movera takes no payment in the app' in r['note'], 'note'
-assert 'pay_request_needs_link' in r['setting'] and 'pay_request_needs_amount' in r['setting'] and 'pay_request_invalid' in r['setting'], 'setting reasons'
+assert 'no longer needed to switch it on' in r['setting'] and 'pay_request_needs_amount' in r['setting'] and 'pay_request_invalid' in r['setting'], 'setting reasons'
 assert 'ABOVE minAmount' in r['job'] and 'asks nobody twice' in r['job'] and 'GET /healthz/jobs' in r['job'], 'job: above the minimum, once, heartbeat'
 n = r['notice']
 assert n['kind'] == 'driver_pay_movera' and n['deepLink'] == 'movera-driver://pay-movera', 'notice kind + deep link'
