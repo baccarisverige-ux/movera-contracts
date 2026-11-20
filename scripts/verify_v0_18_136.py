@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""v0.18.141 DRAFT (owner 2026-11-20 "So we use stripe"): contract.json#stripeFees, the rider pays an owed fee with
+"""v0.18.136 DRAFT (owner 2026-11-20 "So we use stripe"): contract.json#stripeFees, the rider pays an owed fee with
 Stripe in the app (test mode), the signed webhook, the admin status + refund, the country switch (off). Run by verify.sh."""
 import json, yaml
 c = json.load(open('contract.json'))
-assert tuple(map(int, c['version'].split('.'))) >= (0, 18, 141), 'version 0.18.141 or later'
+assert tuple(map(int, c['version'].split('.'))) >= (0, 18, 136), 'version 0.18.136 or later'
 assert 'riderPayLink' not in c, 'the SumUp-link draft is replaced by Stripe'
 f = c['stripeFees']
 assert set(f) == {'note', 'keys', 'setting', 'pay', 'payment', 'webhook', 'refund', 'adminRead', 'rider', 'profile', 'admin', 'driver', 'oldApps'}, 'stripeFees keys'
@@ -28,8 +28,8 @@ assert 'get' in P['/admin/riders/{riderId}/fee-payments'], 'admin read'
 assert 'riderFeeStripe' in S['ConfigDraftUpdate']['properties']['removeKeys']['items']['enum'], 'removeKeys'
 t = open('CONTRACT.md', encoding='utf-8').read()
 assert t.startswith('# Movera shared contract v' + c['version']) and t.count('\n') <= 1500, 'CONTRACT.md heading, size'
-assert '\nv0.18.141 (DRAFT, Stripe for rider fees;' in open('CHANGELOG.md', encoding='utf-8').read(), 'CHANGELOG.md note'
-print('v0.18.141 Stripe rider fee ok')
+assert '\nv0.18.136 (DRAFT, Stripe for rider fees;' in open('CHANGELOG.md', encoding='utf-8').read(), 'CHANGELOG.md note'
+print('v0.18.136 Stripe rider fee ok')
 # Money review fixes (2026-11-20): overpaid part and amount mismatch are visible to the admin.
 assert 'overpaid' in pm['properties'] and 'amountMismatch' in pm['properties'], 'StripeFeePayment overpaid + amountMismatch'
 assert 'Lock order' in f['webhook'] and 'charge_already_refunded' in f['refund'] and 'not kept in the Idempotency-Key store' in f['pay'], 'review fixes'

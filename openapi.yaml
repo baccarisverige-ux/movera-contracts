@@ -1,11 +1,11 @@
-# Movera API v0.18.141 — generated from contract.json (+ CONTRACT.md §7). PROPOSED; no backend exists.
+# Movera API v0.18.136 — generated from contract.json (+ CONTRACT.md §7). PROPOSED; no backend exists.
 openapi: 3.1.0
 info:
   title: Movera API
-  version: 0.18.141
+  version: 0.18.136
   description: '**Proposed contract — no backend exists yet.** One future backend serves the Rider (Flutter), Driver (Flutter)
     and Admin (React/TS) apps. Source of truth for names, enums, transitions, realtime and errors is `contract.json` + `CONTRACT.md`
-    v0.18.141 in this folder; this file must agree with them.
+    v0.18.136 in this folder; this file must agree with them.
 
 
     Wire rules: ids match `^[A-Za-z0-9_-]{1,64}$`; times are RFC 3339 UTC with `Z`; durations are integer seconds; money is
@@ -84,7 +84,7 @@ tags:
 - name: Admin · Finance
 x-contract:
   name: movera
-  version: 0.18.141
+  version: 0.18.136
   source: contract.json
 paths:
   /auth/otp/request:
@@ -9416,7 +9416,7 @@ paths:
         so the one-live-connection switch never falls back to off by a save from another screen. offers.autoOffline is not
         listed: every admin save of the driver document starts from the server document and writes offers whole from the Dispatch
         page that owns it. Publish and Restore are unchanged (Restore names a removed kept key in removeKeys, as for the other
-        documents). v0.18.141 (stripeFees): CountryRules.riderFeeStripe { enabled (default false) } on the country standard
+        documents). v0.18.136 (stripeFees): CountryRules.riderFeeStripe { enabled (default false) } on the country standard
         only (Admin > Pricing > Tips & limits; a zone''s own value is ignored). configDefaults.riderFeeStripe: off in every
         country. enabled not a boolean is 400 invalid_request, reason rider_fee_stripe_invalid. A kept key of country_rules
         (configDocs.keptKeys.country_rules) and kept by Restore / Undo last publish (pricingHistory.restoreKeeps).'
@@ -12096,8 +12096,8 @@ paths:
         now, and one the live document lacks is left out of the restored document (calls.on and the other calls fields are
         restored as before). The four payout/debt keys are changed in Finance › Payouts settings only. Every other field,
         and every other document, is restored as before. The restored document is saved through the same draft path, so configDocs.keptKeys
-        applies to it too. v0.18.141 (stripeFees): CountryRules.riderFeeStripe (the switch for paying a rider fee with Stripe
-        in the app) is kept the same way. v0.18.141 (stripeFees): Restore keeps riderFeeStripe (pricingHistory.restoreKeeps).'
+        applies to it too. v0.18.136 (stripeFees): CountryRules.riderFeeStripe (the switch for paying a rider fee with Stripe
+        in the app) is kept the same way. v0.18.136 (stripeFees): Restore keeps riderFeeStripe (pricingHistory.restoreKeeps).'
       tags:
       - Admin · Config
       x-actor:
@@ -17234,7 +17234,7 @@ paths:
         waive (adjust waiveCancelFee) and reverse no-show write a correction: a WalletEntry kind adjustment (+the fee, at
         most what is still owed of it) with the reason and the audit line as before; past entries are never changed. The refusal
         409 conflict fee_on_running_trip is no longer used: no ride carries a copy of the debt any more, so a ride open at
-        that moment simply reads the new (lower) debt when it is paid. v0.18.141 (stripeFees): Mark as paid by hand stays;
+        that moment simply reads the new (lower) debt when it is paid. v0.18.136 (stripeFees): Mark as paid by hand stays;
         a fee paid with Stripe becomes paid by the webhook (stripeFees.webhook).'
       tags:
       - Admin · People
@@ -19598,7 +19598,7 @@ paths:
     post:
       operationId: payRiderFeeStripe
       summary: Start paying an owed fee with Stripe
-      description: 'v0.18.141 (stripeFees): POST /rider/fees/{tripId}/pay (rider, Idempotency-Key, empty body) -> StripeFeePayment
+      description: 'v0.18.136 (stripeFees): POST /rider/fees/{tripId}/pay (rider, Idempotency-Key, empty body) -> StripeFeePayment
         for her owed fee of that trip. The amount is the server''s only: min(the fee''s amount, her debt now in the fee''s
         currency, debtModel.riderWallet), never a phone number. One open PaymentIntent per fee: a second call while one is
         open (requires_payment or processing) for the same amount answers the same one; if the amount changed, the old one
@@ -19651,7 +19651,7 @@ paths:
     post:
       operationId: stripeWebhook
       summary: Stripe events (signature checked, no sign-in)
-      description: 'v0.18.141 (stripeFees): POST /webhooks/stripe (no sign-in; Stripe calls it). The raw body is checked against
+      description: 'v0.18.136 (stripeFees): POST /webhooks/stripe (no sign-in; Stripe calls it). The raw body is checked against
         the Stripe-Signature header with STRIPE_WEBHOOK_SECRET (HMAC-SHA256 of ''<t>.<body>'', any v1 value, t at most 300
         s from now); a bad or missing signature = 400 invalid_request, reason bad_signature, nothing changes. Each event id
         is handled once (a repeat answers 200 and changes nothing). payment_intent.succeeded (also after the payment was failed
@@ -19705,7 +19705,7 @@ paths:
     get:
       operationId: adminRiderFeePayments
       summary: A rider's Stripe fee payments
-      description: 'v0.18.141 (stripeFees): GET /admin/riders/{riderId}/fee-payments (finance.read) -> { items: StripeFeePayment[]
+      description: 'v0.18.136 (stripeFees): GET /admin/riders/{riderId}/fee-payments (finance.read) -> { items: StripeFeePayment[]
         } without clientSecret, newest first: the admin rider view shows each fee''s Stripe status and, on a succeeded one,
         the Refund button (paidTwice shown as ''Paid twice'').'
       tags:
@@ -19741,7 +19741,7 @@ paths:
     post:
       operationId: adminRefundRiderFeeStripe
       summary: Refund a fee paid with Stripe
-      description: 'v0.18.141 (stripeFees): POST /admin/riders/{riderId}/fees/{tripId}/stripe-refund { reason } (finance.edit,
+      description: 'v0.18.136 (stripeFees): POST /admin/riders/{riderId}/fees/{tripId}/stripe-refund { reason } (finance.edit,
         Idempotency-Key, zone scope of the trip): refunds the fee''s succeeded Stripe payment in full (Stripe refund, idempotency
         key per payment) -> refund_pending, then refunded by the webhook; audit rider.fee_stripe_refund with the reason. A
         refund gives the money back and does NOT put the fee back in her debt (the fee row becomes refunded). Refusals: reason
@@ -21888,7 +21888,7 @@ components:
               amount:
                 $ref: '#/components/schemas/Money'
             additionalProperties: false
-          description: 'v0.18.141 (stripeFees): Rider.feesPayableByCard (optional, GET /rider/profile): [{ tripId, amount:
+          description: 'v0.18.136 (stripeFees): Rider.feesPayableByCard (optional, GET /rider/profile): [{ tripId, amount:
             Money }] the owed fees she can pay in the app now (the fee''s trip zone country has riderFeeStripe on, currency
             SEK or EUR, amount = min(fee, debt) above 0), oldest first; absent when none. The publishable key comes only with
             a payment (StripeFeePayment.publishableKey).'
@@ -39306,7 +39306,7 @@ components:
           description: Opaque; null on the last page.
     RiderFeeStripeSetting:
       type: object
-      description: 'v0.18.141 (stripeFees): CountryRules.riderFeeStripe { enabled (default false) } on the country standard
+      description: 'v0.18.136 (stripeFees): CountryRules.riderFeeStripe { enabled (default false) } on the country standard
         only (Admin > Pricing > Tips & limits; a zone''s own value is ignored). configDefaults.riderFeeStripe: off in every
         country. enabled not a boolean is 400 invalid_request, reason rider_fee_stripe_invalid. A kept key of country_rules
         (configDocs.keptKeys.country_rules) and kept by Restore / Undo last publish (pricingHistory.restoreKeeps).'
@@ -39320,7 +39320,7 @@ components:
       additionalProperties: false
     StripeFeePayment:
       type: object
-      description: 'v0.18.141 (stripeFees): StripeFeePayment { tripId, paymentIntentId, amount: Money, status (requires_payment,
+      description: 'v0.18.136 (stripeFees): StripeFeePayment { tripId, paymentIntentId, amount: Money, status (requires_payment,
         processing, succeeded, failed, canceled, refund_pending, refunded), clientSecret? (only to the rider who pays, only
         while requires_payment), publishableKey? (with clientSecret), createdAt, paidAt?, refundedAt?, paidTwice?, overpaid?:
         Money (the part of a succeeded payment that took nothing off a debt, to refund), amountMismatch? (a succeeded event
