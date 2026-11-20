@@ -8,7 +8,7 @@ c = json.load(open('contract.json'))
 assert tuple(map(int, c['version'].split('.'))) >= (0, 18, 130), 'version 0.18.130 or later'
 kk = c['configDocs']['keptKeys']
 assert kk['driver_app_config'] == ['realtime.oneStream'], 'driver_app_config kept keys'
-assert kk['country_rules'] == ['payoutMode', 'payoutSchedule', 'maxRiderDebt', 'driverOwesLimit', 'calls.adminCallRoles', 'calls.phoneProvider'], 'country_rules unchanged'
+assert kk['country_rules'][:6] == ['payoutMode', 'payoutSchedule', 'maxRiderDebt', 'driverOwesLimit', 'calls.adminCallRoles', 'calls.phoneProvider'], 'country_rules unchanged (v0.18.136 adds riderPayLink)'
 assert kk['dispatch'] == ['radar.reaskAfterSeconds', 'exclusive.reaskAfterSeconds'], 'dispatch unchanged'
 assert set(kk) == {'note', 'country_rules', 'dispatch', 'driver_app_config', 'driverAppConfigNote', 'removeKeys'}, 'keptKeys keys'
 assert kk['driverAppConfigNote'].startswith('v0.18.130 (') and 'offers.autoOffline is not listed' in kk['driverAppConfigNote'], 'driverAppConfigNote'
