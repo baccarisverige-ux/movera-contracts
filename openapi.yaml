@@ -19662,7 +19662,7 @@ paths:
         -> canceled; charge.refunded -> refunded. Unknown events and PaymentIntents: 200, nothing changes. Server environment
         variables only, names: STRIPE_SECRET_KEY, STRIPE_PUBLISHABLE_KEY, STRIPE_WEBHOOK_SECRET. Values are never in code,
         the contract, a config document or a log. This draft accepts only test-mode keys (secret ''sk_test_…'', publishable
-        ''pk_test_…''); with no key, or a live key, the Stripe routes answer 503 service_unavailable, reason payments_unavailable,
+        ''pk_test_…''); with no key, or a live key, the Stripe routes answer 503 unavailable, reason payments_unavailable,
         and nothing is charged.'
       tags:
       - System
@@ -19700,7 +19700,7 @@ paths:
     get:
       operationId: adminRiderFeePayments
       summary: A rider's Stripe fee payments
-      description: 'v0.18.141 (stripeFees): GET /admin/riders/{riderId}/fee-payments (finance.view) -> { items: StripeFeePayment[]
+      description: 'v0.18.141 (stripeFees): GET /admin/riders/{riderId}/fee-payments (finance.read) -> { items: StripeFeePayment[]
         } without clientSecret, newest first: the admin rider view shows each fee''s Stripe status and, on a succeeded one,
         the Refund button (paidTwice shown as ''Paid twice'').'
       tags:
