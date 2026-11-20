@@ -13,7 +13,9 @@ S["StripeFeePayment"] = obj({
     "clientSecret": s("Only to the paying rider while requires_payment.", maxLength=500),
     "publishableKey": s("A Stripe test publishable key, with clientSecret.", maxLength=255),
     "createdAt": ref("Timestamp"), "paidAt": ref("Timestamp"), "refundedAt": ref("Timestamp"),
-    "paidTwice": b("Succeeded after the fee was already settled another way: refund it.")},
+    "paidTwice": b("Succeeded after the fee was already settled another way: refund it."),
+    "overpaid": {"allOf": [ref("Money")], "description": "The part that took nothing off a debt: refund it."},
+    "amountMismatch": b("A succeeded event with another amount or currency: the fee is unchanged.")},
     ["tripId", "paymentIntentId", "amount", "status", "createdAt"], _V141 + _SF["payment"], addl=False)
 S["StripeRefundBody"] = obj({"reason": s(maxLength=300)}, ["reason"], addl=False)
 S["Rider"]["properties"]["feesPayableByCard"] = arr(obj({"tripId": s(), "amount": ref("Money")}, ["tripId", "amount"], addl=False), description=_V141 + _SF["profile"])

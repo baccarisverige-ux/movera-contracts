@@ -30,3 +30,6 @@ t = open('CONTRACT.md', encoding='utf-8').read()
 assert t.startswith('# Movera shared contract v' + c['version']) and t.count('\n') <= 1500, 'CONTRACT.md heading, size'
 assert '\nv0.18.141 (DRAFT, Stripe for rider fees;' in open('CHANGELOG.md', encoding='utf-8').read(), 'CHANGELOG.md note'
 print('v0.18.141 Stripe rider fee ok')
+# Money review fixes (2026-11-20): overpaid part and amount mismatch are visible to the admin.
+assert 'overpaid' in pm['properties'] and 'amountMismatch' in pm['properties'], 'StripeFeePayment overpaid + amountMismatch'
+assert 'Lock order' in f['webhook'] and 'charge_already_refunded' in f['refund'] and 'not kept in the Idempotency-Key store' in f['pay'], 'review fixes'
