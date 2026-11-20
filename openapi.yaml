@@ -9398,7 +9398,7 @@ paths:
         "problem:<code>"] (not_a_list, too_many_steps, pct_or_amount, up_to_missing, pct_out_of_range, amount_out_of_range,
         above_not_last, last_not_above, up_to_out_of_range, up_to_not_increasing); nothing is saved. v0.18.123 (configDocs.keptKeys;
         country_rules: payoutMode, payoutSchedule, maxRiderDebt, driverOwesLimit, calls.adminCallRoles, calls.phoneProvider,
-        riderPayLink; dispatch: radar.reaskAfterSeconds, exclusive.reaskAfterSeconds): v0.18.123 (SF-F1-3 safe config saves;
+        riderFeeStripe; dispatch: radar.reaskAfterSeconds, exclusive.reaskAfterSeconds): v0.18.123 (SF-F1-3 safe config saves;
         owner 2026-11-17 Q-SCS-1 "Keep values, save rest (Rec.)", 2026-11-16 Q-SCS-2 "No, keep current (Rec.)", Rules audits/impact/safe-config-saves.md
         §3, decisions/session-2026-11-06.md): PUT /admin/config/{doc} replaces the draft, except the kept keys of the document
         listed here (dotted paths). A kept key that the stored document (the scope''s draft, else the scope''s own live document)
@@ -9416,14 +9416,10 @@ paths:
         so the one-live-connection switch never falls back to off by a save from another screen. offers.autoOffline is not
         listed: every admin save of the driver document starts from the server document and writes offers whole from the Dispatch
         page that owns it. Publish and Restore are unchanged (Restore names a removed kept key in removeKeys, as for the other
-        documents). v0.18.141 (riderPayLink): CountryRules.riderPayLink { enabled (default false), payLink (an https:// link,
-        at most 500 characters, '''' = none) } on the country standard only (Admin > Pricing > Tips & limits; a zone''s own
-        value is ignored). configDefaults.riderPayLink: off, no link, in every country. The link check is the one of driverPayRequest.payLink
-        (server isPayLink): ''https://'' then printable ASCII only (no space, control, invisible or non-ASCII character),
-        no backslash, it parses, and no ''user:password@'' part. A payLink that fails it is 400 invalid_request, reason rider_pay_link_invalid;
-        saving enabled true without a valid payLink is 400 invalid_request, reason rider_pay_link_needs_link; off may keep
-        or clear the link. A kept key of country_rules (configDocs.keptKeys.country_rules) and kept by Restore / Undo last
-        publish (pricingHistory.restoreKeeps).'
+        documents). v0.18.141 (stripeFees): CountryRules.riderFeeStripe { enabled (default false) } on the country standard
+        only (Admin > Pricing > Tips & limits; a zone''s own value is ignored). configDefaults.riderFeeStripe: off in every
+        country. enabled not a boolean is 400 invalid_request, reason rider_fee_stripe_invalid. A kept key of country_rules
+        (configDocs.keptKeys.country_rules) and kept by Restore / Undo last publish (pricingHistory.restoreKeeps).'
       tags:
       - Admin · Config
       x-actor:
@@ -12100,8 +12096,8 @@ paths:
         now, and one the live document lacks is left out of the restored document (calls.on and the other calls fields are
         restored as before). The four payout/debt keys are changed in Finance › Payouts settings only. Every other field,
         and every other document, is restored as before. The restored document is saved through the same draft path, so configDocs.keptKeys
-        applies to it too. v0.18.141 (riderPayLink): CountryRules.riderPayLink (the rider cancel-fee payment link switch and
-        link) is kept the same way. v0.18.141 (riderPayLink): Restore keeps riderPayLink (pricingHistory.restoreKeeps).'
+        applies to it too. v0.18.141 (stripeFees): CountryRules.riderFeeStripe (the switch for paying a rider fee with Stripe
+        in the app) is kept the same way. v0.18.141 (stripeFees): Restore keeps riderFeeStripe (pricingHistory.restoreKeeps).'
       tags:
       - Admin · Config
       x-actor:
@@ -17238,12 +17234,8 @@ paths:
         waive (adjust waiveCancelFee) and reverse no-show write a correction: a WalletEntry kind adjustment (+the fee, at
         most what is still owed of it) with the reason and the audit line as before; past entries are never changed. The refusal
         409 conflict fee_on_running_trip is no longer used: no ride carries a copy of the debt any more, so a ride open at
-        that moment simply reads the new (lower) debt when it is paid. v0.18.141 (riderPayLink): Manual, by the existing admin
-        action Mark as paid on the owed fee (POST /admin/riders/{riderId}/fees/{tripId}/mark-paid { reason }, outstandingFee.adminMarkPaid,
-        finance.edit): the admin sees the payment in the payment company''s own list (the reference names the rider and the
-        trip) and marks that fee paid with a reason; the wallet correction lowers her debt at once (owed, Rider.outstanding,
-        the next trip no longer carries it). A payment that covers several fees is marked fee by fee. No payment company is
-        called by the server.'
+        that moment simply reads the new (lower) debt when it is paid. v0.18.141 (stripeFees): Mark as paid by hand stays;
+        a fee paid with Stripe becomes paid by the webhook (stripeFees.webhook).'
       tags:
       - Admin · People
       x-actor:
@@ -19602,36 +19594,30 @@ paths:
           $ref: '#/components/responses/RateLimited'
         '503':
           $ref: '#/components/responses/Unavailable'
-  /rider/pay-movera:
-    get:
-      operationId: getRiderPayMovera
-      summary: What the rider owes Movera and where to pay (fee payment link)
-      description: 'v0.18.141 (riderPayLink): GET /rider/pay-movera?currency=XXX (rider; currency optional, default the currency
-        of her oldest debt, else the server''s default currency) -> RiderPayMovera { owed: Money (her debt NOW in that currency
-        = debtModel.riderWallet debt, the same number as Rider.outstandingByCurrency; 0 when nothing), reference, tripId?
-        (the trip of her oldest owed fee in that currency, only while owed is above 0), payLink? (only while owed is above
-        0 and the country of that trip''s zone has riderPayLink on with a valid link) }. reference = ''<riderId>-<tripId>''
-        while owed is above 0, else ''<riderId>'': the text she writes on the payment so Movera finds her and the fee. Read
-        only; the amount is never worked out on the phone. Rider app, the cancel result (and a no-show): when the cancel answer
-        says a fee was charged (cancellation.fee above 0) the existing fee text stays as it is, and the app reads GET /rider/pay-movera?currency=<the
-        fee''s currency>. While the answer has payLink, it shows under the fee text the amount owed, the reference and a ''Pay
-        now'' button that opens payLink in the browser as it is (no amount added: a payment link may be generic) and a line
-        telling her to type the amount and the reference on the payment page. Without payLink (setting off, the fee already
-        paid from wallet credit, an older server answering 404) nothing new is shown. Rider app, Account, the existing outstanding
-        fees line: while GET /rider/pay-movera for that currency has payLink, the same amount, reference and ''Pay now'' button
-        are shown there, so she can pay later. Paying in the car on the next ride stays possible (debtModel.readAtPayment).
-        Manual, by the existing admin action Mark as paid on the owed fee (POST /admin/riders/{riderId}/fees/{tripId}/mark-paid
-        { reason }, outstandingFee.adminMarkPaid, finance.edit): the admin sees the payment in the payment company''s own
-        list (the reference names the rider and the trip) and marks that fee paid with a reason; the wallet correction lowers
-        her debt at once (owed, Rider.outstanding, the next trip no longer carries it). A payment that covers several fees
-        is marked fee by fee. No payment company is called by the server.'
+  /rider/fees/{tripId}/pay:
+    post:
+      operationId: payRiderFeeStripe
+      summary: Start paying an owed fee with Stripe
+      description: 'v0.18.141 (stripeFees): POST /rider/fees/{tripId}/pay (rider, Idempotency-Key, empty body) -> StripeFeePayment
+        for her owed fee of that trip. The amount is the server''s only: min(the fee''s amount, her debt now in the fee''s
+        currency, debtModel.riderWallet), never a phone number. One open PaymentIntent per fee: a second call while one is
+        open (requires_payment or processing) for the same amount answers the same one; if the amount changed, the old one
+        is canceled and a new one made. Refusals: no owed fee of hers on that trip or the amount is 0 = 409 invalid_transition,
+        reason fee_not_owed; the country of the trip''s zone has riderFeeStripe off = 409 conflict, reason stripe_off; a currency
+        Stripe is not used for here (only SEK and EUR; TND is not) = 409 conflict, reason currency_not_supported; no test
+        key = 503 payments_unavailable. Rider app: after a cancel or no-show that charged a fee (cancellation.fee above 0,
+        feeStatus owed) and on the Account outstanding fees line, while her country has riderFeeStripe on, a ''Pay now'' button.
+        It calls POST /rider/fees/{tripId}/pay and opens the Stripe PaymentSheet (card, Apple Pay, Google Pay) for the server''s
+        amount; the phone never works out an amount. When the sheet says done, the app shows ''Payment received'' and reads
+        her profile again (the fee drops when the webhook has marked it paid). A refusal or a closed sheet leaves the fee
+        owed as today. The button shows only for a fee listed in Rider.feesPayableByCard.'
       tags:
       - Rider · Payments
       x-actor:
       - rider
-      x-read-only: true
       parameters:
-      - $ref: '#/components/parameters/WalletCurrency'
+      - $ref: '#/components/parameters/TripId'
+      - $ref: '#/components/parameters/IdempotencyKey'
       - $ref: '#/components/parameters/RequestId'
       - $ref: '#/components/parameters/ApiVersion'
       responses:
@@ -19645,7 +19631,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/RiderPayMovera'
+                $ref: '#/components/schemas/StripeFeePayment'
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
@@ -19654,6 +19640,141 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '503':
+          $ref: '#/components/responses/Unavailable'
+  /webhooks/stripe:
+    post:
+      operationId: stripeWebhook
+      summary: Stripe events (signature checked, no sign-in)
+      description: 'v0.18.141 (stripeFees): POST /webhooks/stripe (no sign-in; Stripe calls it). The raw body is checked against
+        the Stripe-Signature header with STRIPE_WEBHOOK_SECRET (HMAC-SHA256 of ''<t>.<body>'', any v1 value, t at most 300
+        s from now); a bad or missing signature = 400 invalid_request, reason bad_signature, nothing changes. Each event id
+        is handled once (a repeat answers 200 and changes nothing). payment_intent.succeeded for a known PaymentIntent whose
+        amount and currency equal the stored ones: the payment becomes succeeded, and if the fee is still owed it becomes
+        paid exactly as the admin''s Mark as paid (a wallet correction +the fee at most the debt, rider_fees paid, cancellation.feeStatus
+        paid, Rider.outstanding drops it; audit rider.fee_paid_stripe). If the fee was already settled another way (paid in
+        the car, marked paid), nothing more is taken off and the payment is marked paidTwice for the admin to refund. An amount
+        or currency that does not match changes no fee (logged). payment_intent.payment_failed -> failed; payment_intent.canceled
+        -> canceled; charge.refunded -> refunded. Unknown events and PaymentIntents: 200, nothing changes. Server environment
+        variables only, names: STRIPE_SECRET_KEY, STRIPE_PUBLISHABLE_KEY, STRIPE_WEBHOOK_SECRET. Values are never in code,
+        the contract, a config document or a log. This draft accepts only test-mode keys (secret ''sk_test_…'', publishable
+        ''pk_test_…''); with no key, or a live key, the Stripe routes answer 503 service_unavailable, reason payments_unavailable,
+        and nothing is charged.'
+      tags:
+      - System
+      x-actor: []
+      parameters:
+      - name: Stripe-Signature
+        in: header
+        required: true
+        schema:
+          type: string
+          maxLength: 2000
+      responses:
+        '200':
+          description: No content
+          headers:
+            X-Request-Id:
+              description: Echo of the request id (server-generated if absent).
+              schema:
+                type: string
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '503':
+          $ref: '#/components/responses/Unavailable'
+      security: []
+      x-public: true
+  /admin/riders/{riderId}/fee-payments:
+    get:
+      operationId: adminRiderFeePayments
+      summary: A rider's Stripe fee payments
+      description: 'v0.18.141 (stripeFees): GET /admin/riders/{riderId}/fee-payments (finance.view) -> { items: StripeFeePayment[]
+        } without clientSecret, newest first: the admin rider view shows each fee''s Stripe status and, on a succeeded one,
+        the Refund button (paidTwice shown as ''Paid twice'').'
+      tags:
+      - Admin · People
+      x-actor:
+      - admin
+      x-read-only: true
+      parameters:
+      - $ref: '#/components/parameters/RiderId'
+      - $ref: '#/components/parameters/RequestId'
+      - $ref: '#/components/parameters/ApiVersion'
+      responses:
+        '200':
+          description: No content
+          headers:
+            X-Request-Id:
+              description: Echo of the request id (server-generated if absent).
+              schema:
+                type: string
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '503':
+          $ref: '#/components/responses/Unavailable'
+  /admin/riders/{riderId}/fees/{tripId}/stripe-refund:
+    post:
+      operationId: adminRefundRiderFeeStripe
+      summary: Refund a fee paid with Stripe
+      description: 'v0.18.141 (stripeFees): POST /admin/riders/{riderId}/fees/{tripId}/stripe-refund { reason } (finance.edit,
+        Idempotency-Key, zone scope of the trip): refunds the fee''s succeeded Stripe payment in full (Stripe refund, idempotency
+        key per payment) -> refund_pending, then refunded by the webhook; audit rider.fee_stripe_refund with the reason. A
+        refund gives the money back and does NOT put the fee back in her debt (the fee row becomes refunded). Refusals: reason
+        missing = 400 reason_required; no succeeded payment = 409 invalid_transition, reason no_stripe_payment.'
+      tags:
+      - Admin · People
+      x-actor:
+      - admin
+      parameters:
+      - $ref: '#/components/parameters/RiderId'
+      - $ref: '#/components/parameters/TripId'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      - $ref: '#/components/parameters/RequestId'
+      - $ref: '#/components/parameters/ApiVersion'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StripeRefundBody'
+      responses:
+        '200':
+          description: No content
+          headers:
+            X-Request-Id:
+              description: Echo of the request id (server-generated if absent).
+              schema:
+                type: string
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
         '429':
           $ref: '#/components/responses/RateLimited'
         '503':
@@ -21747,6 +21868,23 @@ components:
             when there is no e-mail). Sent on the own profile (GET/PATCH /rider/profile, GET/PATCH /driver/profile, POST /driver/onboarding)
             and on the admin rider / driver views; never masked (a masked e-mail still carries it). A new e-mail clears it
             until proven.'
+        feesPayableByCard:
+          type: array
+          items:
+            type: object
+            required:
+            - tripId
+            - amount
+            properties:
+              tripId:
+                type: string
+              amount:
+                $ref: '#/components/schemas/Money'
+            additionalProperties: false
+          description: 'v0.18.141 (stripeFees): Rider.feesPayableByCard (optional, GET /rider/profile): [{ tripId, amount:
+            Money }] the owed fees she can pay in the app now (the fee''s trip zone country has riderFeeStripe on, currency
+            SEK or EUR, amount = min(fee, debt) above 0), oldest first; absent when none. The publishable key comes only with
+            a payment (StripeFeePayment.publishableKey).'
     DocumentStatus:
       type: string
       enum:
@@ -25192,8 +25330,8 @@ components:
             amount of one bonus campaign (CountryRules.bonusCampaignMax, per country standard or zone, Admin › Pricing › Tips
             & limits, settings.publish). Builder default values (plan §12 D13), admin-changeable. Defaults SE 2 000,00 kr
             (200000 SEK), FR 200,00 € (20000 EUR), TN 200.000 DT (200000 TND). Optional: absent → configDefaults.bonusCampaignMax.'
-        riderPayLink:
-          $ref: '#/components/schemas/RiderPayLinkSetting'
+        riderFeeStripe:
+          $ref: '#/components/schemas/RiderFeeStripeSetting'
       x-server-only: true
     FeeRule:
       type: object
@@ -31443,7 +31581,7 @@ components:
             - payoutSchedule
             - radar.reaskAfterSeconds
             - realtime.oneStream
-            - riderPayLink
+            - riderFeeStripe
           maxItems: 10
           description: 'v0.18.123 (configDocs.keptKeys.removeKeys): ConfigDraftUpdate.removeKeys (optional, array of dotted
             paths): each must be a kept key of that document, else 400 invalid_request, reason unknown_kept_key, details ["key:<path>"],
@@ -39159,57 +39297,75 @@ components:
           - string
           - 'null'
           description: Opaque; null on the last page.
-    RiderPayLinkSetting:
+    RiderFeeStripeSetting:
       type: object
-      description: 'v0.18.141 (riderPayLink): CountryRules.riderPayLink { enabled (default false), payLink (an https:// link,
-        at most 500 characters, '''' = none) } on the country standard only (Admin > Pricing > Tips & limits; a zone''s own
-        value is ignored). configDefaults.riderPayLink: off, no link, in every country. The link check is the one of driverPayRequest.payLink
-        (server isPayLink): ''https://'' then printable ASCII only (no space, control, invisible or non-ASCII character),
-        no backslash, it parses, and no ''user:password@'' part. A payLink that fails it is 400 invalid_request, reason rider_pay_link_invalid;
-        saving enabled true without a valid payLink is 400 invalid_request, reason rider_pay_link_needs_link; off may keep
-        or clear the link. A kept key of country_rules (configDocs.keptKeys.country_rules) and kept by Restore / Undo last
-        publish (pricingHistory.restoreKeeps).'
+      description: 'v0.18.141 (stripeFees): CountryRules.riderFeeStripe { enabled (default false) } on the country standard
+        only (Admin > Pricing > Tips & limits; a zone''s own value is ignored). configDefaults.riderFeeStripe: off in every
+        country. enabled not a boolean is 400 invalid_request, reason rider_fee_stripe_invalid. A kept key of country_rules
+        (configDocs.keptKeys.country_rules) and kept by Restore / Undo last publish (pricingHistory.restoreKeeps).'
       required:
       - enabled
       properties:
         enabled:
           type: boolean
-          description: 'Off by default in every country: no Pay now button until the admin switches it on.'
+          description: Off by default in every country.
           default: false
-        payLink:
-          type: string
-          maxLength: 500
-          pattern: ^(https://[\x21-\x5B\x5D-\x7E]+)?$
-          description: The payment link the rider's Pay now button opens (https, printable ASCII, no backslash, no user:password@;
-            '' = none). Required when enabled.
-          default: ''
       additionalProperties: false
-    RiderPayMovera:
+    StripeFeePayment:
       type: object
-      description: 'v0.18.141 (riderPayLink): GET /rider/pay-movera?currency=XXX (rider; currency optional, default the currency
-        of her oldest debt, else the server''s default currency) -> RiderPayMovera { owed: Money (her debt NOW in that currency
-        = debtModel.riderWallet debt, the same number as Rider.outstandingByCurrency; 0 when nothing), reference, tripId?
-        (the trip of her oldest owed fee in that currency, only while owed is above 0), payLink? (only while owed is above
-        0 and the country of that trip''s zone has riderPayLink on with a valid link) }. reference = ''<riderId>-<tripId>''
-        while owed is above 0, else ''<riderId>'': the text she writes on the payment so Movera finds her and the fee. Read
-        only; the amount is never worked out on the phone.'
+      description: 'v0.18.141 (stripeFees): StripeFeePayment { tripId, paymentIntentId, amount: Money, status (requires_payment,
+        processing, succeeded, failed, canceled, refund_pending, refunded), clientSecret? (only to the rider who pays, only
+        while requires_payment), publishableKey? (with clientSecret), createdAt, paidAt?, refundedAt?, paidTwice? }.'
       required:
-      - owed
-      - reference
+      - tripId
+      - paymentIntentId
+      - amount
+      - status
+      - createdAt
       properties:
-        owed:
-          allOf:
-          - $ref: '#/components/schemas/Money'
-          description: Her debt now in that currency (debtModel.riderWallet); 0 when nothing.
-        reference:
-          type: string
-          maxLength: 80
-          description: '''<riderId>-<tripId>'' while owed is above 0, else ''<riderId>'': the text she writes on the payment.'
         tripId:
           type: string
-          description: The trip of her oldest owed fee in that currency; only while owed is above 0.
-        payLink:
+        paymentIntentId:
+          type: string
+          maxLength: 255
+        amount:
+          allOf:
+          - $ref: '#/components/schemas/Money'
+          description: 'The server''s amount: min(fee, debt now).'
+        status:
+          type: string
+          enum:
+          - requires_payment
+          - processing
+          - succeeded
+          - failed
+          - canceled
+          - refund_pending
+          - refunded
+        clientSecret:
           type: string
           maxLength: 500
-          description: 'Only while owed is above 0 and her country''s riderPayLink is on: opened as it is (no amount added).'
+          description: Only to the paying rider while requires_payment.
+        publishableKey:
+          type: string
+          maxLength: 255
+          description: A Stripe test publishable key, with clientSecret.
+        createdAt:
+          $ref: '#/components/schemas/Timestamp'
+        paidAt:
+          $ref: '#/components/schemas/Timestamp'
+        refundedAt:
+          $ref: '#/components/schemas/Timestamp'
+        paidTwice:
+          type: boolean
+          description: 'Succeeded after the fee was already settled another way: refund it.'
+      additionalProperties: false
+    StripeRefundBody:
+      type: object
+      required:
+      - reason
+      properties:
+        reason:
+          type: string
+          maxLength: 300
       additionalProperties: false
