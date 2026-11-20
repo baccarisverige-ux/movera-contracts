@@ -74,6 +74,6 @@ assert hashlib.sha256(n127.encode()).hexdigest() == 'b51a0ff2ebb7016f49c9a557fb9
 j = cl.index(n127)
 assert cl[j - 2].startswith('v0.18.133 (real SMS sign-in codes; Rule 21 / Rule 25: moved from CONTRACT.md word for word'), 'CHANGELOG.md move line'
 assert cl[j + 2].startswith('Older version notes are in `CHANGELOG.md`: v0.18.126 and before (the v0.18.126 note moved in v0.18.132,'), 'old pointer line kept'
-assert 'Older version notes are in `CHANGELOG.md`: v0.18.127 and before (the v0.18.127 note moved in v0.18.133, the v0.18.126 note in v0.18.132,' in t, 'new pointer line'
+assert 'Older version notes are in `CHANGELOG.md`: v0.18.127 and before (the v0.18.127 note moved in v0.18.133, the v0.18.126 note in v0.18.132,' in ch, 'new pointer line (v0.18.134 moved it to CHANGELOG.md word for word)'
 assert t.count('\n') <= 1500, 'CONTRACT.md over 1,500 lines'
 print('v0.18.133 real SMS sign-in codes ok')
