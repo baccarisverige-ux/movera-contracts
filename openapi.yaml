@@ -39506,7 +39506,8 @@ components:
           type: string
           maxLength: 500
           pattern: ^(https://[^\s]+)?$
-          description: The payment link the Pay Movera button opens (https only; '' = none). Required when enabled.
+          description: 'Legacy, hidden while Stripe pays (DRAFT): the payment link the Pay Movera button opens (https only;
+            '''' = none); not needed to switch on.'
           default: ''
         minAmount:
           oneOf:
