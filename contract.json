@@ -1,6 +1,6 @@
 {
   "contract": "movera",
-  "version": "0.18.132",
+  "version": "0.18.141",
   "note": "Canonical cross-app contract for Rider, Driver and Admin. Frontend-only today; a future single backend implements it. Every app ships an identical copy under contracts/ and runs contract tests against it.",
   "wire": {
     "ids": {
@@ -1339,7 +1339,8 @@
         "maxRiderDebt",
         "driverOwesLimit",
         "calls.adminCallRoles",
-        "calls.phoneProvider"
+        "calls.phoneProvider",
+        "riderPayLink"
       ],
       "dispatch": [
         "radar.reaskAfterSeconds",
@@ -4047,7 +4048,11 @@
     },
     "pickupSpotsOn": true,
     "shareTripOn": true,
-    "driverOneStream": false
+    "driverOneStream": false,
+    "riderPayLink": {
+      "enabled": false,
+      "payLink": ""
+    }
   },
   "realtime": {
     "envelope": [
@@ -4466,7 +4471,7 @@
     "list": "GET /admin/config/{doc}/history?zoneId&cursor&limit (settings.read): newest first, ConfigHistoryEntry { version, publishedAt, publishedBy, note?, action: publish | restore, restoredFrom?, document } v0.18.118 (Rules audits/impact/country-undo.md; server branch claude/rules-email-key-browserstack-f5y0p3-cfgundo fad59d5 src/config/scope.ts scopeKey, src/pricing/routes.ts HistoryQuery / RestoreBody, src/config/service.ts configHistory): History names exactly one of zoneId or country (ISO alpha-2: the country's standard), as GET, PUT and publish (configDocs.scope: both or neither → 400 invalid_request, reason scope_required; a country the admin has no zone in → 403 zone_out_of_scope; a country with no zone → 404 country_not_found). An entry of a country's standard carries country instead of zoneId.",
     "restore": "POST /admin/config/{doc}/restore { zoneId, version, expectedVersion, note? } (the publish permission): publishes that version's document again as the next version (action restore, restoredFrom), with every effect of a publish (§6.2 app documents for pricing). Undo last publish = restore the version before the live one. A version not in the history: 404; the live version: 409 invalid_transition (already_live). v0.18.118 (Rules audits/impact/country-undo.md; server branch claude/rules-email-key-browserstack-f5y0p3-cfgundo fad59d5 src/config/scope.ts scopeKey, src/pricing/routes.ts HistoryQuery / RestoreBody, src/config/service.ts configHistory): { zoneId | country, version, expectedVersion, note? }: exactly one of zoneId or country (configDocs.scope, the same reasons as History), so a country's standard is restored (Undo last publish) like a zone's own document.",
     "audit": "one audit row per pricing publish or restore: action config.publish, details { doc, zoneId, version, restoredFrom?, appDocuments: [{ doc, version }] } (the app documents the publish rewrote)",
-    "restoreKeeps": "v0.18.123 (SF-F1-3 safe config saves; owner 2026-11-17 Q-SCS-1 \"Keep values, save rest (Rec.)\", 2026-11-16 Q-SCS-2 \"No, keep current (Rec.)\", Rules audits/impact/safe-config-saves.md §3, decisions/session-2026-11-06.md): a Restore or Undo last publish of country_rules does not bring back the old payoutMode, payoutSchedule, maxRiderDebt or driverOwesLimit (MONEY), nor the old calls.adminCallRoles or calls.phoneProvider (owner 2026-11-17: Undo/Restore keeps the current call settings, the same rule as payout/debt): each takes the value the scope's live document has now, and one the live document lacks is left out of the restored document (calls.on and the other calls fields are restored as before). The four payout/debt keys are changed in Finance › Payouts settings only. Every other field, and every other document, is restored as before. The restored document is saved through the same draft path, so configDocs.keptKeys applies to it too."
+    "restoreKeeps": "v0.18.123 (SF-F1-3 safe config saves; owner 2026-11-17 Q-SCS-1 \"Keep values, save rest (Rec.)\", 2026-11-16 Q-SCS-2 \"No, keep current (Rec.)\", Rules audits/impact/safe-config-saves.md §3, decisions/session-2026-11-06.md): a Restore or Undo last publish of country_rules does not bring back the old payoutMode, payoutSchedule, maxRiderDebt or driverOwesLimit (MONEY), nor the old calls.adminCallRoles or calls.phoneProvider (owner 2026-11-17: Undo/Restore keeps the current call settings, the same rule as payout/debt): each takes the value the scope's live document has now, and one the live document lacks is left out of the restored document (calls.on and the other calls fields are restored as before). The four payout/debt keys are changed in Finance › Payouts settings only. Every other field, and every other document, is restored as before. The restored document is saved through the same draft path, so configDocs.keptKeys applies to it too. v0.18.141 (riderPayLink): CountryRules.riderPayLink (the rider cancel-fee payment link switch and link) is kept the same way."
   },
   "categoryCatalog": {
     "note": "v0.7.1 (owner 2026-10-27): one catalog of car types for every country and zone (admin Pricing › Manage categories); each zone switches a category on or off in its pricing document.",
@@ -10561,5 +10566,17 @@
     "driver": "realtime.oneStream true: open GET /driver/stream (off-trip and on a trip; the trip stream as before) and give its events to the two existing readers (offers by sequence, settings by kind); do not open the two old streams. false or missing, or GET /driver/stream answers 404 (an older server): the two streams as before, and after a 404 the app does not try the one stream again until it restarts. When the switch changes, the app closes what it holds and opens the other within one settings update.",
     "rider": "Not affected: the rider app has no offer feed; GET /rider/config/stream and the trip stream are unchanged.",
     "admin": "Admin › Dispatch, per zone: the switch 'One live connection per driver phone' (default off), with an 'i' text (what it does, what it saves, who it affects, when to turn it on, the way back, older apps). It is the way back without an app release."
+  },
+  "riderPayLink": {
+    "note": "v0.18.141 (DRAFT, waits for the new server; owner 2026-11-20 \"with this pay in car system the rider has to pay Movera money only when she cancels. All other payment is to the driver. So add a payment link when the rider wants to cancel, but she has to pay a cancellation fee. So in that time, there is a link.\", Rules decisions/session-2026-11-06.md; pattern of driverPayRequest v0.18.139; Rule 0; X-Api-Version stays 0.5; additive: one setting, one read route, no migration): with pay in the car the rider pays Movera only a fee (a cancel or no-show fee she did not pay at once, outstandingFee, debtModel.riderWallet). When such a fee is owed the rider app shows a 'Pay now' button that opens the payment link the admin set for her country (a SumUp link for example), with the amount and a reference for her to type in. Movera takes no payment in the app and nothing is confirmed automatically. Off by default in every country; while off nothing changes. If she does not pay, the fee stays a debt exactly as today: it is still read at payment of her next trip (debtModel.readAtPayment) and the driver can collect it in the car (M2 + M3, completePreview.cashDueSplit).",
+    "setting": "CountryRules.riderPayLink { enabled (default false), payLink (an https:// link, at most 500 characters, '' = none) } on the country standard only (Admin > Pricing > Tips & limits; a zone's own value is ignored). configDefaults.riderPayLink: off, no link, in every country. The link check is the one of driverPayRequest.payLink (server isPayLink): 'https://' then printable ASCII only (no space, control, invisible or non-ASCII character), no backslash, it parses, and no 'user:password@' part. A payLink that fails it is 400 invalid_request, reason rider_pay_link_invalid; saving enabled true without a valid payLink is 400 invalid_request, reason rider_pay_link_needs_link; off may keep or clear the link. A kept key of country_rules (configDocs.keptKeys.country_rules) and kept by Restore / Undo last publish (pricingHistory.restoreKeeps).",
+    "read": "GET /rider/pay-movera?currency=XXX (rider; currency optional, default the currency of her oldest debt, else the server's default currency) -> RiderPayMovera { owed: Money (her debt NOW in that currency = debtModel.riderWallet debt, the same number as Rider.outstandingByCurrency; 0 when nothing), reference, tripId? (the trip of her oldest owed fee in that currency, only while owed is above 0), payLink? (only while owed is above 0 and the country of that trip's zone has riderPayLink on with a valid link) }. reference = '<riderId>-<tripId>' while owed is above 0, else '<riderId>': the text she writes on the payment so Movera finds her and the fee. Read only; the amount is never worked out on the phone.",
+    "cancel": "Rider app, the cancel result (and a no-show): when the cancel answer says a fee was charged (cancellation.fee above 0) the existing fee text stays as it is, and the app reads GET /rider/pay-movera?currency=<the fee's currency>. While the answer has payLink, it shows under the fee text the amount owed, the reference and a 'Pay now' button that opens payLink in the browser as it is (no amount added: a payment link may be generic) and a line telling her to type the amount and the reference on the payment page. Without payLink (setting off, the fee already paid from wallet credit, an older server answering 404) nothing new is shown.",
+    "debtLine": "Rider app, Account, the existing outstanding fees line: while GET /rider/pay-movera for that currency has payLink, the same amount, reference and 'Pay now' button are shown there, so she can pay later. Paying in the car on the next ride stays possible (debtModel.readAtPayment).",
+    "confirm": "Manual, by the existing admin action Mark as paid on the owed fee (POST /admin/riders/{riderId}/fees/{tripId}/mark-paid { reason }, outstandingFee.adminMarkPaid, finance.edit): the admin sees the payment in the payment company's own list (the reference names the rider and the trip) and marks that fee paid with a reason; the wallet correction lowers her debt at once (owed, Rider.outstanding, the next trip no longer carries it). A payment that covers several fees is marked fee by fee. No payment company is called by the server.",
+    "money": "No amount rule changes: owed is the server's debt (riders/debt.ts riderDebt), never a sum on the phone; the fee, the driver's share, readAtPayment and Mark as paid are unchanged.",
+    "admin": "Admin > Pricing > Tips & limits, the country standard: a card 'Rider fee payment link' with the switch and the payment link, with an 'i' text. Mark as paid on the rider's owed fee is unchanged (reused). sv / fr / en.",
+    "driver": "Not affected: the driver app never shows the rider's payment link; the cash he collects for her old fee is unchanged (completePreview.cashDueSplit).",
+    "oldApps": "The route is new, so no older app calls it; an older rider app shows the fee as before."
   }
 }

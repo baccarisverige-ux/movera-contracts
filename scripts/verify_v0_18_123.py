@@ -10,7 +10,7 @@ spec = yaml.safe_load(open('openapi.yaml'))
 S, P = spec['components']['schemas'], spec['paths']
 
 kk = c['configDocs']['keptKeys']
-assert kk['country_rules'] == ['payoutMode', 'payoutSchedule', 'maxRiderDebt', 'driverOwesLimit', 'calls.adminCallRoles', 'calls.phoneProvider'], 'country_rules kept keys'
+assert kk['country_rules'][:6] == ['payoutMode', 'payoutSchedule', 'maxRiderDebt', 'driverOwesLimit', 'calls.adminCallRoles', 'calls.phoneProvider'], 'country_rules kept keys (later versions add riderPayLink, verify_v0_18_141.py)'
 assert kk['dispatch'] == ['radar.reaskAfterSeconds', 'exclusive.reaskAfterSeconds'], 'dispatch kept keys'
 assert set(kk) - {'driver_app_config', 'driverAppConfigNote'} == {'note', 'country_rules', 'dispatch', 'removeKeys'}, 'keptKeys: the two documents (v0.18.130 adds driver_app_config, verify_v0_18_130.py)'
 n = kk['note']

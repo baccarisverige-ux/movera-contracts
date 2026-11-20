@@ -2,6 +2,8 @@
 
 Moved from CONTRACT.md (Rule 25: file size); nothing removed. Newer notes stay at the top of CONTRACT.md.
 
+v0.18.141 (DRAFT, rider fee payment link; waits for the new server; owner 2026-11-20 "add a payment link when the rider wants to cancel, but she has to pay a cancellation fee", Rules decisions/session-2026-11-06.md; Rule 0; X-Api-Version stays `0.5`; additive: one country setting, one read route; no migration; number after 0.18.133-0.18.140; note kept here, not in CONTRACT.md, which is at its 1,500-line limit): `CountryRules.riderPayLink { enabled, payLink }` (off by default, strict https link check, reasons `rider_pay_link_invalid` / `rider_pay_link_needs_link`, a kept key) and `GET /rider/pay-movera` → `RiderPayMovera { owed, reference, tripId?, payLink? }`: the rider's cancel result and Account debt line show 'Pay now' with the server's amount and the reference '<riderId>-<tripId>'; unpaid stays debt as today; the admin confirms with the existing Mark as paid (`contract.json#riderPayLink`).
+
 v0.18.132 (Q117 + Q118 follow-up wording; Rule 21 / Rule 25: moved from CONTRACT.md word for word, nothing removed): the v0.18.126 note and the old pointer line (below).
 
 v0.18.126 (S7 W2 Q126 = Q-B4; owner 2026-11-15 "Yes, open ones only (Rec.)", Rules decisions/session-2026-11-06.md; Rule 0, Rule 33; X-Api-Version stays `0.5`; no API shape change; server migration 0117 (index only); no admin setting; follows v0.18.125): **the admin alarm feed with no cursor starts from the open incidents**, not the whole history (§15 Alarm feed, `contract.json#safety.feedStart`).
