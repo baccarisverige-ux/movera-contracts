@@ -40,7 +40,7 @@ assert 'Older version notes are in `CHANGELOG.md`: v0.18.127 and before (the v0.
 assert t.count('\n') <= 1500, 'CONTRACT.md over 1,500 lines'
 # Second part: the temporary monthly pay request (owner 2026-11-20).
 r = c['driverPayRequest']
-assert set(r) == {'note', 'setting', 'job', 'notice', 'read', 'driver', 'confirm', 'payouts', 'admin', 'rider', 'oldApps'}, 'driverPayRequest keys'
+assert set(r) - {'stripe'} == {'note', 'setting', 'job', 'notice', 'read', 'driver', 'confirm', 'payouts', 'admin', 'rider', 'oldApps'}, 'driverPayRequest keys (stripe: the DRAFT Stripe payment)'
 assert c['configDefaults']['driverPayRequest'] == {'enabled': False, 'dayOfMonth': 1, 'payLink': '', 'minAmount': None}, 'off by default, no link'
 assert 'TEMPORARY' in r['note'] and 'Movera takes no payment in the app' in r['note'], 'note'
 assert 'pay_request_needs_link' in r['setting'] and 'pay_request_needs_amount' in r['setting'] and 'pay_request_invalid' in r['setting'], 'setting reasons'
@@ -70,3 +70,7 @@ pm = S['DriverPayMovera']
 assert pm['required'] == ['enabled', 'owedToMovera', 'reference'] and {'payLink', 'minAmount', 'request'} <= set(pm['properties']), 'DriverPayMovera'
 assert ' **Monthly pay request** (v0.18.139, `driverPayRequest`' in t, 'CONTRACT.md line 2'
 print('v0.18.139 driver wallet balance + monthly pay request ok')
+# DRAFT Stripe driver payment (…-dpay-stripe-c): the route, the answer, the flag.
+if 'stripe' in r:
+    assert '/driver/pay-movera/pay' in P and 'stripe' in S['DriverPayMovera']['properties'] and 'clientSecret' in S['StripeDriverPayment']['properties'], 'driver Stripe payment'
+    assert 'Driver paid Movera' in r['stripe'] and 'paidTwice' in r['stripe'], 'same effect as Driver paid Movera; the rest flagged'
