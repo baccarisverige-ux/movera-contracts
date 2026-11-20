@@ -31,6 +31,8 @@ for k in ('installId', 'deviceLimit', 'setting', 'binding', 'check', 'order', 'a
 spec = yaml.safe_load(open('openapi.yaml'))
 sch = spec['components']['schemas']
 o = sch['OtpRequest']
+assert sch['AccountPhoneChange']['properties']['installId'] == o['properties']['installId'] and 'phoneChange' in dc, 'phone change takes the same fields'
+assert 'canonical bytes' in dc['check'] and 'circuit breaker' in dc['order'], 'review fixes'
 assert o['required'] == ['phone', 'app'], 'OtpRequest required fields as released'
 assert o['properties']['installId']['pattern'] == '^[A-Za-z0-9_-]{16,64}$', 'installId shape'
 assert o['properties']['deviceCheck']['allOf'] == [{'$ref': '#/components/schemas/DeviceCheck'}], 'deviceCheck'
