@@ -39,6 +39,7 @@ for k in ('riderShareBody', 'privacyNote', 'driverPrivacyNote'):
     assert 'pickup' in ll['texts'][k]['en'] and 'ride ends' not in ll['texts'][k]['en'], k + ': says it stops at pickup'
 assert sc['RiderAppConfig']['properties']['liveLocation']['properties']['adjustPickupMeters']['minimum'] == 0, '0 = off'
 assert '409' in p['responses'], '409 documented'
+assert "drops the other side's dot on that status change" in ll['send'], 'apps clear the dot at pickup'
 assert "(accepted / driver_to_pickup, not arrived)" in t, 'CONTRACT.md: not at arrived'
 assert t.count('\n') <= 1500, 'CONTRACT.md over 1,500 lines'
 print('v0.18.144 live location ok')

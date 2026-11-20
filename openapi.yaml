@@ -39229,7 +39229,9 @@ components:
       type: object
       description: 'v0.18.144 (contract.json#liveLocation): The apps send at most every sendEverySeconds, and only while the
         ride screen is open and the switch is on; a switch turned off sends sharing false once. The other side treats a dot
-        older than 3 x sendEverySeconds as gone.'
+        older than 3 x sendEverySeconds as gone. At pickup (rider on board) the server answers 409 live_location_not_active,
+        so no final sharing:false frame follows: each app drops the other side''s dot on that status change itself (the driver
+        app when the trip leaves the to-pickup / arrived steps; the rider app shows no driver dot from these frames).'
       required:
       - sharing
       - sendEverySeconds
