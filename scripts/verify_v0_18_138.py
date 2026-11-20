@@ -33,6 +33,8 @@ sch = spec['components']['schemas']
 o = sch['OtpRequest']
 assert sch['AccountPhoneChange']['properties']['installId'] == o['properties']['installId'] and 'phoneChange' in dc, 'phone change takes the same fields'
 assert 'canonical bytes' in dc['check'] and 'circuit breaker' in dc['order'], 'review fixes'
+assert 'each segment' in dc['check'] and 'zero padding bits' in dc['check'] and 'exactly 5 base64url segments' in dc['check'], 'Android one-use over canonical segments'
+assert 'never Google trouble' in dc['order'] and '401 / 403' in dc['order'], 'outages and our own credentials never count on the address ceiling'
 assert o['required'] == ['phone', 'app'], 'OtpRequest required fields as released'
 assert o['properties']['installId']['pattern'] == '^[A-Za-z0-9_-]{16,64}$', 'installId shape'
 assert o['properties']['deviceCheck']['allOf'] == [{'$ref': '#/components/schemas/DeviceCheck'}], 'deviceCheck'
