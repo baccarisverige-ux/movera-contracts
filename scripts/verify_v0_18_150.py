@@ -13,10 +13,12 @@ assert c['configDefaults']['driverOneStreamFallback'] == {'failuresInARow': 3, '
 assert 'whole number 1-10, default 3' in fb['setting'] and 'whole number 1-60, default 10' in fb['setting'], 'ranges'
 assert '400 invalid_request with reason invalid_document' in fb['server'] and 'GET /driver/config always serves realtime.oneStreamFallback' in fb['server'], 'server'
 assert 'a 200 alone is not connected' in fb['failedTry'] and 'resets the count to 0' in fb['failedTry'], 'failed try'
+assert 'at once, without waiting for a Retry-After' in fb['driver'] and 'while the two old streams stay open' in fb['driver'] and 'one failed return try is enough' in fb['driver'], 'way back'
 assert 'opens the two old streams' in fb['driver'] and 'An app restart forgets the count and the backup' in fb['driver'] and '404 zone_not_found means the two streams once' in fb['driver'] and 'No text on screen' in fb['driver'], 'driver'
 assert fb['rider'].startswith('Not affected'), 'rider'
 assert "'Backup after failed tries' (1-10, default 3)" in fb['admin'] and "'Try the one connection again after (minutes)' (1-60, default 10)" in fb['admin'] and 'en / sv / fr' in fb['admin'], 'admin'
 ids = [s['id'] for s in fb['scenarios']]
+assert {'return_try_fails', 'backup_ignores_retry_after'} <= set(ids), 'way-back scenarios'
 assert len(ids) == len(set(ids)) >= 7, 'scenarios'
 kk = c['configDocs']['keptKeys']
 assert kk['driver_app_config'] == ['realtime.oneStream', 'realtime.oneStreamFallback'], 'kept keys'
@@ -45,4 +47,24 @@ assert cl[j - 2].startswith('v0.18.150 (L20 stream backup; Rule 21 / Rule 25: mo
 assert hashlib.sha256(cl[j + 2].encode()).hexdigest() == '500ff2fd72593fe8c33c06d0cb1634754ea5da6aa47af9bb54ceee2fa8ded620', 'old pointer line moved word for word'
 assert 'Older version notes are in `CHANGELOG.md`: v0.18.127 and before (the v0.18.127 note moved in v0.18.150, the v0.18.126 note in v0.18.132,' in t, 'new pointer line'
 assert t.count('\n') <= 1500, 'CONTRACT.md over 1,500 lines'
+# Review fix: no line of CONTRACT.md / CHANGELOG.md is its own text twice (a doubled line once slipped in).
+for name, text in (('CONTRACT.md', t), ('CHANGELOG.md', ch)):
+    for k, line in enumerate(text.split('\n')):
+        h = len(line) // 2
+        assert not (line and len(line) % 2 == 0 and line[:h] == line[h:]), f'{name}:{k + 1} doubled'
+assert t.split('\n')[0] == '# Movera shared contract v' + c['version'], 'CONTRACT.md heading'
+# Review fix: against the v0.18.132 file (tag or origin/main, when git has it) only a few lines changed.
+import difflib, subprocess
+base = None
+for ref in ('v0.18.132', 'origin/main'):
+    try:
+        base = subprocess.run(['git', 'show', ref + ':CONTRACT.md'], capture_output=True, text=True, check=True).stdout
+        if base.startswith('# Movera shared contract v0.18.132'):
+            break
+        base = None
+    except Exception:
+        base = None
+if base is not None:
+    changed = [d for d in difflib.unified_diff(base.split('\n'), t.split('\n'), lineterm='', n=0) if d[:1] in '+-' and d[:3] not in ('+++', '---')]
+    assert len(changed) <= 12, f'CONTRACT.md: {len(changed)} lines changed against v0.18.132 (expected the heading, the note, the kept-keys line and the move)'
 print('v0.18.150 offer stream backup ok')
