@@ -18,14 +18,16 @@ assert "{ eventId, kind: 'rider_trip_changed', tripId, occurredAt, serverTime }"
 assert 'hints are not replayed' in r and 'not the first connect' in r, 'riderTripEvent: reconnect rule kept'
 rb = bs['riderTripEventBefore0_18_127']
 assert rb.startswith('Replaced in v0.18.127 (kept, Rule 21): P21 / B-n: GET /rider/config/stream also carries rider_trip_changed') and 'for every event of any trip of the signed-in rider' in rb, 'released text kept'
-assert list(bs) == ['note', 'activeTrip', 'liveWins', 'driverChanged', 'noLateMessage', 'riderTripEvent', 'riderTripEventBefore0_18_127', 'pollFallback', 'pollSeconds', 'pollBackoff', 'leaveNowName', 'rulesSource', 'versionRetry', 'admin'], 'bookedRideSeen: only the released key added'
+assert [k for k in bs if k not in ('activeTripBefore0_18_152', 'searchSeen')] == ['note', 'activeTrip', 'liveWins', 'driverChanged', 'noLateMessage', 'riderTripEvent', 'riderTripEventBefore0_18_127', 'pollFallback', 'pollSeconds', 'pollBackoff', 'leaveNowName', 'rulesSource', 'versionRetry', 'admin'], 'bookedRideSeen: only the released key added (v0.18.152 adds activeTripBefore0_18_152 + searchSeen)'
 
 d = S['RiderTripEvent']['description'].replace('\n', ' ')
 assert 'v0.18.127 (contract.json#bookedRideSeen.riderTripEvent): not sent for a GPS update' in d, 'openapi RiderTripEvent'
 assert S['RiderTripEvent']['properties']['kind']['const'] == 'rider_trip_changed', 'openapi kind unchanged'
 
 t = open('CONTRACT.md', encoding='utf-8').read()
-assert '\nv0.18.127 (S7 W2 Q119' in t and 'follows v0.18.126)' in t and 'riderTripEventBefore0_18_127' in t, 'CONTRACT.md v0.18.127 note'
+tc = t + open('CHANGELOG.md', encoding='utf-8').read()  # v0.18.152: the v0.18.127 note moved to CHANGELOG.md word for word
+n127 = next(l for l in tc.split('\n') if l.startswith('v0.18.127 (S7 W2 Q119'))
+assert 'follows v0.18.126)' in n127 and 'riderTripEventBefore0_18_127' in n127, 'CONTRACT.md v0.18.127 note'
 assert "for every event of the rider's trips except a GPS update (kind `location`, v0.18.127)" in t, 'CONTRACT.md P21 line'
 # the move (Rule 25 size, Rule 21 word for word): the v0.18.120 note and the old pointer line now only in CHANGELOG.md
 import hashlib
