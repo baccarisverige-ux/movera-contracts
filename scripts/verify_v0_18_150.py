@@ -12,6 +12,7 @@ assert list(fb) == ['note', 'setting', 'server', 'failedTry', 'driver', 'rider',
 assert c['configDefaults']['driverOneStreamFallback'] == {'failuresInARow': 3, 'retryOneAfterMinutes': 10}, 'defaults (owner: 3 / 10)'
 assert 'whole number 1-10, default 3' in fb['setting'] and 'whole number 1-60, default 10' in fb['setting'], 'ranges'
 assert '400 invalid_request with reason invalid_document' in fb['server'] and 'GET /driver/config always serves realtime.oneStreamFallback' in fb['server'], 'server'
+assert 'with at least one line received (a heartbeat comment counts)' in fb['failedTry'] and 'a stream that received no line never counts as connected' in fb['failedTry'], 'silent stream (review 2)'
 assert 'a 200 alone is not connected' in fb['failedTry'] and 'resets the count to 0' in fb['failedTry'], 'failed try'
 assert 'at once, without waiting for a Retry-After' in fb['driver'] and 'while the two old streams stay open' in fb['driver'] and 'one failed return try is enough' in fb['driver'], 'way back'
 assert 'opens the two old streams' in fb['driver'] and 'An app restart forgets the count and the backup' in fb['driver'] and '404 zone_not_found means the two streams once' in fb['driver'] and 'No text on screen' in fb['driver'], 'driver'
