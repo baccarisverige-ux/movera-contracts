@@ -9,7 +9,7 @@ assert tuple(map(int, c['version'].split('.'))) >= (0, 18, 153), 'version 0.18.1
 keys = list(c)
 assert keys.index('driverIncomeYear') == keys.index('kpis') + 1, 'driverIncomeYear right after kpis'
 d = c['driverIncomeYear']
-assert list(d) == ['note', 'why', 'payee', 'money', 'periods', 'addUp', 'admin', 'driver', 'texts', 'apps'], 'driverIncomeYear keys'
+assert list(d) == ['note', 'why', 'payee', 'money', 'periods', 'addUp', 'partial', 'admin', 'driver', 'texts', 'apps'], 'driverIncomeYear keys'
 assert 'follows v0.18.132; 0.18.133-0.18.152 reserved for other drafts' in d['note'] and 'migration 0132' in d['note'] and 'no admin setting' in d['note'], 'note'
 assert 'lag (2022:1681)' in d['why'] and 'never builds the tax office' in d['why'], 'why: DAC7, no XML'
 assert 'kind company' in d['payee'] and 'kind driver' in d['payee'] and 'never the full account number' in d['payee'], 'payee'
@@ -17,7 +17,11 @@ FIELDS = ['rides', 'grossFares', 'tips', 'bonuses', 'adjustments', 'pickupPay', 
 assert list(d['money']) == ['note'] + FIELDS, 'money fields'
 assert 'Never added across currencies' in d['money']['note'] and 'paid_to_movera' in d['money']['note'], 'money note'
 assert 'pay in the car (cash) included' in d['money']['rides'] and '= GET /driver/earnings net' in d['money']['netEarnings'], 'cash rides, net = earnings net'
-assert "trips.ended_at" in d['periods'] and 'belongs to the old year' in d['periods'], 'periods by trip end, zone-local'
+assert 'earnings_entries.at, when it was credited' in d['periods'] and 'the old year' in d['periods'] and 'do not move' in d['periods'], 'periods by entry time (SHOULD-1)'
+assert 'netEarnings = GET /driver/earnings net for the same period' in d['money']['netEarnings'], 'net = earnings net'
+assert 'never below 0' in d['money']['paidOutByMovera'] and 'payouts.paid_at' in d['money']['paidOutByMovera'] and 'Not derived from the entries' in d['money']['paidOutByMovera'], 'paid out (SHOULD-2)'
+assert 'lineKind: trip' in d['addUp'] and 'payout (one paid payout' in d['addUp'], 'line kinds'
+assert 'partial: true' in d['partial'] and d['texts']['partial'] == {'en': 'Only your zones', 'sv': 'Bara dina zoner', 'fr': 'Seulement vos zones'}, 'partial (SHOULD-4)'
 assert 'Σ trip lines = the day, Σ days = the month, Σ months = the quarter, Σ quarters = the year' in d['addUp'], 'add up'
 a = d['admin']
 assert a['endpoint'].startswith('GET /admin/finance/driver-income (permission finance.read)'), 'admin endpoint'
@@ -39,6 +43,7 @@ assert cv['x-permission'] == 'finance.read' and 'text/csv' in cv['responses']['2
 dv = P['/driver/income-statement']['get']
 assert dv['x-actor'] == ['driver'] and dv['responses']['200']['content']['application/json']['schema'] == {'$ref': '#/components/schemas/DriverIncomeStatement'}, 'openapi driver'
 assert set(S['DriverIncomeTotals']['required']) == set(FIELDS), 'totals fields'
+assert S['DriverIncomeRow']['allOf'][1]['properties']['partial']['type'] == 'boolean' and S['DriverIncomeTripLine']['allOf'][1]['properties']['lineKind']['enum'] == ['trip', 'credit', 'payout'], 'openapi partial, lineKind'
 for n in ('DriverIncomeRow', 'DriverIncomeQuarter', 'DriverIncomeMonth', 'DriverIncomeDay', 'DriverIncomeTripLine', 'DriverIncomePage', 'DriverIncomeStatement'): assert n in S, n
 t = open('CONTRACT.md', encoding='utf-8').read()
 assert t.startswith('# Movera shared contract v' + c['version']) and '\nv0.18.153 (P29 driver income year file, EU DAC7;' in t, 'CONTRACT.md note'
