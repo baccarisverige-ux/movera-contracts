@@ -7,17 +7,17 @@ import hashlib, json, yaml
 c = json.load(open('contract.json'))
 assert tuple(map(int, c['version'].split('.'))) >= (0, 18, 130), 'version 0.18.130 or later'
 kk = c['configDocs']['keptKeys']
-assert kk['driver_app_config'] == ['realtime.oneStream'], 'driver_app_config kept keys'
+assert kk['driver_app_config'][:1] == ['realtime.oneStream'], 'driver_app_config kept keys (v0.18.154 adds appUpdate.minVersion, appUpdate.storeUrls, verify_v0_18_154.py)'
 assert kk['country_rules'] == ['payoutMode', 'payoutSchedule', 'maxRiderDebt', 'driverOwesLimit', 'calls.adminCallRoles', 'calls.phoneProvider'], 'country_rules unchanged'
 assert kk['dispatch'] == ['radar.reaskAfterSeconds', 'exclusive.reaskAfterSeconds'], 'dispatch unchanged'
-assert set(kk) == {'note', 'country_rules', 'dispatch', 'driver_app_config', 'driverAppConfigNote', 'removeKeys'}, 'keptKeys keys'
+assert set(kk) - {'rider_app_config', 'appUpdateNote'} == {'note', 'country_rules', 'dispatch', 'driver_app_config', 'driverAppConfigNote', 'removeKeys'}, 'keptKeys keys (v0.18.154 adds rider_app_config, appUpdateNote)'
 assert kk['driverAppConfigNote'].startswith('v0.18.130 (') and 'offers.autoOffline is not listed' in kk['driverAppConfigNote'], 'driverAppConfigNote'
 assert c['configDefaults']['driverOneStream'] is False, 'default off unchanged'
 spec = yaml.safe_load(open('openapi.yaml'))
 S, P = spec['components']['schemas'], spec['paths']
 assert S['DriverAppConfig']['properties']['realtime']['properties']['oneStream']['type'] == 'boolean', 'the kept path exists'
 u = S['ConfigDraftUpdate']['properties']['removeKeys']
-assert sorted(u['items']['enum']) == sorted(kk['country_rules'] + kk['dispatch'] + kk['driver_app_config']) and u['maxItems'] == len(u['items']['enum']), 'openapi removeKeys'
+assert sorted(u['items']['enum']) == sorted(set(kk['country_rules'] + kk['dispatch'] + kk['driver_app_config'] + kk.get('rider_app_config', []))) and u['maxItems'] == len(u['items']['enum']), 'openapi removeKeys'
 assert 'v0.18.130 (configDocs.keptKeys; driver_app_config: realtime.oneStream)' in P['/admin/config/{doc}']['put']['description'], 'openapi PUT'
 t = open('CONTRACT.md', encoding='utf-8').read()
 assert t.startswith('# Movera shared contract v' + c['version']) and '\nv0.18.130 (SCS guard re-check follow-up;' in t and 'follows v0.18.129)' in t, 'CONTRACT.md note'
