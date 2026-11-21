@@ -1,0 +1,48 @@
+#!/usr/bin/env python3
+"""v0.18.150 (L20 stream backup; owner 2026-11-21 "Switch to old two (Rec.)", Rules plan/NUMBERS.md): after
+realtime.oneStreamFallback.failuresInARow failed tries of GET /driver/stream in a row the driver app opens the two old
+streams and asks the one stream again after retryOneAfterMinutes (contract.json#driverOneStreamFallback), the defaults,
+the kept key, the openapi copy, the CONTRACT.md notes, and the v0.18.127 note moved word for word to CHANGELOG.md
+(Rule 25). Run by scripts/verify.sh (own file, Rule 25)."""
+import hashlib, json, yaml
+c = json.load(open('contract.json'))
+assert tuple(map(int, c['version'].split('.'))) >= (0, 18, 150), 'version 0.18.150 or later'
+fb = c['driverOneStreamFallback']
+assert list(fb) == ['note', 'setting', 'server', 'failedTry', 'driver', 'rider', 'admin', 'scenarios'], 'driverOneStreamFallback keys'
+assert c['configDefaults']['driverOneStreamFallback'] == {'failuresInARow': 3, 'retryOneAfterMinutes': 10}, 'defaults (owner: 3 / 10)'
+assert 'whole number 1-10, default 3' in fb['setting'] and 'whole number 1-60, default 10' in fb['setting'], 'ranges'
+assert '400 invalid_request with reason invalid_document' in fb['server'] and 'GET /driver/config always serves realtime.oneStreamFallback' in fb['server'], 'server'
+assert 'a 200 alone is not connected' in fb['failedTry'] and 'resets the count to 0' in fb['failedTry'], 'failed try'
+assert 'opens the two old streams' in fb['driver'] and 'An app restart forgets the count and the backup' in fb['driver'] and '404 zone_not_found means the two streams once' in fb['driver'] and 'No text on screen' in fb['driver'], 'driver'
+assert fb['rider'].startswith('Not affected'), 'rider'
+assert "'Backup after failed tries' (1-10, default 3)" in fb['admin'] and "'Try the one connection again after (minutes)' (1-60, default 10)" in fb['admin'] and 'en / sv / fr' in fb['admin'], 'admin'
+ids = [s['id'] for s in fb['scenarios']]
+assert len(ids) == len(set(ids)) >= 7, 'scenarios'
+kk = c['configDocs']['keptKeys']
+assert kk['driver_app_config'] == ['realtime.oneStream', 'realtime.oneStreamFallback'], 'kept keys'
+spec = yaml.safe_load(open('openapi.yaml'))
+S, P = spec['components']['schemas'], spec['paths']
+f = S['DriverAppConfig']['properties']['realtime']['properties']['oneStreamFallback']
+assert f['type'] == 'object' and f['additionalProperties'] is False and 'required' not in f, 'openapi object'
+assert (f['properties']['failuresInARow']['minimum'], f['properties']['failuresInARow']['maximum'], f['properties']['failuresInARow']['default']) == (1, 10, 3), 'openapi failuresInARow'
+assert (f['properties']['retryOneAfterMinutes']['minimum'], f['properties']['retryOneAfterMinutes']['maximum'], f['properties']['retryOneAfterMinutes']['default']) == (1, 60, 10), 'openapi retryOneAfterMinutes'
+assert all(f['properties'][k]['type'] == 'integer' for k in ('failuresInARow', 'retryOneAfterMinutes')), 'integers'
+assert 'realtime.oneStreamFallback' in S['ConfigDraftUpdate']['properties']['removeKeys']['items']['enum'], 'removeKeys'
+assert 'v0.18.150 (driverOneStreamFallback)' in P['/driver/stream']['get']['description'], 'openapi /driver/stream'
+assert 'v0.18.150 (driverOneStreamFallback.server)' in P['/admin/config/{doc}']['put']['description'], 'openapi PUT'
+t = open('CONTRACT.md', encoding='utf-8').read()
+assert t.startswith('# Movera shared contract v' + c['version']) and '\nv0.18.150 (L20 stream backup;' in t, 'CONTRACT.md note'
+n150 = next(l for l in t.split('\n') if l.startswith('v0.18.150 (L20 stream backup;'))
+assert 'follows v0.18.132' in n150 and '`contract.json#driverOneStreamFallback`' in n150 and 'Rider: not affected' in n150, 'CONTRACT.md note text'
+assert 'v0.18.150: also `realtime.oneStreamFallback`' in t, 'CONTRACT.md kept keys line'
+ch = open('CHANGELOG.md', encoding='utf-8').read()
+cl = ch.split('\n')
+n127 = next(l for l in cl if l.startswith('v0.18.127 (S7 W2 Q119'))
+assert '\n' + n127 not in t and hashlib.sha256(n127.encode()).hexdigest() == 'b51a0ff2ebb7016f49c9a557fb973e2a146ceaece339a99b3829d3760b5e644e', 'v0.18.127 note moved word for word'
+assert cl.count(n127) == 1, 'v0.18.127 note once in CHANGELOG.md'
+j = cl.index(n127)
+assert cl[j - 2].startswith('v0.18.150 (L20 stream backup; Rule 21 / Rule 25: moved from CONTRACT.md word for word'), 'CHANGELOG.md move line'
+assert hashlib.sha256(cl[j + 2].encode()).hexdigest() == '500ff2fd72593fe8c33c06d0cb1634754ea5da6aa47af9bb54ceee2fa8ded620', 'old pointer line moved word for word'
+assert 'Older version notes are in `CHANGELOG.md`: v0.18.127 and before (the v0.18.127 note moved in v0.18.150, the v0.18.126 note in v0.18.132,' in t, 'new pointer line'
+assert t.count('\n') <= 1500, 'CONTRACT.md over 1,500 lines'
+print('v0.18.150 offer stream backup ok')
