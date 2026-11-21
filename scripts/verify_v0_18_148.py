@@ -6,12 +6,13 @@ import hashlib, json, yaml
 c = json.load(open('contract.json'))
 assert tuple(map(int, c['version'].split('.'))) >= (0, 18, 148), 'version 0.18.148 or later'
 sp = c['sosPressTime']
-assert list(sp) == ['note', 'at', 'liveTrip', 'endedTrip', 'afterEndSeconds', 'maxAgeSeconds', 'futureSkewSeconds', 'refusals', 'idempotency', 'incident', 'admin', 'apps', 'scenarios'], 'sosPressTime keys'
-assert sp['afterEndSeconds'] == 1800 and sp['maxAgeSeconds'] == 1800 and sp['futureSkewSeconds'] == 120, 'windows (owner: 30 min)'
+assert list(sp) == ['note', 'at', 'liveTrip', 'endedTrip', 'afterEndSeconds', 'maxAgeSeconds', 'clock', 'refusals', 'idempotency', 'incident', 'admin', 'apps', 'scenarios'], 'sosPressTime keys'
+assert sp['afterEndSeconds'] == 1800 and sp['maxAgeSeconds'] == 1800, 'windows (owner: 30 min)'
+assert 'p = min(at, receivedAt)' in sp['clock'] and 'never refuses' in sp['clock'], 'fast phone clock clamped, never refused'
 assert 'always taken, whatever `at` says' in sp['liveTrip'], 'live trip unchanged'
 assert 'trips.ended_at, else the trip' in sp['endedTrip'] and 'trips.accepted_at' in sp['endedTrip'], 'ended trip rule'
-assert set(sp['refusals']) == {'sos_at_in_future', 'sos_too_old', 'sos_not_during_trip', 'unchanged'}, 'refusal reasons'
-for r in ('sos_at_in_future', 'sos_too_old', 'sos_not_during_trip'):
+assert set(sp['refusals']) == {'sos_too_old', 'sos_not_during_trip', 'unchanged'}, 'refusal reasons'
+for r in ('sos_too_old', 'sos_not_during_trip'):
     assert sp['refusals'][r].startswith('409 invalid_transition, reason ' + r), r
 assert 'trip_not_live' in sp['refusals']['unchanged'] and '404 trip_not_found' in sp['refusals']['unchanged'], 'unchanged refusals'
 assert 'replays the first SosReceipt (no second incident, no second SMS)' in sp['idempotency'], 'idempotency'
@@ -19,7 +20,7 @@ assert 'No admin setting' in sp['admin'] and 'Any refusal (409 any reason, 404, 
 ids = [s['id'] for s in sp['scenarios']]
 assert len(ids) == len(set(ids)) >= 10, 'scenarios'
 exp = {s['id']: s['expect'] for s in sp['scenarios']}
-assert exp['pressed_in_trip_arrives_after_end'] == 'taken' and exp['arrives_too_late'] == '409 sos_too_old' and exp['at_in_future'] == '409 sos_at_in_future' and exp['pressed_after_window'] == '409 sos_not_during_trip', 'scenario answers'
+assert exp['pressed_in_trip_arrives_after_end'] == 'taken' and exp['arrives_too_late'] == '409 sos_too_old' and exp['phone_clock_fast'] == 'taken' and exp['small_clock_skew'] == 'taken' and exp['arrives_at_max_age'] == 'taken' and exp['pressed_after_window'] == '409 sos_not_during_trip', 'scenario answers'
 spec = yaml.safe_load(open('openapi.yaml'))
 S = spec['components']['schemas']
 assert 'pressedAt' in S['Incident']['properties'] and 'pressedAt' not in S['Incident']['required'], 'Incident.pressedAt optional'
