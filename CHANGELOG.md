@@ -2,7 +2,7 @@
 
 Moved from CONTRACT.md (Rule 25: file size); nothing removed. Newer notes stay at the top of CONTRACT.md.
 
-v0.18.149 (SOS contacts SMS sent; Rule 21 / Rule 25: moved from CONTRACT.md word for word, nothing removed): the v0.18.128 note and the old pointer line (below).
+v0.18.151 (SOS contacts SMS sent; Rule 21 / Rule 25: moved from CONTRACT.md word for word, nothing removed): the v0.18.128 note and the old pointer line (below).
 
 v0.18.128 (S7 W2 Q125, plan B3.11; owner 2026-11-15 Sitting W2 Q125 (Q-B3) "A) count and log above N = 3, refuse later", Rules decisions/session-2026-11-06.md:1388; Rule 0; X-Api-Version stays `0.5`; wording only, no new field, status or reason; no migration, no admin setting; no app change; follows v0.18.127): app streams (rider and driver) are counted per session on each server copy; one opened while the session already has 3 open is still answered 200, logged and counted (§ "Streams per session", `contract.json#realtime.appStreamsPerSession`). Refusing (429 `too_many_streams`) is a later step.
 

@@ -22,7 +22,7 @@ for p in ['/rider/config/stream', '/driver/config/stream', '/driver/offers/strea
     assert 'v0.18.128 (contract.json#realtime.appStreamsPerSession): more than 3 open app streams of one session' in d, 'openapi ' + p
 
 t = open('CONTRACT.md', encoding='utf-8').read()
-tc = t + open('CHANGELOG.md', encoding='utf-8').read()  # v0.18.149: the v0.18.128 note moved to CHANGELOG.md word for word
+tc = t + open('CHANGELOG.md', encoding='utf-8').read()  # v0.18.151: the v0.18.128 note moved to CHANGELOG.md word for word
 assert '\nv0.18.128 (S7 W2 Q125' in tc and '- **Streams per session** (v0.18.128, S7 W2 Q125)' in t, 'CONTRACT.md v0.18.128 note and line'
 # the move (Rule 25 size, Rule 21 word for word): the v0.18.122 and v0.18.121 notes and the old pointer line now only in CHANGELOG.md
 import hashlib
