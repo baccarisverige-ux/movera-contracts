@@ -14,7 +14,7 @@ assert 'they never touch request handling' in h, 'health: no effect on requests'
 la = fd['lateAlarm']
 assert 'the admin alert desk shows it too' in la['rule'] and 'does not show it yet' not in la['rule'], 'lateAlarm.rule'
 assert la['ruleBefore0_18_125'].startswith('Replaced in v0.18.125 (kept, Rule 21): GET /healthz/jobs') and la['ruleBefore0_18_125'].endswith('The admin alert desk does not show it yet (a later job).'), 'released rule kept'
-assert list(la) == ['note', 'tripTimers', 'dispatch', 'rule', 'ruleBefore0_18_125'], 'lateAlarm: only ruleBefore0_18_125 added'
+assert list(la)[:5] == ['note', 'tripTimers', 'dispatch', 'rule', 'ruleBefore0_18_125'] and set(list(la)[5:]) <= {'ruleBefore0_18_145'}, 'lateAlarm: only ruleBefore0_18_125 added (v0.18.145 may add ruleBefore0_18_145)'
 assert list(fd).index('health') == list(fd).index('lateAlarm') + 1, 'health after lateAlarm'
 sd = c['alertDesk']['serverDetection']['kindDefaults']
 sh = sd['system_health']

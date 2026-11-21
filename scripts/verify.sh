@@ -918,8 +918,10 @@ assert 'v0.18.83' in fd['shedOnly'] and 'fastDispatch.shedPolls' in fd['shedOnly
 la = fd['lateAlarm']
 assert la['tripTimers']['lateSeconds'] == 60 and la['tripTimers']['kinds'][:3] == ['trip_eta', 'ride_check_scan', 'near_dropoff'], 'S3 trip timers 60 s'
 assert la['dispatch']['lateSeconds'] == 30 and la['dispatch']['kinds'] == ['dispatch_round', 'withdraw_driver_offers'], 'S3 dispatch 30 s'
-for part in ('/healthz/jobs', '503', 'lateSeconds', 'overdue', 'TRIP_LANES', 'default 1', '60 s / 30 s', 'never restarts'):
+for part in ('/healthz/jobs', '503', 'lateSeconds', 'overdue', 'TRIP_LANES', '60 s / 30 s', 'never restarts'):
     assert part in la['rule'] + la['note'], 'S3 lateAlarm: ' + part
+# v0.18.145 (owner 2026-11-20 18:49): TRIP_LANES default 2; the v0.18.83 wording (default 1) is kept in ruleBefore0_18_145.
+assert 'default 2' in la['rule'] and 'default 1' in la['ruleBefore0_18_145'], 'S3 lateAlarm: TRIP_LANES default 2 (was 1)'
 assert 'fastDispatch.lateAlarm' in fd['timers'], 'S3 timers points to lateAlarm'
 bs = c['bookedRideSeen']
 pb = bs['pollBackoff']
