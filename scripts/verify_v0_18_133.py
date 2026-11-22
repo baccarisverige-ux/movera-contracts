@@ -64,14 +64,14 @@ for name in ('OtpVerifyRequest', 'AccountPhoneVerify'):
     for code, ok in (('1234', True), ('123456', True), ('12345', False), ('1234567', False), ('123', False), ('', False), ('12345a', False), ('1234\n', False), (' 123456', False)):
         assert bool(re.fullmatch(pat, code)) is ok, name + ' code ' + repr(code)
 t = open('CONTRACT.md', encoding='utf-8').read()
-assert t.startswith('# Movera shared contract v' + c['version']) and '\nv0.18.133 (real SMS sign-in codes;' in t, 'CONTRACT.md note'
-n133 = next(l for l in t.split('\n') if l.startswith('v0.18.133 (real SMS sign-in codes;'))
+assert t.startswith('# Movera shared contract v' + c['version']) and '\nv0.18.133 (real SMS sign-in codes;' in t + open('CHANGELOG.md', encoding='utf-8').read(), 'CONTRACT.md note'  # the note moved to CHANGELOG.md in v0.18.143
+n133 = next(l for l in (t + open('CHANGELOG.md', encoding='utf-8').read()).split('\n') if l.startswith('v0.18.133 (real SMS sign-in codes;'))
 assert 'follows v0.18.132; SMS-alone' in n133 and 'reserved for S5' not in n133, 'CONTRACT.md note follows v0.18.132 (SMS-alone, owner 2026-11-20)'
 # No line of CONTRACT.md doubled by an edit (contracts #187 lesson): every long line is there once.
 _long = [l for l in t.split('\n') if len(l) > 40]
 _dup = sorted({l for l in _long if _long.count(l) > 1})
 assert not _dup, 'CONTRACT.md has doubled lines: %r' % [l[:60] for l in _dup[:3]]
-assert 'v0.18.133 (`contract.json#smsSignIn`): **real SMS codes.**' in t and 'random 6-digit code (`smsSignIn.codeLength`)' in t and '**A code sent by SMS is 6 digits**' in t and 'codeLength?' in t, 'CONTRACT.md section 8 line + 6 digits'
+assert 'v0.18.133 (`contract.json#smsSignIn`): **real SMS codes.**' in t and 'random 6-digit code (`smsSignIn.codeLength`)' in t and '**A code sent by SMS is 6 digits**' in t + open('CHANGELOG.md', encoding='utf-8').read() and 'codeLength?' in t, 'CONTRACT.md section 8 line + 6 digits'
 ch = open('CHANGELOG.md', encoding='utf-8').read()
 cl = ch.split('\n')
 n127 = next(l for l in cl if l.startswith('v0.18.127 (S7 W2 Q119, plan 0.21;'))

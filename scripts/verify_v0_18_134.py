@@ -37,6 +37,6 @@ assert cr == {'$ref': '#/components/schemas/AccountDeletionSetting'}, 'CountryRu
 st = S['AccountDeletionSetting']['properties']
 assert st['eraseEnabled']['default'] is False and st['eraseAfterDays']['default'] == 30 and st['eraseAfterDays']['minimum'] == 30, 'setting'
 t = open('CONTRACT.md', encoding='utf-8').read()
-assert t.startswith('# Movera shared contract v' + c['version']) and '\nv0.18.134 (account deletion E1;' in t, 'CONTRACT.md note'
+assert t.startswith('# Movera shared contract v' + c['version']) and '\nv0.18.134 (account deletion E1;' in t + open('CHANGELOG.md', encoding='utf-8').read(), 'CONTRACT.md note'  # the note moved to CHANGELOG.md in v0.18.143
 assert t.count('\n') <= 1500, 'CONTRACT.md over 1,500 lines'
 print('v0.18.134 ok')
