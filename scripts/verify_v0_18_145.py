@@ -20,7 +20,7 @@ for p in ('/driver/profile', '/notifications', '/driver/reminders', '/driver/onb
     assert 'get' in o['paths'][p], p + ' stays (additive)'
 assert 'airport_queue_changed' in o['paths']['/driver/config/stream']['get']['description'], 'stream doc'
 t = open('CONTRACT.md', encoding='utf-8').read()
-assert t.startswith('# Movera shared contract v' + c['version']) and '\nv0.18.145 (S4c load cut' in t, 'CONTRACT.md note'
+assert t.startswith('# Movera shared contract v' + c['version']) and '\nv0.18.145 (S4c load cut' in t + open('CHANGELOG.md', encoding='utf-8').read(), 'CONTRACT.md note'  # the note moved to CHANGELOG.md in v0.18.151
 import hashlib
 ch = open('CHANGELOG.md', encoding='utf-8').read()
 cl = ch.split('\n')
