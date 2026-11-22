@@ -26,7 +26,7 @@ assert sc['LiveLocationEvent']['required'] == ['tripId', 'side', 'sharing', 'at'
 assert set(sc['RiderAppConfig']['properties']['liveLocation']['properties']) == {'share', 'adjustPickupMeters', 'sendEverySeconds'}, 'setting'
 assert 'privacyNote' in ll['texts'] and 'driverPrivacyNote' in ll['texts'], 'consent texts'
 t = open('CONTRACT.md', encoding='utf-8').read()
-assert t.startswith('# Movera shared contract v' + c['version']) and '\nv0.18.144 (owner 2026-11-20' in t, 'CONTRACT.md note'
+assert t.startswith('# Movera shared contract v' + c['version']) and '\nv0.18.144 (owner 2026-11-20' in t + open('CHANGELOG.md', encoding='utf-8').read(), 'CONTRACT.md note'  # the note moved to CHANGELOG.md in v0.18.150
 import hashlib
 ch = open('CHANGELOG.md', encoding='utf-8').read()
 cl = ch.split('\n')
@@ -48,6 +48,6 @@ for k in ('riderShareBody', 'privacyNote', 'driverPrivacyNote'):
 assert sc['RiderAppConfig']['properties']['liveLocation']['properties']['adjustPickupMeters']['minimum'] == 0, '0 = off'
 assert '409' in p['responses'], '409 documented'
 assert "drops the other side's dot on that status change" in ll['send'], 'apps clear the dot at pickup'
-assert "(accepted / driver_to_pickup, not arrived)" in t, 'CONTRACT.md: not at arrived'
+assert "(accepted / driver_to_pickup, not arrived)" in t + open('CHANGELOG.md', encoding='utf-8').read(), 'CONTRACT.md: not at arrived'
 assert t.count('\n') <= 1500, 'CONTRACT.md over 1,500 lines'
 print('v0.18.144 live location ok')
