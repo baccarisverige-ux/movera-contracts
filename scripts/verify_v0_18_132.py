@@ -14,8 +14,8 @@ assert 'Without a token, POST /auth/otp/request' not in k, 'key: old "Without a 
 assert kb.startswith('Replaced in v0.18.132 (kept, Rule 21): v0.18.119 (S7 W2 Q117 + Q118;') and 'Without a token, POST /auth/otp/request and /auth/otp/verify' in kb, 'released key kept (Rule 21)'
 assert list(rl).index('keyBefore0_18_132') == list(rl).index('key') + 1, 'keyBefore0_18_132 right after key'
 t = open('CONTRACT.md', encoding='utf-8').read()
-assert t.startswith('# Movera shared contract v' + c['version']) and '\nv0.18.132 (S7 W2 Q117 + Q118 follow-up SF-1 + SF-2;' in t, 'CONTRACT.md note'
-n132 = next(l for l in t.split('\n') if l.startswith('v0.18.132 (S7 W2 Q117 + Q118 follow-up SF-1 + SF-2;'))
+assert t.startswith('# Movera shared contract v' + c['version']) and '\nv0.18.132 (S7 W2 Q117 + Q118 follow-up SF-1 + SF-2;' in t + open('CHANGELOG.md', encoding='utf-8').read(), 'CONTRACT.md note'  # the note moved to CHANGELOG.md in v0.18.141
+n132 = next(l for l in (t + open('CHANGELOG.md', encoding='utf-8').read()).split('\n') if l.startswith('v0.18.132 (S7 W2 Q117 + Q118 follow-up SF-1 + SF-2;'))
 assert 'follows v0.18.131)' in n132 and 'follows v0.18.130)' not in n132, 'CONTRACT.md note follows v0.18.131'
 assert "v0.18.132: a token sent on these four calls is not read; a body that cannot be read counts against the address at its budget (429 when full);" in t, 'CONTRACT.md §47'
 ch = open('CHANGELOG.md', encoding='utf-8').read()

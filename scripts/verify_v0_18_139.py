@@ -41,10 +41,10 @@ assert 'Older version notes are in `CHANGELOG.md`: v0.18.130 and before (the v0.
 assert t.count('\n') <= 1500, 'CONTRACT.md over 1,500 lines'
 # Second part: the temporary monthly pay request (owner 2026-11-20).
 r = c['driverPayRequest']
-assert set(r) == {'note', 'setting', 'job', 'notice', 'read', 'driver', 'confirm', 'payouts', 'admin', 'rider', 'oldApps'}, 'driverPayRequest keys'
+assert set(r) - {'stripe'} == {'note', 'setting', 'job', 'notice', 'read', 'driver', 'confirm', 'payouts', 'admin', 'rider', 'oldApps'}, 'driverPayRequest keys (stripe: v0.18.141, verify_v0_18_141.py)'
 assert c['configDefaults']['driverPayRequest'] == {'enabled': False, 'dayOfMonth': 1, 'payLink': '', 'minAmount': None}, 'off by default, no link'
 assert 'TEMPORARY' in r['note'] and 'Movera takes no payment in the app' in r['note'], 'note'
-assert 'pay_request_needs_link' in r['setting'] and 'pay_request_needs_amount' in r['setting'] and 'pay_request_invalid' in r['setting'], 'setting reasons'
+assert 'no longer needed to switch it on' in r['setting'] and 'pay_request_needs_amount' in r['setting'] and 'pay_request_invalid' in r['setting'], 'setting reasons'
 assert 'ABOVE minAmount' in r['job'] and 'asks nobody twice' in r['job'] and 'GET /healthz/jobs' in r['job'], 'job: above the minimum, once, heartbeat'
 n = r['notice']
 assert n['kind'] == 'driver_pay_movera' and n['deepLink'] == 'movera-driver://pay-movera', 'notice kind + deep link'
@@ -71,3 +71,4 @@ pm = S['DriverPayMovera']
 assert pm['required'] == ['enabled', 'owedToMovera', 'reference'] and {'payLink', 'minAmount', 'request'} <= set(pm['properties']), 'DriverPayMovera'
 assert ' **Monthly pay request** (v0.18.139, `driverPayRequest`' in t, 'CONTRACT.md line 2'
 print('v0.18.139 driver wallet balance + monthly pay request ok')
+# The Stripe driver payment (driverPayRequest.stripe) is v0.18.141: its checks are in scripts/verify_v0_18_141.py.
