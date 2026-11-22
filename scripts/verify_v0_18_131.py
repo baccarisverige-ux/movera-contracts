@@ -20,7 +20,7 @@ assert 'alertsMore' not in abs_['required'], 'alertsMore is optional'
 assert 'v0.18.131 (alertDesk.serverDetection.liveList)' in spec['paths']['/admin/alerts/book']['get']['description'], 'openapi GET book text'
 t = open('CONTRACT.md', encoding='utf-8').read()
 ch = open('CHANGELOG.md', encoding='utf-8').read()
-assert t.startswith('# Movera shared contract v' + c['version']) and '\nv0.18.131 (S7 alert-cap MF3;' in t and 'follows v0.18.130)' in t, 'CONTRACT.md note'
+assert t.startswith('# Movera shared contract v' + c['version']) and '\nv0.18.131 (S7 alert-cap MF3;' in t + open('CHANGELOG.md', encoding='utf-8').read() and 'follows v0.18.130)' in t + open('CHANGELOG.md', encoding='utf-8').read(), 'CONTRACT.md note'  # the note moved to CHANGELOG.md in v0.18.140
 s44 = t[t.index('\n## 44. '):t.index('\n## 46. ')]
 assert 'v0.18.131 (MF3, `liveList.openOtherCap` / `more`)' in s44 and '`alertsMore { open, solved }`' in s44, 'CONTRACT.md §44'
 assert '\nv0.18.125 (L20-6 health' not in t and '\nv0.18.125 (L20-6 health' in ch, 'v0.18.125 note moved'
