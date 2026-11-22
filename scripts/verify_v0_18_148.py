@@ -29,8 +29,8 @@ for p in ('/rider/trips/{tripId}/sos', '/driver/trips/{tripId}/sos'):
     d = spec['paths'][p]['post']['description']
     assert 'v0.18.148 (sosPressTime)' in d and 'sos_not_during_trip' in d, p
 t = open('CONTRACT.md', encoding='utf-8').read()
-assert t.startswith('# Movera shared contract v' + c['version']) and '\nv0.18.148 (SOS by press time;' in t, 'CONTRACT.md note'
-n148 = next(l for l in t.split('\n') if l.startswith('v0.18.148 (SOS by press time;'))
+assert t.startswith('# Movera shared contract v' + c['version']) and '\nv0.18.148 (SOS by press time; Rules' in t + open('CHANGELOG.md', encoding='utf-8').read(), 'CONTRACT.md note'  # the note moved to CHANGELOG.md in v0.18.153
+n148 = next(l for l in (t + open('CHANGELOG.md', encoding='utf-8').read()).split('\n') if l.startswith('v0.18.148 (SOS by press time; Rules'))
 assert 'follows v0.18.146)' in n148 and '`contract.json#sosPressTime`' in n148, 'CONTRACT.md note text'
 assert ' v0.18.148 (`sosPressTime`): after the trip ended the SOS is judged by `at`' in t, '§15 line'
 ch = open('CHANGELOG.md', encoding='utf-8').read()
