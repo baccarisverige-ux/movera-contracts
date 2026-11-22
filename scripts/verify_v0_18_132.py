@@ -27,6 +27,6 @@ j = cl.index(n126)
 assert cl[j - 2].startswith('v0.18.132 (Q117 + Q118 follow-up wording; Rule 21 / Rule 25: moved from CONTRACT.md word for word'), 'CHANGELOG.md move line'
 assert cl[j + 2].startswith('Older version notes are in `CHANGELOG.md`: v0.18.125 and before (the v0.18.125 note moved in v0.18.131, the v0.18.124 note in v0.18.130,'), 'old pointer line kept'
 assert hashlib.sha256(cl[j + 2].encode()).hexdigest() == '8d890a6d7d2eb11df3a270da51c03d02106ca7809b200d5732b3c7c2cb72abda', 'old pointer line moved word for word'
-assert 'Older version notes are in `CHANGELOG.md`: v0.18.126 and before (the v0.18.126 note moved in v0.18.132, the v0.18.125 note in v0.18.131, the v0.18.124 note in v0.18.130,' in t, 'new pointer line'
+assert 'Older version notes are in `CHANGELOG.md`: v0.18.126 and before (the v0.18.126 note moved in v0.18.132, the v0.18.125 note in v0.18.131, the v0.18.124 note in v0.18.130,' in t + ch, 'new pointer line (kept in CHANGELOG.md since v0.18.154)'
 assert t.count('\n') <= 1500, 'CONTRACT.md over 1,500 lines'
 print('v0.18.132 Q117 + Q118 follow-up wording ok')
