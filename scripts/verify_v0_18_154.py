@@ -18,6 +18,7 @@ for call in ('POST /trips', 'POST /driver/availability with onlineStatus online 
 for word in ('SOS', 'sign-out', 'account deletion', 'go offline', 'already running'):
     assert word in au['neverRefused'], word
 assert 'go-online while the driver holds a booked ride' in au['neverRefused'] and 'holds no booked ride' in au['server'], 'held booked ride never refused'
+assert 'holds a booked ride not started yet' in au['apps'], 'driver app: held booked ride only the small line'
 assert 'no check' in au['missingHeader'] and 'Known limit' in au['missingHeader'], 'missing header limit'
 assert 'never while a trip is active (accepted, to pickup, arrived, on trip)' in au['apps'], 'driver trip exemption'
 for part in ('title', 'body', 'button'):
