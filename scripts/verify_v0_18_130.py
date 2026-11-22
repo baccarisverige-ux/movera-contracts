@@ -8,7 +8,7 @@ c = json.load(open('contract.json'))
 assert tuple(map(int, c['version'].split('.'))) >= (0, 18, 130), 'version 0.18.130 or later'
 kk = c['configDocs']['keptKeys']
 assert kk['driver_app_config'] == ['realtime.oneStream'], 'driver_app_config kept keys'
-assert kk['country_rules'][:6] == ['payoutMode', 'payoutSchedule', 'maxRiderDebt', 'driverOwesLimit', 'calls.adminCallRoles', 'calls.phoneProvider'], 'country_rules unchanged (v0.18.136 adds riderPayLink)'
+assert kk['country_rules'][:6] == ['payoutMode', 'payoutSchedule', 'maxRiderDebt', 'driverOwesLimit', 'calls.adminCallRoles', 'calls.phoneProvider'], 'country_rules unchanged (v0.18.136 adds riderFeeStripe, v0.18.139 adds driverPayRequest)'
 assert kk['dispatch'] == ['radar.reaskAfterSeconds', 'exclusive.reaskAfterSeconds'], 'dispatch unchanged'
 assert set(kk) == {'note', 'country_rules', 'dispatch', 'driver_app_config', 'driverAppConfigNote', 'removeKeys'}, 'keptKeys keys'
 assert kk['driverAppConfigNote'].startswith('v0.18.130 (') and 'offers.autoOffline is not listed' in kk['driverAppConfigNote'], 'driverAppConfigNote'
@@ -20,7 +20,7 @@ u = S['ConfigDraftUpdate']['properties']['removeKeys']
 assert sorted(u['items']['enum']) == sorted(kk['country_rules'] + kk['dispatch'] + kk['driver_app_config']) and u['maxItems'] == len(u['items']['enum']), 'openapi removeKeys'
 assert 'v0.18.130 (configDocs.keptKeys; driver_app_config: realtime.oneStream)' in P['/admin/config/{doc}']['put']['description'], 'openapi PUT'
 t = open('CONTRACT.md', encoding='utf-8').read()
-assert t.startswith('# Movera shared contract v' + c['version']) and '\nv0.18.130 (SCS guard re-check follow-up;' in t and 'follows v0.18.129)' in t, 'CONTRACT.md note'
+assert t.startswith('# Movera shared contract v' + c['version']) and '\nv0.18.130 (SCS guard re-check follow-up;' in t + open('CHANGELOG.md', encoding='utf-8').read() and 'follows v0.18.129)' in t + open('CHANGELOG.md', encoding='utf-8').read(), 'CONTRACT.md note'  # the note moved to CHANGELOG.md in v0.18.139
 assert '`realtime.oneStream` (`configDocs.keptKeys.driver_app_config`)' in t, 'CONTRACT.md kept keys line'
 ch = open('CHANGELOG.md', encoding='utf-8').read()
 cl = ch.split('\n')
