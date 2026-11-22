@@ -26,7 +26,7 @@ for k in ('owedToMovera', 'moveraOwesYou'):
 assert 'cashCollected' in S['EarningsPeriod']['properties'], 'EarningsPeriod.cashCollected stays'
 assert 'v0.18.139 (driverWalletBalance)' in P['/driver/earnings']['get']['description'], 'route text'
 t = open('CONTRACT.md', encoding='utf-8').read()
-assert t.startswith('# Movera shared contract v' + c['version']) and '\nv0.18.139 (driver wallet D5;' in t, 'CONTRACT.md note'
+assert t.startswith('# Movera shared contract v' + c['version']) and '\nv0.18.139 (driver wallet D5;' in t + open('CHANGELOG.md', encoding='utf-8').read(), 'CONTRACT.md note'  # the note moved to CHANGELOG.md in v0.18.145
 assert '- **Driver wallet balance** (v0.18.139, `driverWalletBalance`)' in t, 'CONTRACT.md line'
 ch = open('CHANGELOG.md', encoding='utf-8').read()
 cl = ch.split('\n')
