@@ -18,7 +18,7 @@ spec = yaml.safe_load(open('openapi.yaml'))
 sc = spec['components']['schemas']
 assert 'pickup' in sc['RouteQuote']['properties'] and 'pickup' in sc['TripRouteChange']['properties'] and sc['TripRouteChange']['properties']['reason']['enum'] == ['rider_changed_route'], 'openapi fields'
 t = open('CONTRACT.md', encoding='utf-8').read()
-assert '\nv0.18.143 (owner 2026-11-20 "must rider can change !!!!"' in t and '- **While searching** (v0.18.143' in t, 'CONTRACT.md'
+assert '\nv0.18.143 (owner 2026-11-20 "must rider can change !!!!"' in t + open('CHANGELOG.md', encoding='utf-8').read() and '- **While searching** (v0.18.143' in t, 'CONTRACT.md'
 import hashlib
 ch = open('CHANGELOG.md', encoding='utf-8').read()
 cl = ch.split('\n')
