@@ -22,7 +22,7 @@ ids = [s['id'] for s in fb['scenarios']]
 assert {'return_try_fails', 'backup_ignores_retry_after'} <= set(ids), 'way-back scenarios'
 assert len(ids) == len(set(ids)) >= 7, 'scenarios'
 kk = c['configDocs']['keptKeys']
-assert kk['driver_app_config'] == ['realtime.oneStream', 'realtime.oneStreamFallback'], 'kept keys'
+assert kk['driver_app_config'][:2] == ['realtime.oneStream', 'realtime.oneStreamFallback'], 'kept keys (v0.18.154 adds appUpdate.minVersion, appUpdate.storeUrls, verify_v0_18_154.py)'
 spec = yaml.safe_load(open('openapi.yaml'))
 S, P = spec['components']['schemas'], spec['paths']
 f = S['DriverAppConfig']['properties']['realtime']['properties']['oneStreamFallback']

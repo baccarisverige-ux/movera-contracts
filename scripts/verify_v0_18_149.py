@@ -32,7 +32,7 @@ assert set(sc['AdminSession']['properties']) == set(a['list']['fields']) and sc[
 assert sc['AdminSessionSignOutCommand']['required'] == ['reason'], 'reason required'
 assert 'signed_out_by_movera' in P['/auth/refresh']['post']['description'], 'refresh doc'
 t = open('CONTRACT.md', encoding='utf-8').read()
-assert t.startswith('# Movera shared contract v' + c['version']) and '\nv0.18.149 (admin sessions' in t, 'CONTRACT.md note'
+assert t.startswith('# Movera shared contract v' + c['version']) and '\nv0.18.149 (admin sessions, owner' in t + open('CHANGELOG.md', encoding='utf-8').read(), 'CONTRACT.md note'  # the note moved to CHANGELOG.md in v0.18.154
 assert '`signed_out_by_movera` (an admin signed the phone out, v0.18.149' in t, 'Why signed out bullet'
 import hashlib
 ch = open('CHANGELOG.md', encoding='utf-8').read()
