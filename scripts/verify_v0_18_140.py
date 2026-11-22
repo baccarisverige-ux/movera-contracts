@@ -14,7 +14,8 @@ for f in ('cashDueRide', 'cashDueOutstandingFee'):
     assert o['properties'][f]['allOf'] == [{'$ref': '#/components/schemas/Money'}], f + ' is Money'
 assert o.get('additionalProperties') is False, 'CompletePreview stays closed'
 assert 'collect sheet shows them as two rows' not in d, 'no rows on the collect sheet (owner 2026-11-21)'
-assert '\nv0.18.140 (debt line M3;' in open('CONTRACT.md', encoding='utf-8').read() and 'follows v0.18.139)' in next(l for l in open('CONTRACT.md', encoding='utf-8').read().split('\n') if l.startswith('v0.18.140 (')), 'CONTRACT.md top note (launch restack: was a DRAFT note in CHANGELOG.md), follows v0.18.139'
+_tc = open('CONTRACT.md', encoding='utf-8').read() + open('CHANGELOG.md', encoding='utf-8').read()  # the note moved to CHANGELOG.md in v0.18.146
+assert '\nv0.18.140 (debt line M3; owner' in _tc and 'follows v0.18.139)' in next(l for l in _tc.split('\n') if l.startswith('v0.18.140 (debt line M3; owner')), 'CONTRACT.md top note (launch restack: was a DRAFT note in CHANGELOG.md), follows v0.18.139'
 t = open('CONTRACT.md', encoding='utf-8').read()
 assert t.startswith('# Movera shared contract v' + c['version']) and t.count('\n') <= 1500, 'CONTRACT.md title / size'
 print('v0.18.140 cash due split ok')
