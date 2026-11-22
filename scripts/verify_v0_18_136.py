@@ -28,7 +28,8 @@ assert 'get' in P['/admin/riders/{riderId}/fee-payments'], 'admin read'
 assert 'riderFeeStripe' in S['ConfigDraftUpdate']['properties']['removeKeys']['items']['enum'], 'removeKeys'
 t = open('CONTRACT.md', encoding='utf-8').read()
 assert t.startswith('# Movera shared contract v' + c['version']) and t.count('\n') <= 1500, 'CONTRACT.md heading, size'
-assert '\nv0.18.136 (Stripe for rider fees;' in t and 'follows v0.18.134)' in next(l for l in t.split('\n') if l.startswith('v0.18.136 (')), 'CONTRACT.md top note (launch restack: was a DRAFT note in CHANGELOG.md), follows v0.18.134'
+tc = t + open('CHANGELOG.md', encoding='utf-8').read()  # the note moved to CHANGELOG.md in v0.18.144
+assert '\nv0.18.136 (Stripe for rider fees; Stripe test or live keys' in tc and 'follows v0.18.134)' in next(l for l in tc.split('\n') if l.startswith('v0.18.136 (Stripe for rider fees; Stripe test or live keys')), 'CONTRACT.md top note (launch restack: was a DRAFT note in CHANGELOG.md), follows v0.18.134'
 print('v0.18.136 Stripe rider fee ok')
 # Money review fixes (2026-11-20): overpaid part and amount mismatch are visible to the admin.
 assert 'overpaid' in pm['properties'] and 'amountMismatch' in pm['properties'], 'StripeFeePayment overpaid + amountMismatch'

@@ -22,7 +22,7 @@ ch = open('CHANGELOG.md', encoding='utf-8').read()
 cl = ch.split('\n')
 tc = t + ch
 assert t.startswith('# Movera shared contract v' + c['version']), 'CONTRACT.md title'
-n141 = next(l for l in tc.split('\n') if l.startswith("v0.18.141 (Stripe for the driver's monthly payment;"))
+n141 = next(l for l in tc.split('\n') if l.startswith("v0.18.141 (Stripe for the driver's monthly payment; owner"))
 assert 'follows v0.18.140)' in n141 and '`contract.json#driverPayRequest.stripe`' in n141, 'v0.18.141 note follows v0.18.140'
 # the move (Rule 25 size, Rule 21 word for word): the v0.18.132 note and the old pointer line now in CHANGELOG.md
 n132 = next(l for l in cl if l.startswith('v0.18.132 (S7 W2 Q117 + Q118 follow-up S'))
