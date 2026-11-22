@@ -1,0 +1,36 @@
+#!/usr/bin/env python3
+"""v0.18.151 (SOS contacts SMS sent; owner 2026-11-02 Q2 "Use them in SOS (Recommended)", Rules decisions/driver-g14.md:12):
+the driver's SOS texts his emergency contacts through the sign-in SMS sender when the server switch is on (default off)
+(contract.json#sosContactsSms.send), the CONTRACT.md notes, and the v0.18.145 note (launch restack; the draft moved v0.18.128) moved word for word to CHANGELOG.md
+(Rule 25). Run by scripts/verify.sh (own file, Rule 25)."""
+import hashlib, json
+c = json.load(open('contract.json'))
+assert tuple(map(int, c['version'].split('.'))) >= (0, 18, 151), 'version 0.18.151 or later'
+s = c['sosContactsSms']['send']
+assert list(s) == ['note', 'sender', 'serverSwitch', 'serverSwitchNote', 'once', 'dailyCap', 'delivery', 'logs', 'apps'], 'send keys'
+assert s['serverSwitch'] == 'SOS_CONTACTS_SMS_SEND' and 'unset or any other value = off, the default' in s['serverSwitchNote'], 'server switch default off'
+assert 'smsSignIn.serverKeys' in s['sender'] and 'CountryRules.sosContactsSms (setting, default on) stays' in s['serverSwitchNote'], 'same sender, country switch kept'
+assert 'At most one SMS per contact number per SOS case' in s['once'] and 'never resent (fail closed)' in s['once'], 'once'
+assert 'smsSignIn.dailyCap' in s['dailyCap'] and 'error daily_limit' in s['dailyCap'], 'daily cap'
+assert 'never holds a contact' in s['logs'] and 'or a position' in s['logs'], 'logs'
+assert "Rider: not affected" in s["apps"], "rider not affected"
+assert c['sosContactsSms']['statuses'] == ['off', 'no_contacts', 'not_connected', 'queued', 'sent', 'failed'], 'no new status'
+assert 'fleet invitation SMS stays not connected' in c['smsSignIn']['otherSmsV0_18_151'], 'otherSms follow-up'
+assert c['smsSignIn']['otherSms'].endswith('until a later version says so.'), 'released otherSms kept as it was'
+t = open('CONTRACT.md', encoding='utf-8').read()
+assert t.startswith('# Movera shared contract v' + c['version']) and '\nv0.18.151 (SOS contacts SMS sent;' in t, 'CONTRACT.md note'
+n151 = next(l for l in t.split('\n') if l.startswith('v0.18.151 (SOS contacts SMS sent;'))
+assert 'follows v0.18.150)' in n151 and '`contract.json#sosContactsSms.send`' in n151, 'CONTRACT.md note text'
+assert ' v0.18.151 (`sosContactsSms.send`): connected = the sign-in SMS keys are set AND the server switch' in t, '§92 line'
+ch = open('CHANGELOG.md', encoding='utf-8').read()
+cl = ch.split('\n')
+# launch restack (plan K): this version moves the v0.18.145 note (the draft moved v0.18.127)
+n145 = next(l for l in cl if l.startswith('v0.18.145 (S4c load cut, Rules audits/im'))
+assert '\n' + n145 not in t and cl.count(n145) == 1, 'v0.18.145 note moved once'
+assert hashlib.sha256(n145.encode()).hexdigest() == '7809a14c6db4edff05a2c24061a9cdda975ad106ef3715f1a028d3eaa4006386', 'v0.18.145 note moved word for word'
+j = cl.index(n145)
+assert cl[j - 2].startswith('v0.18.151 (SOS contacts SMS sent; Rule 21 / Rule 25: moved from CONTRACT.md word for word'), 'CHANGELOG.md move line'
+assert hashlib.sha256(cl[j + 2].encode()).hexdigest() == '3a5fd96af8765dc8336f11c064b0e94b42ac0236be8374ea99d7dd369de80f58', 'old pointer line moved word for word'
+assert 'Older version notes are in `CHANGELOG.md`: v0.18.145 and before (the v0.18.145 note moved in v0.18.151, the v0.18.144 note in v0.18.150, the v0.18.143' in t + ch, 'new pointer line (in CHANGELOG.md once a later version moves it)'
+assert t.count('\n') <= 1500, 'CONTRACT.md over 1,500 lines'
+print('v0.18.151 SOS contacts SMS sent ok')

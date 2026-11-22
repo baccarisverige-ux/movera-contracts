@@ -14,8 +14,8 @@ assert 'Without a token, POST /auth/otp/request' not in k, 'key: old "Without a 
 assert kb.startswith('Replaced in v0.18.132 (kept, Rule 21): v0.18.119 (S7 W2 Q117 + Q118;') and 'Without a token, POST /auth/otp/request and /auth/otp/verify' in kb, 'released key kept (Rule 21)'
 assert list(rl).index('keyBefore0_18_132') == list(rl).index('key') + 1, 'keyBefore0_18_132 right after key'
 t = open('CONTRACT.md', encoding='utf-8').read()
-assert t.startswith('# Movera shared contract v' + c['version']) and '\nv0.18.132 (S7 W2 Q117 + Q118 follow-up SF-1 + SF-2;' in t, 'CONTRACT.md note'
-n132 = next(l for l in t.split('\n') if l.startswith('v0.18.132 (S7 W2 Q117 + Q118 follow-up SF-1 + SF-2;'))
+assert t.startswith('# Movera shared contract v' + c['version']) and '\nv0.18.132 (S7 W2 Q117 + Q118 follow-up SF-1 + SF-2;' in t + open('CHANGELOG.md', encoding='utf-8').read(), 'CONTRACT.md note'  # the note moved to CHANGELOG.md in v0.18.141
+n132 = next(l for l in (t + open('CHANGELOG.md', encoding='utf-8').read()).split('\n') if l.startswith('v0.18.132 (S7 W2 Q117 + Q118 follow-up SF-1 + SF-2;'))
 assert 'follows v0.18.131)' in n132 and 'follows v0.18.130)' not in n132, 'CONTRACT.md note follows v0.18.131'
 assert "v0.18.132: a token sent on these four calls is not read; a body that cannot be read counts against the address at its budget (429 when full);" in t, 'CONTRACT.md §47'
 ch = open('CHANGELOG.md', encoding='utf-8').read()
@@ -27,6 +27,6 @@ j = cl.index(n126)
 assert cl[j - 2].startswith('v0.18.132 (Q117 + Q118 follow-up wording; Rule 21 / Rule 25: moved from CONTRACT.md word for word'), 'CHANGELOG.md move line'
 assert cl[j + 2].startswith('Older version notes are in `CHANGELOG.md`: v0.18.125 and before (the v0.18.125 note moved in v0.18.131, the v0.18.124 note in v0.18.130,'), 'old pointer line kept'
 assert hashlib.sha256(cl[j + 2].encode()).hexdigest() == '8d890a6d7d2eb11df3a270da51c03d02106ca7809b200d5732b3c7c2cb72abda', 'old pointer line moved word for word'
-assert 'Older version notes are in `CHANGELOG.md`: v0.18.126 and before (the v0.18.126 note moved in v0.18.132, the v0.18.125 note in v0.18.131, the v0.18.124 note in v0.18.130,' in t, 'new pointer line'
+assert 'Older version notes are in `CHANGELOG.md`: v0.18.126 and before (the v0.18.126 note moved in v0.18.132, the v0.18.125 note in v0.18.131, the v0.18.124 note in v0.18.130,' in t + ch, 'new pointer line (kept in CHANGELOG.md since v0.18.133)'
 assert t.count('\n') <= 1500, 'CONTRACT.md over 1,500 lines'
 print('v0.18.132 Q117 + Q118 follow-up wording ok')

@@ -31,7 +31,7 @@ assert 'placeId' not in S['SavedPlaceRequest']['properties'], 'request has its o
 for path, m in (('/rider/places', 'post'), ('/rider/places/{placeId}', 'put'), ('/rider/places/import', 'post')):
     assert 'v0.18.129' in spec['paths'][path][m]['description'], path
 t = open('CONTRACT.md', encoding='utf-8').read()
-assert t.startswith('# Movera shared contract v' + c['version']) and '\nv0.18.129 (saved-places design' in t and 'follows v0.18.128' in t, 'CONTRACT.md v0.18.129 note'
+assert t.startswith('# Movera shared contract v' + c['version']) and '\nv0.18.129 (saved-places design' in t + open('CHANGELOG.md', encoding='utf-8').read() and 'follows v0.18.128' in t + open('CHANGELOG.md', encoding='utf-8').read(), 'CONTRACT.md v0.18.129 note'  # the note moved to CHANGELOG.md in v0.18.136
 # the move (Rule 25 size, Rule 21 word for word): the v0.18.123 note and the old pointer line now only in CHANGELOG.md
 import hashlib
 ch = open('CHANGELOG.md', encoding='utf-8').read()

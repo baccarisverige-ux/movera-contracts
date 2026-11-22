@@ -918,8 +918,10 @@ assert 'v0.18.83' in fd['shedOnly'] and 'fastDispatch.shedPolls' in fd['shedOnly
 la = fd['lateAlarm']
 assert la['tripTimers']['lateSeconds'] == 60 and la['tripTimers']['kinds'][:3] == ['trip_eta', 'ride_check_scan', 'near_dropoff'], 'S3 trip timers 60 s'
 assert la['dispatch']['lateSeconds'] == 30 and la['dispatch']['kinds'] == ['dispatch_round', 'withdraw_driver_offers'], 'S3 dispatch 30 s'
-for part in ('/healthz/jobs', '503', 'lateSeconds', 'overdue', 'TRIP_LANES', 'default 1', '60 s / 30 s', 'never restarts'):
+for part in ('/healthz/jobs', '503', 'lateSeconds', 'overdue', 'TRIP_LANES', '60 s / 30 s', 'never restarts'):
     assert part in la['rule'] + la['note'], 'S3 lateAlarm: ' + part
+# v0.18.145 (owner 2026-11-20 18:49): TRIP_LANES default 2; the v0.18.83 wording (default 1) is kept in ruleBefore0_18_145.
+assert 'default 2' in la['rule'] and 'default 1' in la['ruleBefore0_18_145'], 'S3 lateAlarm: TRIP_LANES default 2 (was 1)'
 assert 'fastDispatch.lateAlarm' in fd['timers'], 'S3 timers points to lateAlarm'
 bs = c['bookedRideSeen']
 pb = bs['pollBackoff']
@@ -1441,7 +1443,7 @@ key = lambda f: tuple(int(x) for x in re.findall(r'\d+', f))
 print('\n'.join(sorted(fs, key=key)))
 PY
 )
-for f in scripts/verify_v0_18_94.py scripts/verify_v0_18_97.py scripts/verify_v0_18_99.py scripts/verify_v0_18_100.py scripts/verify_v0_18_101.py scripts/verify_v0_18_102.py scripts/verify_v0_18_105.py scripts/verify_v0_18_106.py scripts/verify_v0_18_108.py scripts/verify_v0_18_109.py scripts/verify_v0_18_110.py scripts/verify_v0_18_111.py scripts/verify_v0_18_112.py scripts/verify_v0_18_113.py scripts/verify_v0_18_115.py scripts/verify_v0_18_116.py scripts/verify_v0_18_117.py scripts/verify_v0_18_118.py scripts/verify_v0_18_119.py scripts/verify_v0_18_120.py scripts/verify_v0_18_121.py scripts/verify_v0_18_122.py scripts/verify_v0_18_123.py scripts/verify_v0_18_124.py scripts/verify_v0_18_125.py scripts/verify_v0_18_126.py scripts/verify_v0_18_127.py scripts/verify_v0_18_128.py scripts/verify_v0_18_129.py scripts/verify_v0_18_130.py scripts/verify_v0_18_131.py scripts/verify_v0_18_132.py; do
+for f in scripts/verify_v0_18_94.py scripts/verify_v0_18_97.py scripts/verify_v0_18_99.py scripts/verify_v0_18_100.py scripts/verify_v0_18_101.py scripts/verify_v0_18_102.py scripts/verify_v0_18_105.py scripts/verify_v0_18_106.py scripts/verify_v0_18_108.py scripts/verify_v0_18_109.py scripts/verify_v0_18_110.py scripts/verify_v0_18_111.py scripts/verify_v0_18_112.py scripts/verify_v0_18_113.py scripts/verify_v0_18_115.py scripts/verify_v0_18_116.py scripts/verify_v0_18_117.py scripts/verify_v0_18_118.py scripts/verify_v0_18_119.py scripts/verify_v0_18_120.py scripts/verify_v0_18_121.py scripts/verify_v0_18_122.py scripts/verify_v0_18_123.py scripts/verify_v0_18_124.py scripts/verify_v0_18_125.py scripts/verify_v0_18_126.py scripts/verify_v0_18_127.py scripts/verify_v0_18_128.py scripts/verify_v0_18_129.py scripts/verify_v0_18_130.py scripts/verify_v0_18_131.py scripts/verify_v0_18_132.py scripts/verify_v0_18_133.py scripts/verify_v0_18_134.py scripts/verify_v0_18_139.py scripts/verify_v0_18_141.py scripts/verify_v0_18_143.py scripts/verify_v0_18_144.py scripts/verify_v0_18_145.py scripts/verify_v0_18_146.py scripts/verify_v0_18_148.py scripts/verify_v0_18_149.py scripts/verify_v0_18_150.py scripts/verify_v0_18_151.py scripts/verify_v0_18_152.py scripts/verify_v0_18_153.py scripts/verify_v0_18_154.py; do
   printf '%s\n' "$vfiles" | grep -qx "$f" || { echo "$f is not in the verify_v*.py list"; exit 1; }
 done
 ran=0
