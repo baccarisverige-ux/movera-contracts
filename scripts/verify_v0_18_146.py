@@ -18,8 +18,8 @@ assert r['required'] == ['completed', 'cancelled', 'noShow'] and r['additionalPr
 assert 'rideCounts' not in ep['required'], 'rideCounts optional'
 assert 'v0.18.146 (driverRideCounts)' in spec['paths']['/driver/earnings']['get']['description'], 'endpoint description'
 t = open('CONTRACT.md', encoding='utf-8').read()
-assert t.startswith('# Movera shared contract v' + c['version']) and '\nv0.18.146 (audit apps-every-control 2026-11-20 N5;' in t, 'CONTRACT.md note'
-n146 = next(l for l in t.split('\n') if l.startswith('v0.18.146 (audit apps-every-control 2026-11-20 N5;'))
+assert t.startswith('# Movera shared contract v' + c['version']) and '\nv0.18.146 (audit apps-every-control 2026-11-20 N5;' in t + open('CHANGELOG.md', encoding='utf-8').read(), 'CONTRACT.md note'  # the note moved to CHANGELOG.md in v0.18.152
+n146 = next(l for l in (t + open('CHANGELOG.md', encoding='utf-8').read()).split('\n') if l.startswith('v0.18.146 (audit apps-every-control 2026-11-20 N5;'))
 assert 'follows v0.18.145)' in n146 and '`contract.json#driverRideCounts`' in n146, 'CONTRACT.md note text'
 ch = open('CHANGELOG.md', encoding='utf-8').read()
 cl = ch.split('\n')

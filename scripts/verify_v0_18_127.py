@@ -18,7 +18,7 @@ assert "{ eventId, kind: 'rider_trip_changed', tripId, occurredAt, serverTime }"
 assert 'hints are not replayed' in r and 'not the first connect' in r, 'riderTripEvent: reconnect rule kept'
 rb = bs['riderTripEventBefore0_18_127']
 assert rb.startswith('Replaced in v0.18.127 (kept, Rule 21): P21 / B-n: GET /rider/config/stream also carries rider_trip_changed') and 'for every event of any trip of the signed-in rider' in rb, 'released text kept'
-assert list(bs) == ['note', 'activeTrip', 'liveWins', 'driverChanged', 'noLateMessage', 'riderTripEvent', 'riderTripEventBefore0_18_127', 'pollFallback', 'pollSeconds', 'pollBackoff', 'leaveNowName', 'rulesSource', 'versionRetry', 'admin'], 'bookedRideSeen: only the released key added'
+assert [k for k in bs if k not in ('activeTripBefore0_18_152', 'searchSeen')] == ['note', 'activeTrip', 'liveWins', 'driverChanged', 'noLateMessage', 'riderTripEvent', 'riderTripEventBefore0_18_127', 'pollFallback', 'pollSeconds', 'pollBackoff', 'leaveNowName', 'rulesSource', 'versionRetry', 'admin'], 'bookedRideSeen: only the released key added (v0.18.152 adds activeTripBefore0_18_152 + searchSeen)'
 
 d = S['RiderTripEvent']['description'].replace('\n', ' ')
 assert 'v0.18.127 (contract.json#bookedRideSeen.riderTripEvent): not sent for a GPS update' in d, 'openapi RiderTripEvent'
