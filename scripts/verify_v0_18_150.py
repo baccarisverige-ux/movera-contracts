@@ -34,10 +34,11 @@ assert 'realtime.oneStreamFallback' in S['ConfigDraftUpdate']['properties']['rem
 assert 'v0.18.150 (driverOneStreamFallback)' in P['/driver/stream']['get']['description'], 'openapi /driver/stream'
 assert 'v0.18.150 (driverOneStreamFallback.server)' in P['/admin/config/{doc}']['put']['description'], 'openapi PUT'
 t = open('CONTRACT.md', encoding='utf-8').read()
-assert t.startswith('# Movera shared contract v' + c['version']) and '\nv0.18.150 (L20 stream backup;' in t, 'CONTRACT.md note'
-n150 = next(l for l in t.split('\n') if l.startswith('v0.18.150 (L20 stream backup;'))
+tch = t + open('CHANGELOG.md', encoding='utf-8').read()  # the v0.18.150 note moved to CHANGELOG.md in v0.18.157
+assert t.startswith('# Movera shared contract v' + c['version']) and '\nv0.18.150 (L20 stream backup;' in tch, 'CONTRACT.md note'
+n150 = next(l for l in tch.split('\n') if l.startswith('v0.18.150 (L20 stream backup;') and 'moved from CONTRACT.md' not in l)
 assert 'follows v0.18.149)' in n150 and '`contract.json#driverOneStreamFallback`' in n150 and 'Rider: not affected' in n150, 'CONTRACT.md note text'
-assert 'v0.18.150: also `realtime.oneStreamFallback`' in t, 'CONTRACT.md kept keys line'
+assert 'v0.18.150: also `realtime.oneStreamFallback`' in tch, 'CONTRACT.md kept keys line'
 ch = open('CHANGELOG.md', encoding='utf-8').read()
 cl = ch.split('\n')
 # launch restack (plan K): this version moves the v0.18.144 note (the draft moved v0.18.127)
