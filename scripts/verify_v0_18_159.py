@@ -14,9 +14,11 @@ assert 'default true' in f['setting'] and 'Admin › Drivers › Onboarding' in 
 assert 'Rider: not affected' in f['apps'], 'rider not affected'
 rm = c['driverOnboarding']['reminders']
 k = rm['kinds']['fleet_no_car']
-assert k.startswith('v0.18.159') and 'blocks_online' in k and 'FLEET OWNER' in k and 'ZERO cars' in k and 'whatever the fleet' in k, 'kind'
+assert k.startswith('v0.18.159') and 'blocks_online' in k and 'FLEET OWNER' in k and 'ZERO cars' in k and 'NOT approved' in k and 'keeps fleet_no_approved_car' in k, 'kind'
 assert 'fix fleet_vehicles' in k and 'Never sent to a member' in k and 'X-Contract-Version 0.18.159 or later' in k, 'kind fix / gate'
-assert 'fleet_no_approved_car is not sent' in k and 'account_not_active is not sent' in k, 'kind one car line'
+assert 'account_not_active is not sent' in k, 'kind'
+assert 'approvalBlockedReason' in f['adminView'] and 'PUBLISHED' in f['adminView'], 'admin view'
+assert 'PENDING fleet' in f['driverApp'], 'grey only for a pending fleet'
 assert 'nor while a fleet_no_car line is sent' in rm['kinds']['account_not_active'], 'account_not_active'
 assert 'fleet_vehicles' in rm['fixTargets'], 'fix target'
 for t in ('fleet_no_car', 'fleet_no_car_body', 'fleet_add_car', 'fleet_not_approved', 'fleet_not_approved_body', 'fleet_cars_empty', 'fleet_cars_empty_body'):
@@ -39,4 +41,5 @@ assert md.count('\n') <= 1500, 'CONTRACT.md over 1,500 lines'
 ch = open('CHANGELOG.md', encoding='utf-8').read()
 assert 'v0.18.159 (fleet needs a car; Rule 21 / Rule 25: moved from CONTRACT.md word for word' in ch, 'CHANGELOG move line'
 assert '\nv0.18.150 (L20 stream backup;' in ch and '\nv0.18.150 (L20 stream backup;' not in md, 'v0.18.150 note moved'
+assert S['Fleet']['properties']['approvalBlockedReason']['enum'] == ['fleet_has_no_car'] and 'approvalBlockedReason' not in S['Fleet']['required'], 'openapi Fleet.approvalBlockedReason'
 print('v0.18.159 fleet needs a car: ok')
