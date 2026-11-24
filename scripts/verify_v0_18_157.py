@@ -32,4 +32,9 @@ md = open('CONTRACT.md', encoding='utf-8').read(); ch = open('CHANGELOG.md', enc
 assert md.startswith('# Movera shared contract v0.18.157') or '\nv0.18.157 (SMS sign-in for every country;' in md, 'CONTRACT.md note'
 assert '\nv0.18.150 (L20 stream backup;' not in md and '\nv0.18.150 (L20 stream backup;' in ch, 'v0.18.150 note moved'
 assert c['configDocs']['keptKeys']['country_rules'][-1] == 'smsSignInOtherCountries', 'kept key'
+g = oc['guards']
+assert d['perCodeDailyCap'] == 10 and d['perMinuteCap'] == 30 and d['blockedCallingCodes'] == [], 'guard defaults'
+for k in ('perCodeDailyCap', 'perMinuteCap', 'blockedCallingCodes', 'alerts', 'deviceCheck'):
+    assert isinstance(g[k], str) and g[k], k
+assert '+1' in oc['callingCodes'] and '+882' in oc['callingCodes'] and '+216' in oc['callingCodes'], 'calling codes'
 print('v0.18.157 ok')
