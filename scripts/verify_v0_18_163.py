@@ -10,8 +10,10 @@ lt = c['liveTraffic']
 assert lt['since'] == '0.18.163' and lt['provider'] == 'google_traffic', 'provider'
 assert lt['routeSources'] == ['google', 'osrm', 'estimate'], 'sources'
 assert 'TRAFFIC_AWARE' in lt['request'] and 'routes.duration,routes.distanceMeters' in lt['request'] and 'never logged' in lt['request'], 'request'
-assert lt['fallback'].startswith('google -> osrm -> estimate') and 'system_health:live_traffic' in lt['fallback'], 'fallback'
-assert 'stay on OSRM' in lt['uses'], 'ETA choice documented'
+assert lt['fallback'].startswith('google -> estimate') and 'system_health:live_traffic' in lt['fallback'], 'fallback'
+assert 'open street map' in lt['noOsrm'] and 'polyline' in lt['calls']['quote'] and 'NO calls' in lt['calls']['duringTrip'], 'owner cheapest method'
+assert lt['recall']['defaults'] == {'offRouteMeters': 200, 'offRouteSeconds': 30, 'behindMinutes': 5}, 'recall defaults'
+assert 'encodedPolyline' in lt['request'], 'field mask polyline'
 assert lt['defaultOnCountries'] == ['SE', 'FR'] and 'DispatchDocument.liveTraffic' in lt['setting'], 'setting'
 assert 'Driver app: not affected' in lt['apps'] and 'placeholder 600' in lt['rider'], 'apps'
 spec = yaml.safe_load(open('openapi.yaml'))
@@ -21,7 +23,7 @@ assert q['properties']['routeSource']['enum'] == ['google', 'osrm', 'estimate'],
 for k in ('tripSeconds', 'tripMeters', 'routeSource'):
     assert k not in q['required'], 'Quote.' + k + ' optional'
 d = S['DispatchDocument']
-assert d['properties']['liveTraffic']['required'] == ['on'] and 'liveTraffic' not in d['required'], 'DispatchDocument.liveTraffic'
+assert d['properties']['liveTraffic']['required'] == ['on'] and d['properties']['liveTraffic']['properties']['offRouteMeters']['maximum'] == 2000 and 'liveTraffic' not in d['required'], 'DispatchDocument.liveTraffic'
 md = open('CONTRACT.md', encoding='utf-8').read()
 ch = open('CHANGELOG.md', encoding='utf-8').read()
 assert md.startswith('# Movera shared contract v' + c['version']), 'CONTRACT.md title'

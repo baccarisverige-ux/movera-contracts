@@ -11,5 +11,12 @@ _Q["tripMeters"] = i(_V163 + "the road distance this price used, in metres. Abse
 _Q["routeSource"] = s(_V163 + _LT["routeSourceRule"] + " Absent from an older server.", enum=list(_LT["routeSources"]))
 _D = S["DispatchDocument"]["properties"]
 assert "liveTraffic" not in _D, "DispatchDocument.liveTraffic exists before v0.18.163"
-_D["liveTraffic"] = obj({"on": b(_V163 + "true: trip times with live traffic (Google), else roads without traffic (OSRM).")}, ["on"],
-                        _V163 + _LT["setting"] + " " + _LT["fallback"], addl=False)
+_R = _LT["recall"]
+def _rng(k, what):
+    lo, hi = _R["ranges"][k]
+    return i(_V163 + what + f" {lo} to {hi}, default {_R['defaults'][k]}.", minimum=lo, maximum=hi)
+_D["liveTraffic"] = obj({"on": b(_V163 + "true: trip times with live traffic (Google), else the straight-line estimate."),
+                         "offRouteMeters": _rng("offRouteMeters", "metres off the stored route that count as leaving it,"),
+                         "offRouteSeconds": _rng("offRouteSeconds", "seconds off the route before Google is asked again,"),
+                         "behindMinutes": _rng("behindMinutes", "minutes behind the route's planned arrival before Google is asked again,")},
+                        ["on"], _V163 + _LT["setting"] + " " + _LT["calls"]["recall"] + " " + _LT["fallback"], addl=False)

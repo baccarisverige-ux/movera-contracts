@@ -23475,9 +23475,9 @@ components:
           - google
           - osrm
           - estimate
-          description: 'v0.18.163 (contract.json#liveTraffic): Every route says where it came from: google (live traffic),
-            osrm (roads, no traffic), estimate (straight line x roadFactor at pickupKmh). quotes.route_source keeps it (migration
-            0138 adds google). Absent from an older server.'
+          description: 'v0.18.163 (contract.json#liveTraffic): Every route says where it came from: google (live traffic)
+            or estimate (straight line x roadFactor at pickupKmh); osrm stays a known value for older stored quotes only (the
+            server no longer asks OSRM). quotes.route_source keeps it (migration 0138 adds google). Absent from an older server.'
     RouteQuote:
       type: object
       description: 'Price for a route change after request; apply with PATCH /trips/{tripId}. Priced from the booking (owner
@@ -30515,23 +30515,45 @@ components:
               default: 60
         liveTraffic:
           type: object
-          description: 'v0.18.163 (contract.json#liveTraffic): DispatchDocument.liveTraffic { on } per zone, or per country
-            as the country standard (Admin > Dispatch, country/zone dispatch settings, with an "i" text). A zone that follows
-            its country standard reads the standard''s value; a document without the field (or no document) reads the default
-            for the zone''s country: on for SE and FR, off elsewhere (defaultOnCountries). Off = OSRM then the estimate, as
-            before v0.18.163. google -> osrm -> estimate. Google is asked with a timeout (default 2500 ms) behind a circuit
-            breaker (default 5 failures in a row open it for 60 s, then one probe), as OSRM. Any Google failure, a 4xx/5xx
-            answer, a timeout, the open breaker, no key, or the per-copy rate limit takes OSRM, and OSRM down takes the estimate.
-            Each fallback is one warn log line (never the key); while Google fell back in the last 10 minutes the admin gets
-            one system_health alert per country book (key system_health:live_traffic:<CC>, "Live traffic is not available:
-            trip times use roads without traffic"), solved by itself when Google answers again.'
+          description: 'v0.18.163 (contract.json#liveTraffic): DispatchDocument.liveTraffic { on, offRouteMeters, offRouteSeconds,
+            behindMinutes } per zone, or per country as the country standard (Admin > Dispatch > Rides, with an "i" text).
+            A zone that follows its country standard reads the standard''s values; a document without on (or no document)
+            reads the default for the zone''s country: on for SE and FR, off elsewhere (defaultOnCountries); a missing or
+            out-of-range threshold reads its default (recall). Off = the straight-line estimate. 5. Google is asked again
+            only when the driver left the route (more than recall.offRouteMeters from it for more than recall.offRouteSeconds)
+            or is more than recall.behindMinutes behind the route''s planned arrival; and once for a route change (its price
+            and its new route). google -> estimate. Google is asked with a timeout (default 2500 ms) behind a circuit breaker
+            (5 failures in a row open it for 60 s, then one probe). Any Google failure, a 4xx/5xx answer, a timeout, the open
+            breaker or the per-copy rate cap takes the straight-line estimate. Each failure is one warn log line (never the
+            key); while, in a country with live traffic on, at least 3 quotes of the last 10 minutes and none from Google
+            were made, the admin gets one system_health alert per country book (key system_health:live_traffic:<CC>, "Live
+            traffic is not available: trip times use roads without traffic"), solved by itself when Google answers again.
+            No alert when the server has no Google key.'
           required:
           - 'on'
           properties:
             'on':
               type: boolean
-              description: 'v0.18.163 (contract.json#liveTraffic): true: trip times with live traffic (Google), else roads
-                without traffic (OSRM).'
+              description: 'v0.18.163 (contract.json#liveTraffic): true: trip times with live traffic (Google), else the straight-line
+                estimate.'
+            offRouteMeters:
+              type: integer
+              minimum: 50
+              maximum: 2000
+              description: 'v0.18.163 (contract.json#liveTraffic): metres off the stored route that count as leaving it, 50
+                to 2000, default 200.'
+            offRouteSeconds:
+              type: integer
+              minimum: 10
+              maximum: 600
+              description: 'v0.18.163 (contract.json#liveTraffic): seconds off the route before Google is asked again, 10
+                to 600, default 30.'
+            behindMinutes:
+              type: integer
+              minimum: 1
+              maximum: 60
+              description: 'v0.18.163 (contract.json#liveTraffic): minutes behind the route''s planned arrival before Google
+                is asked again, 1 to 60, default 5.'
           additionalProperties: false
       x-server-only: true
       x-ranges:
