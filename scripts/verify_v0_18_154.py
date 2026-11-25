@@ -53,8 +53,9 @@ assert 'upgrade_required' in S['ErrorCode']['enum'], 'ErrorCode enum'
 rk = S['ConfigDraftUpdate']['properties']['removeKeys']['items']['enum']
 assert 'appUpdate.minVersion' in rk and 'appUpdate.storeUrls' in rk, 'removeKeys'
 t = open('CONTRACT.md', encoding='utf-8').read()
-assert t.startswith('# Movera shared contract v' + c['version']) and '\nv0.18.154 (P16c minimum app version;' in t, 'CONTRACT.md note'
-assert 'follows v0.18.153)' in t, 'CONTRACT.md follows'
+tc = t + open('CHANGELOG.md', encoding='utf-8').read()  # v0.18.159: the v0.18.154 note moved to CHANGELOG.md word for word
+assert t.startswith('# Movera shared contract v' + c['version']) and '\nv0.18.154 (P16c minimum app version;' in tc, 'CONTRACT.md note'
+assert 'follows v0.18.153)' in tc, 'CONTRACT.md follows'
 assert 'v0.18.154: 426 `upgrade_required` on book, go-online, offer accept' in t, 'CONTRACT.md §18 row'
 ch = open('CHANGELOG.md', encoding='utf-8').read()
 cl = ch.split('\n')
