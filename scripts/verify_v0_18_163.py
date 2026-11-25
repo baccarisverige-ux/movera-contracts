@@ -15,7 +15,7 @@ assert 'open street map' in lt['noOsrm'] and 'polyline' in lt['calls']['quote'] 
 assert lt['recall']['defaults'] == {'offRouteMeters': 200, 'offRouteSeconds': 30, 'behindMinutes': 5}, 'recall defaults'
 assert 'encodedPolyline' in lt['request'], 'field mask polyline'
 assert lt['defaultOnCountries'] == ['SE', 'FR'] and 'DispatchDocument.liveTraffic' in lt['setting'], 'setting'
-assert 'Driver app: no code change' in lt['apps'] and 'GET /routes/driving' in lt['navigation'] and 'placeholder 600' in lt['rider'], 'apps'
+assert 'Driver app: no code change' in lt['apps'] and 'GET /routes/driving' in lt['navigation'] and 'never calls Google' in lt['navigation'] and 'placeholder 600' in lt['rider'], 'apps'
 spec = yaml.safe_load(open('openapi.yaml'))
 S = spec['components']['schemas']
 q = S['Quote']
