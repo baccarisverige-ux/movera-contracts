@@ -14,7 +14,7 @@ assert z['since'] == '0.18.161', 'since'
 assert "its fleet's zone; else (a car with no fleet) its driver's first zone" in z['carZone'] and 'else none (null)' in z['carZone'], 'car zone rule'
 assert 'left out as soon as zoneId, zoneIds or country is given' in z['noZone'], 'no zone excluded'
 assert 'zone_out_of_scope' in z['existingZoneId'], 'zoneId documented'
-assert 'never as SE' in z['panel'] and 'unknown_filter' in z['panel'], 'panel'
+assert 'never as SE' in z['panel'] and 'unknown_filter' in z['panel'] and 'rows without zoneId' in z['panel'], 'panel'
 assert 'Driver app: not affected' in z['apps'] and 'Rider app: not affected' in z['apps'], 'apps'
 spec = yaml.safe_load(open('openapi.yaml'))
 S, P = spec['components']['schemas'], spec['paths']
