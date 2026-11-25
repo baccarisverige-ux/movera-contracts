@@ -35,7 +35,8 @@ assert 'v0.18.159 (fleetNeedsCar)' in P['/admin/fleets/{fleetId}/review']['post'
 assert 'v0.18.159 (fleetNeedsCar): fleet_no_car' in P['/driver/reminders']['get']['description'], 'openapi reminders'
 md = open('CONTRACT.md', encoding='utf-8').read()
 assert md.startswith('# Movera shared contract v' + c['version']), 'CONTRACT.md title'
-assert '\nv0.18.159 (fleet needs a car;' in md and 'Rider: not affected.' in md, 'CONTRACT.md note'
+_mc = md + open('CHANGELOG.md', encoding='utf-8').read()  # v0.18.164: the note moved to CHANGELOG.md word for word
+assert '\nv0.18.159 (fleet needs a car;' in _mc and 'Rider: not affected.' in _mc, 'CONTRACT.md note'
 assert 'v0.18.159 (`fleetNeedsCar`): approving a fleet with no car' in md, 'CONTRACT.md admin line'
 assert md.count('\n') <= 1500, 'CONTRACT.md over 1,500 lines'
 ch = open('CHANGELOG.md', encoding='utf-8').read()
