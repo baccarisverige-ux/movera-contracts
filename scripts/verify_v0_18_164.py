@@ -26,6 +26,7 @@ assert 'hybrid or electric' in ma and 'not put back to pending' in ma and 'Swede
 spec = yaml.safe_load(open('openapi.yaml'))
 vp = spec['components']['schemas']['OnboardingSettings']['properties']['vehicles']
 assert vp['properties']['maxAgeYears']['maximum'] == 30 and 'maxAgeYears' not in vp['required'], 'openapi maxAgeYears'
+assert spec['components']['schemas']['DocumentSummary']['properties']['hasFile']['type'] == 'boolean', 'hasFile'
 assert vp['properties']['hybridElectricExempt']['default'] is False, 'openapi exempt'
 md = open('CONTRACT.md', encoding='utf-8').read(); ch = open('CHANGELOG.md', encoding='utf-8').read()
 assert md.startswith('# Movera shared contract v' + c['version']), 'title'

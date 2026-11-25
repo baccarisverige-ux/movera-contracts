@@ -23660,6 +23660,17 @@ components:
             admin driver page list both: the approved one and, right after it, its renewal. The Home line of the approved
             one (expiring / expired) carries renewalStatus (in_review | rejected). With renewalStatus rejected the line also
             carries reviewNote = the admin''s note on the rejected renewal (why), so Home can show it.'
+        hasFile:
+          type: boolean
+          description: 'v0.18.164 (documents.reviewNeedsFile): true when a file is stored for this document (or renewal).
+            Absent from an older server (treat as unknown). v0.18.164 (owner 2026-11-25 "Yes, fix all 3", upload safety):
+            POST /admin/documents/{documentId}/review { decision: approved } of a document whose type has kind file (in its
+            country) and that has no stored file is 400 invalid_request, reason no_file; rejecting stays allowed. DocumentSummary.hasFile
+            (admin and driver document lists) says whether a file is stored; the admin panel shows Open and Approve only for
+            a row with a file (hasFile true, or fileUrl), else "No file" (Reject stays). Test accounts (seed-test, SEED_TEST_ON_START)
+            store a tiny placeholder file for each file document when the server has a fixed document key. The driver app
+            sends one Idempotency-Key per picked photo, so a retry after a timeout never makes a second version, and shows
+            the document as uploaded when the server already has it.'
     Document:
       type: object
       required:
