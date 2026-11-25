@@ -29,7 +29,7 @@ spec = yaml.safe_load(open('openapi.yaml'))
 p = spec['components']['schemas']['CountryRules']['properties']['smsSignInOtherCountries']
 assert p['properties']['enabled']['default'] is True and p['properties']['dailyCap']['default'] == 50 and p['additionalProperties'] is False, 'openapi'
 md = open('CONTRACT.md', encoding='utf-8').read(); ch = open('CHANGELOG.md', encoding='utf-8').read()
-assert md.startswith('# Movera shared contract v0.18.157') or '\nv0.18.157 (SMS sign-in for every country;' in md, 'CONTRACT.md note'
+assert md.startswith('# Movera shared contract v0.18.157') or '\nv0.18.157 (SMS sign-in for every country;' in md + ch, 'CONTRACT.md note'  # v0.18.162: the note moved to CHANGELOG.md word for word
 assert '\nv0.18.150 (L20 stream backup;' not in md and '\nv0.18.150 (L20 stream backup;' in ch, 'v0.18.150 note moved'
 assert c['configDocs']['keptKeys']['country_rules'][-1] == 'smsSignInOtherCountries', 'kept key'
 g = oc['guards']
