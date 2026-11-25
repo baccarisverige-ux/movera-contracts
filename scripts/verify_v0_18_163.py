@@ -31,4 +31,5 @@ assert '\nv0.18.163 (live traffic for trip times;' in md + ch, 'CONTRACT.md note
 assert 'v0.18.163 (live traffic; Rule 21 / Rule 25: moved from CONTRACT.md word for word' in ch, 'CHANGELOG move line'
 assert '\nv0.18.158 (crash catcher;' in ch, 'v0.18.158 note moved'
 assert md.count('\n') <= 1500, 'CONTRACT.md over 1,500 lines'
+assert spec['components']['schemas']['TripEta']['properties']['source']['enum'][0] == 'google', 'TripEta.source google'
 print('v0.18.163 live traffic: ok')

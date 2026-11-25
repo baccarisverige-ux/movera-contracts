@@ -20,3 +20,7 @@ _D["liveTraffic"] = obj({"on": b(_V163 + "true: trip times with live traffic (Go
                          "offRouteSeconds": _rng("offRouteSeconds", "seconds off the route before Google is asked again,"),
                          "behindMinutes": _rng("behindMinutes", "minutes behind the route's planned arrival before Google is asked again,")},
                         ["on"], _V163 + _LT["setting"] + " " + _LT["calls"]["recall"] + " " + _LT["fallback"], addl=False)
+_E = S["TripEta"]["properties"]["source"]
+assert "google" not in _E["enum"], "TripEta.source google exists before v0.18.163"
+_E["enum"] = ["google"] + list(_E["enum"])
+_E["description"] = "google | " + _E["description"] + " " + _V163 + "google: worked out along the stored Google route with live traffic (" + _LT["calls"]["duringTrip"] + "); osrm is no longer sent (" + _LT["noOsrm"].split(":")[0] + "). Apps treat an unknown value like estimate."

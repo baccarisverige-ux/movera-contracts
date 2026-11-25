@@ -37534,12 +37534,17 @@ components:
         source:
           type: string
           enum:
+          - google
           - osrm
           - estimate
           - stale
-          description: 'osrm | estimate | stale (stale: the driver sent no position for more than 120 s, dispatch''s "gone"
-            age; the previous ETA is kept with at = now, nothing new is routed; the apps show the last number and may say
-            it is old)'
+          description: 'google | osrm | estimate | stale (stale: the driver sent no position for more than 120 s, dispatch''s
+            "gone" age; the previous ETA is kept with at = now, nothing new is routed; the apps show the last number and may
+            say it is old) v0.18.163 (contract.json#liveTraffic): google: worked out along the stored Google route with live
+            traffic (4. During the trip NO calls: each ETA tick works out the remaining distance along the stored polyline
+            from the driver''s position, times the route''s average speed (Google duration / distance). To the drop-off the
+            trip''s quote polyline is used from boarding (no call).); osrm is no longer sent (Owner 2026-11-25 "We cannot
+            use data for open street map"). Apps treat an unknown value like estimate.'
     WaitingRuleOverride:
       type: object
       description: 'v0.18.8: DriverAppConfig.waiting (Admin › Dispatch › Waiting at pickup, per zone): farPickup { on, km,
