@@ -20,5 +20,6 @@ for cfg in ('RiderAppConfig', 'DriverAppConfig'):
     assert 'v0.18.160: default 300' in d, cfg + ' openapi default 300'
 md = open('CONTRACT.md', encoding='utf-8').read()
 assert md.startswith('# Movera shared contract v' + c['version']), 'CONTRACT.md title'
-assert '\nv0.18.160 (free pickup move 300 m;' in md, 'CONTRACT.md v0.18.160 note'
+_mc = md + open('CHANGELOG.md', encoding='utf-8').read()  # v0.18.165: the note moved to CHANGELOG.md word for word
+assert '\nv0.18.160 (free pickup move 300 m;' in _mc, 'CONTRACT.md v0.18.160 note'
 print('v0.18.160 free pickup move 300 m: ok')
