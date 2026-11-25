@@ -34785,7 +34785,14 @@ components:
                 Driver read: GET /driver/onboarding/settings serves each category minYear raised to at least the age year
                 (the stored document and GET /admin/config/onboarding are unchanged), so the driver app''s base year and its
                 "the car must be from <year> or later" text follow with no app change; the server''s own checks use the stored
-                document and the exemption.'
+                document and the exemption. Side effects on an existing approved car below the age year (owner to OK): it
+                stays approved and drivable, but while it breaks the rule every admin change is refused (PATCH /admin/vehicles/{vehicleId}
+                category_not_allowed, PUT /admin/drivers/{driverId}/categories, re-approval 409 vehicle_rules_not_met, also
+                after a review a 0.18.162 country change asked for) and Vehicle.fitCategories is empty; the year moves every
+                1 January. A published onboarding document of the country replaces the defaults whole: the FR defaults of
+                v0.18.164 (age rule, fleet list, REVTC 60, insurance guide) apply only where standard-FR was never published,
+                else an admin publishes them in Drivers › Onboarding. Driver read edge: an exempt car below a category minYear
+                is told the raised year (e.g. a 2015 hybrid hears 2020 where 2016 is the real floor); conservative, accepted.'
             hybridElectricExempt:
               type: boolean
               description: 'v0.18.164: hybrid and electric cars are exempt from maxAgeYears (not from minYear). Missing =
