@@ -34782,7 +34782,10 @@ components:
                 year (not from minYear). A car with no fuel is not exempt. The year rolls every 1 January with no publish.
                 Existing approved cars are not put back to pending (no migration): an approved car that breaks the age year
                 stays approved and shows its ruleProblems in red until an admin decides (owner OK needed before any hold).
-                The apps use the same rule for their own fit and message ("the car must be from <age year> or later").'
+                Driver read: GET /driver/onboarding/settings serves each category minYear raised to at least the age year
+                (the stored document and GET /admin/config/onboarding are unchanged), so the driver app''s base year and its
+                "the car must be from <year> or later" text follow with no app change; the server''s own checks use the stored
+                document and the exemption.'
             hybridElectricExempt:
               type: boolean
               description: 'v0.18.164: hybrid and electric cars are exempt from maxAgeYears (not from minYear). Missing =
