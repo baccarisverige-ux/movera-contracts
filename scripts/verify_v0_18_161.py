@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """v0.18.161 (admin cars and fleets by zone and country; owner 2026-11-25 "Yes, fix it"): GET /admin/vehicles and
 GET /admin/fleets in adminListFilters.lists with zoneId / zoneIds / country, the car-zone rule, Vehicle.zoneId /
-Vehicle.country / Fleet.zoneId, the openapi copy, the CONTRACT.md note and the v0.18.155 note moved word for word to
+Vehicle.country / Fleet.zoneId, the openapi copy, the CONTRACT.md note and the v0.18.156 note moved word for word to
 CHANGELOG.md (Rule 21 / Rule 25). Run by scripts/verify.sh from the repository root (own file, Rule 25)."""
 import json, yaml
 c = json.load(open('contract.json'))
@@ -37,8 +37,8 @@ assert '`kpis` and (v0.18.161) `vehicles` and `fleets` take' in md, '§7'
 assert md.count('\n') <= 1500, 'CONTRACT.md over 1,500 lines'
 ch = open('CHANGELOG.md', encoding='utf-8').read()
 assert 'v0.18.161 (admin cars by zone; Rule 21 / Rule 25: moved from CONTRACT.md word for word' in ch, 'CHANGELOG move line'
-n155 = next(l for l in ch.split('\n') if l.startswith('v0.18.155 (driver profile v3;'))
-assert '\n' + n155 not in md, 'v0.18.155 note moved'
+n156 = next(l for l in ch.split('\n') if l.startswith('v0.18.156 (iOS push;') and 'moved from' not in l)
+assert '\n' + n156 not in md, 'v0.18.156 note moved'
 assert 'Check what happened' in z['noCountry'] and c['alertDesk']['kindGroups']['car_no_country'] == 'system' and c['alertDesk']['serverDetection']['kindDefaults']['car_no_country']['level'] == 'important', 'noCountry + alert'
 assert 'vehicleId' in c['alertDesk']['serverDetection']['kindDefaults']['car_no_country']['rule'], 'alert ref'
 print('v0.18.161 admin cars by zone: ok')

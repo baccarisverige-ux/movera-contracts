@@ -35,7 +35,7 @@ assert rq['comment']['maxLength'] == 2000, 'private comment unchanged'
 for d in ('RiderAppConfig', 'DriverAppConfig'):
     assert sc[d]['properties']['driverProfile'] == {'$ref': '#/components/schemas/DriverProfileSettings'}, d
 t = open('CONTRACT.md', encoding='utf-8').read()
-tc = t + open('CHANGELOG.md', encoding='utf-8').read()  # v0.18.161: the v0.18.155 note moved to CHANGELOG.md word for word
+tc = t + open('CHANGELOG.md', encoding='utf-8').read()  # v0.18.160: the v0.18.155 note moved to CHANGELOG.md word for word
 assert t.startswith('# Movera shared contract v' + c['version']) and '\nv0.18.155 (driver profile v3' in tc, 'CONTRACT.md note'
 assert '\nv0.18.150 (' not in t, 'v0.18.150 note moved'
 assert 'follows v0.18.154)' in tc, 'follows'
