@@ -46,8 +46,9 @@ assert set(S['DriverIncomeTotals']['required']) == set(FIELDS), 'totals fields'
 assert S['DriverIncomeRow']['allOf'][1]['properties']['partial']['type'] == 'boolean' and S['DriverIncomeTripLine']['allOf'][1]['properties']['lineKind']['enum'] == ['trip', 'credit', 'payout'], 'openapi partial, lineKind'
 for n in ('DriverIncomeRow', 'DriverIncomeQuarter', 'DriverIncomeMonth', 'DriverIncomeDay', 'DriverIncomeTripLine', 'DriverIncomePage', 'DriverIncomeStatement'): assert n in S, n
 t = open('CONTRACT.md', encoding='utf-8').read()
-assert t.startswith('# Movera shared contract v' + c['version']) and '\nv0.18.153 (P29 driver income year file, EU DAC7;' in t, 'CONTRACT.md note'
-n153 = next(l for l in t.split('\n') if l.startswith('v0.18.153 (P29 driver income year file'))
+tc = t + open('CHANGELOG.md', encoding='utf-8').read()  # v0.18.158: the v0.18.153 note moved to CHANGELOG.md word for word
+assert t.startswith('# Movera shared contract v' + c['version']) and '\nv0.18.153 (P29 driver income year file, EU DAC7;' in tc, 'CONTRACT.md note'
+n153 = next(l for l in tc.split('\n') if l.startswith('v0.18.153 (P29 driver income year file'))
 assert 'follows v0.18.152)' in n153 and '`contract.json#driverIncomeYear`' in n153, 'CONTRACT.md note text'
 assert t.count('- **Driver income (year)** (v0.18.153, `contract.json#driverIncomeYear`, DAC7)') == 1, 'KPIs line once'
 ch = open('CHANGELOG.md', encoding='utf-8').read()

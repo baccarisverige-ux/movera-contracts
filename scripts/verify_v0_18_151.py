@@ -18,8 +18,9 @@ assert c['sosContactsSms']['statuses'] == ['off', 'no_contacts', 'not_connected'
 assert 'fleet invitation SMS stays not connected' in c['smsSignIn']['otherSmsV0_18_151'], 'otherSms follow-up'
 assert c['smsSignIn']['otherSms'].endswith('until a later version says so.'), 'released otherSms kept as it was'
 t = open('CONTRACT.md', encoding='utf-8').read()
-assert t.startswith('# Movera shared contract v' + c['version']) and '\nv0.18.151 (SOS contacts SMS sent;' in t, 'CONTRACT.md note'
-n151 = next(l for l in t.split('\n') if l.startswith('v0.18.151 (SOS contacts SMS sent;'))
+_tch = t + '\n' + open('CHANGELOG.md', encoding='utf-8').read()  # v0.18.156: the v0.18.151 note moved to CHANGELOG.md word for word
+assert t.startswith('# Movera shared contract v' + c['version']) and '\nv0.18.151 (SOS contacts SMS sent;' in _tch, 'CONTRACT.md note'
+n151 = next(l for l in _tch.split('\n') if l.startswith('v0.18.151 (SOS contacts SMS sent;') and 'moved from CONTRACT.md' not in l)
 assert 'follows v0.18.150)' in n151 and '`contract.json#sosContactsSms.send`' in n151, 'CONTRACT.md note text'
 assert ' v0.18.151 (`sosContactsSms.send`): connected = the sign-in SMS keys are set AND the server switch' in t, '§92 line'
 ch = open('CHANGELOG.md', encoding='utf-8').read()

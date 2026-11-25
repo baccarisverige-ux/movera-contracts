@@ -34,7 +34,7 @@ assert 'realtime.oneStreamFallback' in S['ConfigDraftUpdate']['properties']['rem
 assert 'v0.18.150 (driverOneStreamFallback)' in P['/driver/stream']['get']['description'], 'openapi /driver/stream'
 assert 'v0.18.150 (driverOneStreamFallback.server)' in P['/admin/config/{doc}']['put']['description'], 'openapi PUT'
 t = open('CONTRACT.md', encoding='utf-8').read()
-tc = t + open('CHANGELOG.md', encoding='utf-8').read()  # v0.18.157: this note moved to CHANGELOG.md (Rule 21 kept word for word)
+tc = t + open('CHANGELOG.md', encoding='utf-8').read()  # v0.18.155: the v0.18.150 note moved to CHANGELOG.md word for word
 assert t.startswith('# Movera shared contract v' + c['version']) and '\nv0.18.150 (L20 stream backup;' in tc, 'CONTRACT.md note'
 n150 = next(l for l in tc.split('\n') if l.startswith('v0.18.150 (L20 stream backup;'))
 assert 'follows v0.18.149)' in n150 and '`contract.json#driverOneStreamFallback`' in n150 and 'Rider: not affected' in n150, 'CONTRACT.md note text'
