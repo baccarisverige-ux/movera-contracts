@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """v0.18.157 (SMS sign-in for every country; owner 2026-11-24 "SMS sign-in codes must work for ANY phone number from
-ANY country"): checks contract.json#smsSignIn.otherCountries (default OFF, cap 50 inside dailyCapRange, home country SE,
+ANY country"): checks contract.json#smsSignIn.otherCountries (default ON for the rider app, cap 50 inside dailyCapRange, home country SE,
 strict E.164, mobile patterns compile and accept / refuse sample numbers, texts en / sv / fr), the openapi copy, the
 CONTRACT.md note and the v0.18.150 note moved word for word to CHANGELOG.md (Rule 21 / Rule 25)."""
 import json, re, yaml
@@ -37,4 +37,9 @@ assert d['perCodeDailyCap'] == 10 and d['perMinuteCap'] == 30 and d['blockedCall
 for k in ('perCodeDailyCap', 'perMinuteCap', 'blockedCallingCodes', 'alerts', 'deviceCheck'):
     assert isinstance(g[k], str) and g[k], k
 assert '+1' in oc['callingCodes'] and '+882' in oc['callingCodes'] and '+216' in oc['callingCodes'], 'calling codes'
+assert 'v0.18.157 (smsSignIn.otherCountries.setting): CountryRules.smsSignInOtherCountries' in c['pricingHistory']['restoreKeeps'], 'Restore keeps it'
+assert '(on, 50)' in oc['setting'] and '(off, 50)' not in oc['setting'], 'default wording on'
+for k in ('perCodeDailyCap', 'perMinuteCap', 'blocked'):
+    if k in oc['admin']['texts']:
+        t = oc['admin']['texts'][k]; assert set(t) == {'en', 'sv', 'fr'} and all(t.values()), k
 print('v0.18.157 ok')
