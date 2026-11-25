@@ -40,4 +40,5 @@ assert 'v0.18.161 (admin cars by zone; Rule 21 / Rule 25: moved from CONTRACT.md
 n155 = next(l for l in ch.split('\n') if l.startswith('v0.18.155 (driver profile v3;'))
 assert '\n' + n155 not in md, 'v0.18.155 note moved'
 assert 'Check what happened' in z['noCountry'] and c['alertDesk']['kindGroups']['car_no_country'] == 'system' and c['alertDesk']['serverDetection']['kindDefaults']['car_no_country']['level'] == 'important', 'noCountry + alert'
+assert 'vehicleId' in c['alertDesk']['serverDetection']['kindDefaults']['car_no_country']['rule'], 'alert ref'
 print('v0.18.161 admin cars by zone: ok')
