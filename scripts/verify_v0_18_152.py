@@ -33,8 +33,9 @@ assert 'v0.18.152 (contract.json#bookedRideSeen.searchSeen)' in d and 'no list d
 tp = spec['components']['schemas']['TripProjection']
 assert tp['properties']['driverAssigned']['type'] == 'boolean' and 'driverAssigned' not in tp.get('required', []), 'TripProjection.driverAssigned optional'
 t = open('CONTRACT.md', encoding='utf-8').read()
-assert t.startswith('# Movera shared contract v' + c['version']) and '\nv0.18.152 (booked ride shown like a normal ride once its search starts;' in t, 'CONTRACT.md note'
-n152 = next(l for l in t.split('\n') if l.startswith('v0.18.152 (booked ride shown like a normal ride once its search starts;'))
+tc = t + open('CHANGELOG.md', encoding='utf-8').read()  # v0.18.157: the v0.18.152 note moved to CHANGELOG.md word for word
+assert t.startswith('# Movera shared contract v' + c['version']) and '\nv0.18.152 (booked ride shown like a normal ride once its search starts;' in tc, 'CONTRACT.md note'
+n152 = next(l for l in tc.split('\n') if l.startswith('v0.18.152 (booked ride shown like a normal ride once its search starts;'))
 assert 'follows v0.18.151)' in n152 and '`contract.json#bookedRideSeen.searchSeen`' in n152, 'CONTRACT.md note text'
 assert t.count('- **Active trip**: `GET /rider/trips/active`') == 1 and 'v0.18.152 (`bookedRideSeen.searchSeen`): also a booked trip being searched or accepted' in t, '§53 line (once)'
 ch = open('CHANGELOG.md', encoding='utf-8').read()
