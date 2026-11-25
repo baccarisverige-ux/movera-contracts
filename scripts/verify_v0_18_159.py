@@ -42,6 +42,6 @@ ch = open('CHANGELOG.md', encoding='utf-8').read()
 assert 'v0.18.159 (fleet needs a car; Rule 21 / Rule 25: moved from CONTRACT.md word for word' in ch, 'CHANGELOG move line'
 n154 = next(l for l in ch.split('\n') if l.startswith('v0.18.154 (P16c minimum app version; owner'))
 assert '\n' + n154 not in md and hashlib.sha256(n154.encode()).hexdigest() == '1ae7ed93cc8ad2623dd2c03e5e31d32e20015de7619c5daf652d0f4bd5013ab6', 'v0.18.154 note moved word for word'
-assert 'v0.18.154 and before (the v0.18.154 note moved in v0.18.159, the v0.18.153 note in v0.18.158' in md, 'new pointer line'
+assert 'v0.18.154 and before (the v0.18.154 note moved in v0.18.159, the v0.18.153 note in v0.18.158' in md + ch, 'new pointer line'  # v0.18.161: that pointer line moved to CHANGELOG.md
 assert S['Fleet']['properties']['approvalBlockedReason']['enum'] == ['fleet_has_no_car'] and 'approvalBlockedReason' not in S['Fleet']['required'], 'openapi Fleet.approvalBlockedReason'
 print('v0.18.159 fleet needs a car: ok')
