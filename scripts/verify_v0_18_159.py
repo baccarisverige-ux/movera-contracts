@@ -2,9 +2,9 @@
 """v0.18.159 (fleet needs a car; owner 2026-11-24, Rules decisions/driver-g2.md "Fleet owner must add a car"): the reminder
 fleet_no_car (fleet owner, zero cars, any fleet status, gated by X-Contract-Version), the per-country setting
 OnboardingSettings.fleetNeedsCarForApproval (default true), the 409 fleet_has_no_car on fleet approval, the texts in
-sv / fr / en, the openapi copy, the CONTRACT.md note and the v0.18.150 note moved word for word to CHANGELOG.md (Rule 21 /
+sv / fr / en, the openapi copy, the CONTRACT.md note and the v0.18.154 note moved word for word to CHANGELOG.md (Rule 21 /
 Rule 25). Run by scripts/verify.sh from the repository root (own file, Rule 25)."""
-import json, yaml
+import hashlib, json, yaml
 c = json.load(open('contract.json'))
 assert tuple(map(int, c['version'].split('.'))) >= (0, 18, 159), 'version 0.18.159 or later'
 f = c['fleetNeedsCar']
@@ -40,6 +40,8 @@ assert 'v0.18.159 (`fleetNeedsCar`): approving a fleet with no car' in md, 'CONT
 assert md.count('\n') <= 1500, 'CONTRACT.md over 1,500 lines'
 ch = open('CHANGELOG.md', encoding='utf-8').read()
 assert 'v0.18.159 (fleet needs a car; Rule 21 / Rule 25: moved from CONTRACT.md word for word' in ch, 'CHANGELOG move line'
-assert '\nv0.18.150 (L20 stream backup;' in ch and '\nv0.18.150 (L20 stream backup;' not in md, 'v0.18.150 note moved'
+n154 = next(l for l in ch.split('\n') if l.startswith('v0.18.154 (P16c minimum app version; owner'))
+assert '\n' + n154 not in md and hashlib.sha256(n154.encode()).hexdigest() == '1ae7ed93cc8ad2623dd2c03e5e31d32e20015de7619c5daf652d0f4bd5013ab6', 'v0.18.154 note moved word for word'
+assert 'v0.18.154 and before (the v0.18.154 note moved in v0.18.159, the v0.18.153 note in v0.18.158' in md, 'new pointer line'
 assert S['Fleet']['properties']['approvalBlockedReason']['enum'] == ['fleet_has_no_car'] and 'approvalBlockedReason' not in S['Fleet']['required'], 'openapi Fleet.approvalBlockedReason'
 print('v0.18.159 fleet needs a car: ok')
