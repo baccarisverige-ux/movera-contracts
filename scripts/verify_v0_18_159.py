@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """v0.18.159 (fleet needs a car; owner 2026-11-24, Rules decisions/driver-g2.md "Fleet owner must add a car"): the reminder
-fleet_no_car (fleet owner, zero cars, any fleet status, gated by X-Contract-Version), the per-country setting
+fleet_no_car (fleet owner, zero cars, fleet not approved, gated by X-Contract-Version), the per-country setting
 OnboardingSettings.fleetNeedsCarForApproval (default true), the 409 fleet_has_no_car on fleet approval, the texts in
 sv / fr / en, the openapi copy, the CONTRACT.md note and the v0.18.154 note moved word for word to CHANGELOG.md (Rule 21 /
 Rule 25). Run by scripts/verify.sh from the repository root (own file, Rule 25)."""
