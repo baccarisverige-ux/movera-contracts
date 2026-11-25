@@ -9,13 +9,13 @@ assert tuple(map(int, c['version'].split('.'))) >= (0, 18, 163), 'version 0.18.1
 lt = c['liveTraffic']
 assert lt['since'] == '0.18.163' and lt['provider'] == 'google_traffic', 'provider'
 assert lt['routeSources'] == ['google', 'osrm', 'estimate'], 'sources'
-assert 'TRAFFIC_AWARE' in lt['request'] and 'routes.duration,routes.distanceMeters' in lt['request'] and 'never logged' in lt['request'], 'request'
+assert 'no departureTime' in lt['request'] and 'TRAFFIC_AWARE' in lt['request'] and 'routes.duration,routes.distanceMeters' in lt['request'] and 'never logged' in lt['request'], 'request'
 assert lt['fallback'].startswith('google -> estimate') and 'system_health:live_traffic' in lt['fallback'], 'fallback'
 assert 'open street map' in lt['noOsrm'] and 'polyline' in lt['calls']['quote'] and 'NO calls' in lt['calls']['duringTrip'], 'owner cheapest method'
 assert lt['recall']['defaults'] == {'offRouteMeters': 200, 'offRouteSeconds': 30, 'behindMinutes': 5}, 'recall defaults'
 assert 'encodedPolyline' in lt['request'], 'field mask polyline'
 assert lt['defaultOnCountries'] == ['SE', 'FR'] and 'DispatchDocument.liveTraffic' in lt['setting'], 'setting'
-assert 'Driver app: not affected' in lt['apps'] and 'placeholder 600' in lt['rider'], 'apps'
+assert 'Driver app: no code change' in lt['apps'] and 'GET /routes/driving' in lt['navigation'] and 'placeholder 600' in lt['rider'], 'apps'
 spec = yaml.safe_load(open('openapi.yaml'))
 S = spec['components']['schemas']
 q = S['Quote']
@@ -32,4 +32,5 @@ assert 'v0.18.163 (live traffic; Rule 21 / Rule 25: moved from CONTRACT.md word 
 assert '\nv0.18.158 (crash catcher;' in ch, 'v0.18.158 note moved'
 assert md.count('\n') <= 1500, 'CONTRACT.md over 1,500 lines'
 assert spec['components']['schemas']['TripEta']['properties']['source']['enum'][0] == 'google', 'TripEta.source google'
+assert 'v0.18.163' in spec['paths']['/routes/driving/{coordinates}']['get']['description'], 'navigation'
 print('v0.18.163 live traffic: ok')
