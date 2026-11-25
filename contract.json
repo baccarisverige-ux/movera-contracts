@@ -1,6 +1,6 @@
 {
   "contract": "movera",
-  "version": "0.18.162",
+  "version": "0.18.163",
   "note": "Canonical cross-app contract for Rider, Driver and Admin. Frontend-only today; a future single backend implements it. Every app ships an identical copy under contracts/ and runs contract tests against it.",
   "wire": {
     "ids": {
@@ -11887,5 +11887,29 @@
     "oneTimeFix": "Server migration 0137 (runs once): every driver with no country who is in a fleet gets the fleet's country (and, with no zone, the fleet's zone). Every other driver with no country stays null: the driver app shows him the country step at his next sign-in, and the admin sees the alert driver_no_country.",
     "noCountryError": "The admin shows a driver with no country (Driver.country missing) as a red error \"Driver has no country\" on the driver page and in the driver list, with a \"Set country\" link to the Country field of the driver page.",
     "apps": "Driver app: a required \"Which country do you work in?\" screen right after the first sign-in and before the details form (no country picked by default; only open countries), shown once to every driver or fleet owner whose Driver.country is missing (new or existing); the details form then shows the country read-only with a change link back to the step while accountStatus is pending or on_hold. Rider app: not affected (it never reads or sets a driver's country). Admin: the Country field with Change on the driver page (reason, own-country scope), the red error, and the driver and fleet lists filtered by country (adminListFilters, carZones)."
+  },
+  "liveTraffic": {
+    "since": "0.18.163",
+    "note": "v0.18.163 (live traffic for trip times; owner 2026-11-25 \"Google trafic réel\" after an offer said 13 min where Google Maps said 26 min; Rule 0; X-Api-Version stays `0.5`; additive, optional; migration 0138 (quotes.route_source may be google); follows v0.18.162): the server asks Google for the drive time WITH live traffic for prices, offers and booked rides; OSRM (no traffic) and then the straight-line estimate stay as the fallback.",
+    "provider": "google_traffic",
+    "request": "Google Routes API computeRoutes (POST https://routes.googleapis.com/directions/v2:computeRoutes), travelMode DRIVE, routingPreference TRAFFIC_AWARE, departureTime = now, X-Goog-FieldMask routes.duration,routes.distanceMeters only (no shape, no TRAFFIC_AWARE_OPTIMAL: the cheapest SKU that has live traffic). The key is the server's GOOGLE_MAPS_API_KEY (Routes API enabled on its Google Cloud project); it is sent in the X-Goog-Api-Key header and never logged.",
+    "routeSources": [
+      "google",
+      "osrm",
+      "estimate"
+    ],
+    "routeSourceRule": "Every route says where it came from: google (live traffic), osrm (roads, no traffic), estimate (straight line x roadFactor at pickupKmh). quotes.route_source keeps it (migration 0138 adds google).",
+    "fallback": "google -> osrm -> estimate. Google is asked with a timeout (default 2500 ms) behind a circuit breaker (default 5 failures in a row open it for 60 s, then one probe), as OSRM. Any Google failure, a 4xx/5xx answer, a timeout, the open breaker, no key, or the per-copy rate limit takes OSRM, and OSRM down takes the estimate. Each fallback is one warn log line (never the key); while Google fell back in the last 10 minutes the admin gets one system_health alert per country book (key system_health:live_traffic:<CC>, \"Live traffic is not available: trip times use roads without traffic\"), solved by itself when Google answers again.",
+    "uses": "Live traffic is used for: the quote (Quote.tripSeconds and the per-minute fare line, so the booked trip's duration and the offer's Offer.tripSeconds, which already carries the booked trip's duration), the booked ride's leave-on-time check (the drive to the pickup) and the route-change price. The live ETA ticks (TripProjection eta, every few seconds per trip) stay on OSRM: they run far too often to pay a traffic route each time (cost), and the trip times that set prices and offers are the ones the owner asked for.",
+    "rateLimit": "Per server copy at most GOOGLE_ROUTES_PER_MINUTE Google asks a minute (default 300); above it the ask takes OSRM for that minute (no alert: a cost cap, not an outage).",
+    "setting": "DispatchDocument.liveTraffic { on } per zone, or per country as the country standard (Admin > Dispatch, country/zone dispatch settings, with an \"i\" text). A zone that follows its country standard reads the standard's value; a document without the field (or no document) reads the default for the zone's country: on for SE and FR, off elsewhere (defaultOnCountries). Off = OSRM then the estimate, as before v0.18.163.",
+    "defaultOnCountries": [
+      "SE",
+      "FR"
+    ],
+    "quote": "Quote.tripSeconds (the drive time the price used, seconds), Quote.tripMeters and Quote.routeSource (google, osrm or estimate), on every quote from v0.18.163; absent from an older server.",
+    "rider": "The rider app shows the server's Quote.tripSeconds as the trip time (Select ride, the search screen); its own straight-line minutes only when the quote has no tripSeconds (an older server). The contract QuoteRequest never sent a duration; the old non-contract quote call no longer sends a placeholder 600 s (durationSeconds is sent only when the app really has one).",
+    "admin": "Admin > Dispatch (zone and country standard): \"Live traffic (Google)\" on/off with an \"i\" text; other pages only link to it.",
+    "apps": "Driver app: not affected (the offer already shows the server's Offer.tripSeconds). Rider app: shows Quote.tripSeconds."
   }
 }

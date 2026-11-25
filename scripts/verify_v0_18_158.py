@@ -44,7 +44,8 @@ for doc in ('RiderAppConfig', 'DriverAppConfig'):
     cr = S[doc]['properties']['crashReports']
     assert cr['properties']['on']['default'] is True and cr['additionalProperties'] is False, doc
 t = open('CONTRACT.md', encoding='utf-8').read()
-assert t.startswith('# Movera shared contract v' + c['version']) and '\nv0.18.158 (crash catcher;' in t, 'CONTRACT.md note'
+ch = open('CHANGELOG.md', encoding='utf-8').read()
+assert t.startswith('# Movera shared contract v' + c['version']) and '\nv0.18.158 (crash catcher;' in t + ch, 'CONTRACT.md note'  # v0.18.163: the note moved to CHANGELOG.md word for word
 assert 'v0.18.158 (`contract.json#crashCatcher`): kinds `dart_error`' in t, 'CONTRACT.md §11 line'
 ch = open('CHANGELOG.md', encoding='utf-8').read()
 cl = ch.split('\n')

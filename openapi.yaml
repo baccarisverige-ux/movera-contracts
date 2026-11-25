@@ -1,11 +1,11 @@
-# Movera API v0.18.162 — generated from contract.json (+ CONTRACT.md §7). PROPOSED; no backend exists.
+# Movera API v0.18.163 — generated from contract.json (+ CONTRACT.md §7). PROPOSED; no backend exists.
 openapi: 3.1.0
 info:
   title: Movera API
-  version: 0.18.162
+  version: 0.18.163
   description: '**Proposed contract — no backend exists yet.** One future backend serves the Rider (Flutter), Driver (Flutter)
     and Admin (React/TS) apps. Source of truth for names, enums, transitions, realtime and errors is `contract.json` + `CONTRACT.md`
-    v0.18.162 in this folder; this file must agree with them.
+    v0.18.163 in this folder; this file must agree with them.
 
 
     Wire rules: ids match `^[A-Za-z0-9_-]{1,64}$`; times are RFC 3339 UTC with `Z`; durations are integer seconds; money is
@@ -84,7 +84,7 @@ tags:
 - name: Admin · Finance
 x-contract:
   name: movera
-  version: 0.18.162
+  version: 0.18.163
   source: contract.json
 paths:
   /auth/otp/request:
@@ -23456,6 +23456,28 @@ components:
           description: 'v0.18.84 (owner Q-M2 / Q-S5-5): Q-S5-5: Quote.walletDebt (Money in the quote''s currency; absent when
             that balance is ≥ 0) is information only, not in Quote.total and not a fare line: the rider app shows texts.quoteDebtLine
             under the price. The amount paid is the one read at payment.'
+        tripSeconds:
+          type: integer
+          minimum: 0
+          description: 'v0.18.163 (contract.json#liveTraffic): the drive time this price used, in seconds (live traffic when
+            routeSource is google). The rider app shows the server''s Quote.tripSeconds as the trip time (Select ride, the
+            search screen); its own straight-line minutes only when the quote has no tripSeconds (an older server). The contract
+            QuoteRequest never sent a duration; the old non-contract quote call no longer sends a placeholder 600 s (durationSeconds
+            is sent only when the app really has one). Absent from an older server.'
+        tripMeters:
+          type: integer
+          minimum: 0
+          description: 'v0.18.163 (contract.json#liveTraffic): the road distance this price used, in metres. Absent from an
+            older server.'
+        routeSource:
+          type: string
+          enum:
+          - google
+          - osrm
+          - estimate
+          description: 'v0.18.163 (contract.json#liveTraffic): Every route says where it came from: google (live traffic),
+            osrm (roads, no traffic), estimate (straight line x roadFactor at pickupKmh). quotes.route_source keeps it (migration
+            0138 adds google). Absent from an older server.'
     RouteQuote:
       type: object
       description: 'Price for a route change after request; apply with PATCH /trips/{tripId}. Priced from the booking (owner
@@ -30491,6 +30513,26 @@ components:
               minimum: 0
               maximum: 240
               default: 60
+        liveTraffic:
+          type: object
+          description: 'v0.18.163 (contract.json#liveTraffic): DispatchDocument.liveTraffic { on } per zone, or per country
+            as the country standard (Admin > Dispatch, country/zone dispatch settings, with an "i" text). A zone that follows
+            its country standard reads the standard''s value; a document without the field (or no document) reads the default
+            for the zone''s country: on for SE and FR, off elsewhere (defaultOnCountries). Off = OSRM then the estimate, as
+            before v0.18.163. google -> osrm -> estimate. Google is asked with a timeout (default 2500 ms) behind a circuit
+            breaker (default 5 failures in a row open it for 60 s, then one probe), as OSRM. Any Google failure, a 4xx/5xx
+            answer, a timeout, the open breaker, no key, or the per-copy rate limit takes OSRM, and OSRM down takes the estimate.
+            Each fallback is one warn log line (never the key); while Google fell back in the last 10 minutes the admin gets
+            one system_health alert per country book (key system_health:live_traffic:<CC>, "Live traffic is not available:
+            trip times use roads without traffic"), solved by itself when Google answers again.'
+          required:
+          - 'on'
+          properties:
+            'on':
+              type: boolean
+              description: 'v0.18.163 (contract.json#liveTraffic): true: trip times with live traffic (Google), else roads
+                without traffic (OSRM).'
+          additionalProperties: false
       x-server-only: true
       x-ranges:
         radar.drivers:
