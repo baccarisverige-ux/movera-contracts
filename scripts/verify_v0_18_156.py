@@ -30,7 +30,8 @@ g = P['/push/config']['get']
 assert 'v0.18.156' in g['description'] and any(p.get('name') == 'platform' and 'ios gives iosConfig' in p['description'] for p in g['parameters']), 'openapi /push/config'
 assert 'v0.18.156: every FCM message' in P['/push/devices']['post']['description'], 'openapi /push/devices'
 t = open('CONTRACT.md', encoding='utf-8').read()
-assert t.startswith('# Movera shared contract v' + c['version']) and '\nv0.18.156 (iOS push;' in t, 'CONTRACT.md note'
+tc = t + open('CHANGELOG.md', encoding='utf-8').read()  # v0.18.161: the v0.18.156 note moved to CHANGELOG.md word for word
+assert t.startswith('# Movera shared contract v' + c['version']) and '\nv0.18.156 (iOS push;' in tc, 'CONTRACT.md note'
 ch = open('CHANGELOG.md', encoding='utf-8').read()
 cl = ch.split('\n')
 n151 = next(l for l in cl if l.startswith('v0.18.151 (SOS contacts SMS sent;') and 'moved from CONTRACT.md' not in l)
