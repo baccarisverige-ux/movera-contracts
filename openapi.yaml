@@ -4083,9 +4083,10 @@ paths:
         on POST /driver/onboarding), POST /driver/fleet/invite (a number with an account), POST /driver/fleet/invitations/{invitationId}/accept
         and POST /admin/fleets/{fleetId}/invitations/{invitationId}/accept. POST /driver/onboarding is 409 fleet_other_country
         too when a fleet member changes his country away from his fleet''s, or a fleet owner changes it while his fleet has
-        other drivers. v0.18.162 (contract.json#driverCountryFirst): POST /driver/onboarding still carries country; it must
-        be the saved country while one is saved, else 409 conflict reason country_locked (the app shows the country read-only
-        and goes back to the step to change it before approval).'
+        other drivers. v0.18.162 (contract.json#driverCountryFirst): POST /driver/onboarding still carries country (older
+        apps send it from the form); before approval it may still change it under the same fleet rules (409 fleet_other_country),
+        as the step. The new driver app shows the country read-only in the form and changes it only through the step (PUT
+        /driver/country) before approval.'
       tags:
       - Driver · Account
       x-actor:

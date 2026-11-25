@@ -10,7 +10,7 @@ d = c['driverCountryFirst']
 assert d['since'] == '0.18.162', 'since'
 assert 'PUT /driver/country' in d['step']['route'] and 'country_not_open' in d['step']['route'], 'step'
 assert 'details_locked' in d['step']['when'] and 'fleet_other_country' in d['step']['when'], 'step when'
-assert 'country_locked' in d['step']['onboarding'], 'onboarding'
+assert 'read-only' in d['step']['onboarding'] and 'fleet_other_country' in d['step']['onboarding'], 'onboarding'
 assert d['required']['reason'] == 'country_required' and 'POST /driver/vehicles' in d['required']['rule'], 'required'
 a = d['adminSet']
 assert 'POST /admin/drivers/{driverId}/country' in a['route'] and 'drivers.activate' in a['route'], 'admin route'
@@ -27,7 +27,7 @@ assert P['/driver/country']['put']['requestBody']['content']['application/json']
 o = P['/admin/drivers/{driverId}/country']['post']
 assert o['x-permission'] == 'drivers.activate' and set(S['AdminDriverCountryCommand']['required']) == {'expectedVersion', 'country', 'reason'}, 'admin op'
 assert 'country_required' in P['/driver/vehicles']['post']['description'], 'vehicles'
-assert 'country_locked' in P['/driver/onboarding']['post']['description'], 'onboarding'
+assert 'v0.18.162' in P['/driver/onboarding']['post']['description'], 'onboarding'
 md = open('CONTRACT.md', encoding='utf-8').read()
 assert md.startswith('# Movera shared contract v' + c['version']), 'CONTRACT.md title'
 assert '\nv0.18.162 (driver country first;' in md, 'CONTRACT.md note'
