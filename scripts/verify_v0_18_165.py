@@ -19,4 +19,10 @@ ch = open('CHANGELOG.md').read()
 assert 'v0.18.165 (sign-in code 60 s; Rule 21 / Rule 25' in ch and 'v0.18.160 (free pickup move 300 m;' in ch, 'v0.18.160 note moved'
 spec = yaml.safe_load(open('openapi.yaml'))
 assert spec['components']['schemas']['OtpChallenge']['description'].startswith('The code lives 60 s;'), 'openapi OtpChallenge'
+e = c['auth']['emailCode']
+assert e['expiresSeconds'] == 90 and e['retryAfterSeconds'] == 90 and e['since'] == '0.18.165', 'e-mail change code 90 s'
+assert 'Mail 90 s' in e['note'] and 'otp_resend_too_soon' in e['note'], 'emailCode note'
+assert 'auth.emailCode' in md, 'CONTRACT.md e-mail 90 s'
 print('v0.18.165 ok')
+assert 'v0.18.165 (auth.emailCode): the e-mail code lives 90 s' in spec['paths']['/account/email/change']['post']['description'], 'openapi e-mail change 90 s'
+print('v0.18.165 e-mail 90 s ok')
