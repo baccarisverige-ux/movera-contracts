@@ -30,7 +30,8 @@ assert 'country_required' in P['/driver/vehicles']['post']['description'], 'vehi
 assert 'v0.18.162' in P['/driver/onboarding']['post']['description'], 'onboarding'
 md = open('CONTRACT.md', encoding='utf-8').read()
 assert md.startswith('# Movera shared contract v' + c['version']), 'CONTRACT.md title'
-assert '\nv0.18.162 (driver country first;' in md, 'CONTRACT.md note'
+_mc = md + open('CHANGELOG.md', encoding='utf-8').read()  # v0.18.167: the note moved to CHANGELOG.md word for word
+assert '\nv0.18.162 (driver country first;' in _mc, 'CONTRACT.md note'
 assert md.count('\n') <= 1500, 'CONTRACT.md over 1,500 lines'
 ch = open('CHANGELOG.md', encoding='utf-8').read()
 assert 'v0.18.162 (driver country first; Rule 21 / Rule 25: moved from CONTRACT.md word for word' in ch, 'CHANGELOG move line'
