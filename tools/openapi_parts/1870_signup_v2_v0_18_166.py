@@ -29,3 +29,16 @@ _OS["twoSidedTypes"] = arr(ref("DocumentType"), uniqueItems=True, description=_V
 # v0.18.166 (owner 2026-11-26 "Peut pas"): an approved profile photo is locked for the driver.
 _op = PATHS["/driver/documents"]["post"]
 _op["description"] = (_op.get("description", "") + " " + _V166 + C["signupV2"]["profilePhoto"]["locked"]).strip()
+# v0.18.166 (owner 2026-11-26 "Oui, ajouter l'adresse (Recommandé)"): the home address (DAC7, invoices).
+_AD = C["signupV2"]["address"]
+assert "DriverAddress" not in S and "/admin/drivers/{driverId}/address" not in PATHS, "address exists before v0.18.166"
+S["DriverAddress"] = obj({"street": s(minLength=1, maxLength=200), "postalCode": s(minLength=1, maxLength=20), "city": s(minLength=1, maxLength=100)},
+                         ["street", "postalCode", "city"], _V166 + _AD["owner"] + " " + _AD["shape"] + " " + _AD["autocomplete"], addl=False)
+_OR["address"] = ref("DriverAddress")
+_DR["address"] = ref("DriverAddress")
+_op = PATHS["/driver/onboarding"]["post"]
+_op["description"] = (_op["description"] + " " + _V166 + _AD["required"]).strip()
+S["AdminDriverAddressCommand"] = obj(dict(EV, address=ref("DriverAddress"), reason=s(minLength=1, maxLength=500)), ["expectedVersion", "address", "reason"], _V166 + _AD["adminEdit"], addl=False)
+op("post", "/admin/drivers/{driverId}/address", "adminSetDriverAddress", "Change a driver's home address (reason, audited)", ["admin"], "Admin · People",
+   params=[pref("DriverId")], body="AdminDriverAddressCommand", ok=(200, "Driver"), mutation=True, permission="drivers.activate",
+   desc=_V166 + _AD["adminEdit"])

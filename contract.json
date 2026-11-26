@@ -11981,6 +11981,7 @@
         "dateOfBirth",
         "personalNumber",
         "taxiLicenseNumber",
+        "address",
         "language"
       ],
       "countryFromPhone": "The country is pre-selected from the signed-in phone number: +46 = SE, +33 = FR (only when that country is open in driverOnboarding.countries); else from the device location only if the location permission is ALREADY granted (the app never asks for it here); else empty. Always editable. Only open countries are listed; no flags.",
@@ -11992,12 +11993,13 @@
       "route": "PUT /driver/country { country, cityId? } (v0.18.166: cityId optional). cityId must be one of driverOnboarding.countries[country].cities (else 400 invalid_request reason invalid_city); it saves drivers.cityId and drivers.zoneIds = [that city's zoneId]. Without cityId the old rule stays (the country's first city). All v0.18.162 rules (before approval only, fleet country) are unchanged."
     },
     "signUpFields": {
-      "note": "OnboardingSettings.signUpFields (optional, per country): { dateOfBirth, personalNumber, taxiLicenseNumber, language } each { on, required }. Missing = the defaults below. A field that is off is not shown and not sent; a required field that is on and missing is 400 invalid_request reason field_required with details [field].",
+      "note": "OnboardingSettings.signUpFields (optional, per country): { dateOfBirth, personalNumber, taxiLicenseNumber, language, address } each { on, required }. Missing = the defaults below. A field that is off is not shown and not sent; a required field that is on and missing is 400 invalid_request reason field_required with details [field].",
       "fields": [
         "dateOfBirth",
         "personalNumber",
         "taxiLicenseNumber",
-        "language"
+        "language",
+        "address"
       ],
       "defaults": {
         "SE": {
@@ -12016,6 +12018,10 @@
           "language": {
             "on": true,
             "required": true
+          },
+          "address": {
+            "on": true,
+            "required": true
           }
         },
         "FR": {
@@ -12032,6 +12038,10 @@
             "required": false
           },
           "language": {
+            "on": true,
+            "required": true
+          },
+          "address": {
             "on": true,
             "required": true
           }
@@ -12088,6 +12098,13 @@
     "profilePhoto": {
       "note": "Owner 2026-11-26 (Rules decisions/driver-g2.md): \"Photo de profile is just a picture to put on the profile of the driver, but the virtual session is another thing\" and, can the driver change it later, \"Peut pas\". The profile photo is the existing file type profile_photo, added at sign-up by tapping the circle (camera or gallery). info_session is not touched.",
       "locked": "Before approval the driver may retake it (a new upload replaces the waiting one). Once profile_photo is approved (or approved then expired) the driver cannot change it himself: POST /driver/documents with type profile_photo is 409 invalid_transition reason profile_photo_locked and nothing is saved (no renewal); the driver app hides the change entry and says to contact support. Only an admin (Movera support) changes it. Older renewals already waiting are kept (Rule 21)."
+    },
+    "address": {
+      "owner": "Owner 2026-11-26 \"Oui, ajouter l'adresse (Recommandé)\": the home address on \"Vos informations\" for FR and SE, under the date of birth (SE: under Personnummer), required to send the registration. Reason: EU DAC7 reporting (name, address, date of birth, tax id, bank) and invoices.",
+      "shape": "DriverAddress { street 1-200, postalCode 1-20, city 1-100 } (trimmed). Sent as DriverOnboardingRequest.address, stored drivers.address_street / address_postal_code / address_city (migration 0139), returned as Driver.address to the driver himself; an admin without drivers.viewSensitive gets street masked as the first character and •••, postalCode and city as they are, sensitiveMasked true (adminMasking).",
+      "autocomplete": "While typing the street the app may suggest addresses with the places provider it already uses for ride addresses (no new provider, no new cost line); picking one fills street, postal code and city. Without suggestions the three plain fields are filled by hand.",
+      "required": "signUpFields.address (defaults SE and FR: on, required). Missing when required: 400 invalid_request reason field_required with details [address]; a field out of range: 400 invalid_request reason invalid_address.",
+      "adminEdit": "POST /admin/drivers/{driverId}/address { expectedVersion, address, reason } (drivers.activate, own-country scope as the country change; 409 version_mismatch with the Driver). Audit action driver.address, target the driver, detail { reason } (no address text in the audit). Returns the Driver. The admin driver page shows the address under Details with an Edit button."
     }
   }
 }

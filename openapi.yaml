@@ -4092,11 +4092,13 @@ paths:
         apps send it from the form); before approval it may still change it under the same fleet rules (409 fleet_other_country),
         as the step. The new driver app shows the country read-only in the form and changes it only through the step (PUT
         /driver/country) before approval. v0.18.166 (contract.json#signupV2): OnboardingSettings.signUpFields (optional, per
-        country): { dateOfBirth, personalNumber, taxiLicenseNumber, language } each { on, required }. Missing = the defaults
-        below. A field that is off is not shown and not sent; a required field that is on and missing is 400 invalid_request
+        country): { dateOfBirth, personalNumber, taxiLicenseNumber, language, address } each { on, required }. Missing = the
+        defaults below. A field that is off is not shown and not sent; a required field that is on and missing is 400 invalid_request
         reason field_required with details [field]. When personalNumber is sent the app sends dateOfBirth = its first 8 digits
         (DriverOnboardingRequest.dateOfBirth stays required); a dateOfBirth that differs, a bad date or a failed check is
-        400 invalid_request reason invalid_personal_number. The minAge rule (under_age) still applies.'
+        400 invalid_request reason invalid_personal_number. The minAge rule (under_age) still applies. v0.18.166 (contract.json#signupV2):
+        signUpFields.address (defaults SE and FR: on, required). Missing when required: 400 invalid_request reason field_required
+        with details [address]; a field out of range: 400 invalid_request reason invalid_address.'
       tags:
       - Driver · Account
       x-actor:
@@ -21474,6 +21476,56 @@ paths:
           $ref: '#/components/responses/RateLimited'
         '503':
           $ref: '#/components/responses/Unavailable'
+  /admin/drivers/{driverId}/address:
+    post:
+      operationId: adminSetDriverAddress
+      summary: Change a driver's home address (reason, audited)
+      description: 'v0.18.166 (contract.json#signupV2): POST /admin/drivers/{driverId}/address { expectedVersion, address,
+        reason } (drivers.activate, own-country scope as the country change; 409 version_mismatch with the Driver). Audit
+        action driver.address, target the driver, detail { reason } (no address text in the audit). Returns the Driver. The
+        admin driver page shows the address under Details with an Edit button.'
+      tags:
+      - Admin · People
+      x-actor:
+      - admin
+      x-permission: drivers.activate
+      parameters:
+      - $ref: '#/components/parameters/DriverId'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      - $ref: '#/components/parameters/RequestId'
+      - $ref: '#/components/parameters/ApiVersion'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdminDriverAddressCommand'
+      responses:
+        '200':
+          description: OK
+          headers:
+            X-Request-Id:
+              description: Echo of the request id (server-generated if absent).
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Driver'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '503':
+          $ref: '#/components/responses/Unavailable'
 components:
   securitySchemes:
     bearerAuth:
@@ -24009,6 +24061,8 @@ components:
           description: 'v0.18.166 (contract.json#signupV2): Optional text 1-30 characters (letters, digits, spaces, dashes),
             the number on the Taxiförarlegitimation; stored drivers.taxi_license_number (migration 0139), returned as Driver.taxiLicenseNumber;
             else 400 invalid_request reason invalid_taxi_license_number. It does not replace the document taxi_driver_license.'
+        address:
+          $ref: '#/components/schemas/DriverAddress'
     DriverScheduledRides:
       type: object
       description: 'Owner decision 2 (v0.4.2): an admin''s reservations on/off for this one driver (CONTRACT.md §6.1). Missing
@@ -34076,6 +34130,8 @@ components:
           description: 'v0.18.166 (contract.json#signupV2): Optional text 1-30 characters (letters, digits, spaces, dashes),
             the number on the Taxiförarlegitimation; stored drivers.taxi_license_number (migration 0139), returned as Driver.taxiLicenseNumber;
             else 400 invalid_request reason invalid_taxi_license_number. It does not replace the document taxi_driver_license.'
+        address:
+          $ref: '#/components/schemas/DriverAddress'
     FleetCodeCommand:
       type: object
       description: 'v0.5.3: POST /admin/fleets/{fleetId}/code.'
@@ -34896,9 +34952,9 @@ components:
         signUpFields:
           type: object
           description: 'v0.18.166 (contract.json#signupV2): OnboardingSettings.signUpFields (optional, per country): { dateOfBirth,
-            personalNumber, taxiLicenseNumber, language } each { on, required }. Missing = the defaults below. A field that
-            is off is not shown and not sent; a required field that is on and missing is 400 invalid_request reason field_required
-            with details [field].'
+            personalNumber, taxiLicenseNumber, language, address } each { on, required }. Missing = the defaults below. A
+            field that is off is not shown and not sent; a required field that is on and missing is 400 invalid_request reason
+            field_required with details [field].'
           properties:
             dateOfBirth:
               type: object
@@ -34940,6 +34996,19 @@ components:
                   description: Must be filled (only when on).
               additionalProperties: false
             language:
+              type: object
+              required:
+              - 'on'
+              - required
+              properties:
+                'on':
+                  type: boolean
+                  description: Shown on the info screen.
+                required:
+                  type: boolean
+                  description: Must be filled (only when on).
+              additionalProperties: false
+            address:
               type: object
               required:
               - 'on'
@@ -43471,6 +43540,57 @@ components:
           description: Version the caller last saw; stale → 409 version_mismatch.
         country:
           $ref: '#/components/schemas/CountryCode'
+        reason:
+          type: string
+          minLength: 1
+          maxLength: 500
+      additionalProperties: false
+    DriverAddress:
+      type: object
+      description: 'v0.18.166 (contract.json#signupV2): Owner 2026-11-26 "Oui, ajouter l''adresse (Recommandé)": the home
+        address on "Vos informations" for FR and SE, under the date of birth (SE: under Personnummer), required to send the
+        registration. Reason: EU DAC7 reporting (name, address, date of birth, tax id, bank) and invoices. DriverAddress {
+        street 1-200, postalCode 1-20, city 1-100 } (trimmed). Sent as DriverOnboardingRequest.address, stored drivers.address_street
+        / address_postal_code / address_city (migration 0139), returned as Driver.address to the driver himself; an admin
+        without drivers.viewSensitive gets street masked as the first character and •••, postalCode and city as they are,
+        sensitiveMasked true (adminMasking). While typing the street the app may suggest addresses with the places provider
+        it already uses for ride addresses (no new provider, no new cost line); picking one fills street, postal code and
+        city. Without suggestions the three plain fields are filled by hand.'
+      required:
+      - street
+      - postalCode
+      - city
+      properties:
+        street:
+          type: string
+          minLength: 1
+          maxLength: 200
+        postalCode:
+          type: string
+          minLength: 1
+          maxLength: 20
+        city:
+          type: string
+          minLength: 1
+          maxLength: 100
+      additionalProperties: false
+    AdminDriverAddressCommand:
+      type: object
+      description: 'v0.18.166 (contract.json#signupV2): POST /admin/drivers/{driverId}/address { expectedVersion, address,
+        reason } (drivers.activate, own-country scope as the country change; 409 version_mismatch with the Driver). Audit
+        action driver.address, target the driver, detail { reason } (no address text in the audit). Returns the Driver. The
+        admin driver page shows the address under Details with an Edit button.'
+      required:
+      - expectedVersion
+      - address
+      - reason
+      properties:
+        expectedVersion:
+          type: integer
+          minimum: 1
+          description: Version the caller last saw; stale → 409 version_mismatch.
+        address:
+          $ref: '#/components/schemas/DriverAddress'
         reason:
           type: string
           minLength: 1

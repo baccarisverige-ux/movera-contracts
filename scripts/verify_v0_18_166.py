@@ -35,4 +35,9 @@ assert md.startswith('# Movera shared contract v0.18.166') or tuple(map(int, c['
 assert '\nv0.18.166 (sign-up pro v2 + document scan;' in md and 'the v0.18.161 note moved in v0.18.166' in md
 ch = open('CHANGELOG.md', encoding='utf-8').read()
 assert 'v0.18.166 (sign-up pro v2; Rule 21 / Rule 25' in ch and '\nv0.18.161 (admin cars and fleets by zone and country;' in ch
+assert f['defaults']['SE']['address'] == f['defaults']['FR']['address'] == {'on': True, 'required': True}, 'address required SE + FR'
+assert sv['infoScreen']['order'].index('address') > sv['infoScreen']['order'].index('personalNumber')
+assert set(sc['DriverAddress']['required']) == {'street', 'postalCode', 'city'} and 'address' in sc['DriverOnboardingRequest']['properties'] and 'address' not in sc['DriverOnboardingRequest']['required']
+assert 'post' in spec['paths']['/admin/drivers/{driverId}/address'], 'admin address route'
+assert "Oui, ajouter l'adresse" in sv['address']['owner'] and 'driver.address' in md
 print('v0.18.166 sign-up v2 ok')
