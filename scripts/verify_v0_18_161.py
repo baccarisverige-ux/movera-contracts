@@ -32,7 +32,8 @@ for k in ('zoneId', 'country'):
 assert S['Fleet']['properties']['zoneId']['allOf'] == [{'$ref': '#/components/schemas/Id'}] and 'zoneId' not in S['Fleet']['required'], 'Fleet.zoneId'
 md = open('CONTRACT.md', encoding='utf-8').read()
 assert md.startswith('# Movera shared contract v' + c['version']), 'CONTRACT.md title'
-assert '\nv0.18.161 (admin cars and fleets by zone and country;' in md, 'CONTRACT.md note'
+_mc = md + open('CHANGELOG.md', encoding='utf-8').read()  # v0.18.166: the note moved to CHANGELOG.md word for word
+assert '\nv0.18.161 (admin cars and fleets by zone and country;' in _mc, 'CONTRACT.md note'
 assert '`kpis` and (v0.18.161) `vehicles` and `fleets` take' in md, '§7'
 assert md.count('\n') <= 1500, 'CONTRACT.md over 1,500 lines'
 ch = open('CHANGELOG.md', encoding='utf-8').read()
