@@ -10,7 +10,7 @@ p = c['smsProviders']
 assert p['since'] == '0.18.168', 'since'
 for k in ('note', 'serverKeysNote', 'infobip', 'setting', 'fallback', 'logs', 'driver', 'rider', 'admin'):
     assert isinstance(p[k], str) and p[k], k
-assert p['providers'] == ['infobip', '46elks'] and p['defaultOrder'] == ['infobip', '46elks'], 'providers + default order'
+assert p['providers'] == ['infobip', '46elks'] and p['defaultOrder'] == ['46elks', 'infobip'], 'providers + default order'
 assert p['serverKeys'] == {'infobip': ['INFOBIP_BASE_URL', 'INFOBIP_API_KEY'], '46elks': c['smsSignIn']['serverKeys']}, 'server key names'
 assert 'never two SMS for one code' in p['fallback'], 'no double send'
 assert 'never the number, the text or the code' in p['logs'], 'privacy'
