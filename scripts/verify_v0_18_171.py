@@ -18,7 +18,7 @@ assert 'never jumps to the straight-line estimate' in g['atCap'], 'at cap'
 assert 'trips.eta_route.at' in g['spacing'] and 'best effort per copy' in g['spacing'], '60 s rule'
 assert 'SUM over all countries' in g['dailyBudget'] and '1400' in g['dailyBudget'] and '600' in g['dailyBudget'] and '2000' in g['dailyBudget'], 'budget'
 assert 'America/Los_Angeles' in g['dayBoundary'], 'day'
-assert 'system_health:google_routes_budget' in g['budgetAlert'] and 'system_health:live_traffic:<CC>' in g['budgetAlert'], 'alerts'
+assert 'system_health:google_routes_budget:<CC>' in g['budgetAlert'] and "every country's alert book" in g['budgetAlert'] and 'system_health:live_traffic:<CC>' in g['budgetAlert'], 'alerts'
 assert '429' in g['quotaExceeded'] and 'RESOURCE_EXHAUSTED' in g['quotaExceeded'], 'quota'
 assert '150 m' in g['trust'] and 'driver_locations' in g['trust'], 'trust'
 assert 'code stays Ok' in g['codeRule'], 'Q1'
@@ -38,7 +38,10 @@ rl = sc['DispatchDocument']['properties']['liveTraffic']['properties']['roadLine
 m = rl['properties']['maxCallsPerTrip']
 assert m['minimum'] == 1 and m['maximum'] == 4, 'maxCallsPerTrip 1..4'
 b = sc['GoogleRoutesBudget']
-assert b['properties']['dailyLimit']['maximum'] == 2000
+assert b['properties']['dailyLimit']['maximum'] == 100000 and sc['GoogleRoutesBudgetCommand']['properties']['dailyLimit']['maximum'] == 100000, 'raise by admin only'
+assert 'invalid_budget' in g['budgetSetting'] and 'not_all_countries' in g['budgetSetting'], 'PUT errors'
+assert 'with nothing saved it answers the defaults' in g['budgetSetting'], 'GET defaults'
+assert c['liveTraffic']['navigationFrom171'] == 'see googleRoadLines.navigation' and 'googleRoadLines.calls' in c['liveTraffic']['callsFrom171'], 'pointers'
 p = spec['paths']['/admin/maps/google-budget']
 assert p['get']['x-permission'] == 'settings.read' and p['put']['x-permission'] == 'settings.publish'
 assert 'v0.18.171' in spec['paths']['/routes/driving/{coordinates}']['get']['description']

@@ -25,9 +25,9 @@ _LTD["roadLines"] = obj({
 }, desc=_V171 + _GR["setting"], addl=False)
 assert "/admin/maps/google-budget" not in PATHS, "/admin/maps/google-budget exists before v0.18.171"
 S["GoogleRoutesBudget"] = obj(OrderedDict([
-    ("dailyLimit", i("All Google Routes calls per day, all countries together.", minimum=100, maximum=2000)),
-    ("quotesPerDay", i("The part kept for prices (quotes).", minimum=0, maximum=2000)),
-    ("roadLinesPerDay", i("dailyLimit - quotesPerDay: the part for road lines.", minimum=0, maximum=2000)),
+    ("dailyLimit", i("All Google Routes calls per day, all countries together (default 2000).", minimum=100, maximum=100000)),
+    ("quotesPerDay", i("The part kept for prices (quotes), default 1400.", minimum=0, maximum=100000)),
+    ("roadLinesPerDay", i("dailyLimit - quotesPerDay: the part for road lines, default 600.", minimum=0, maximum=100000)),
     ("today", obj(OrderedDict([
         ("day", s("The America/Los_Angeles calendar day (YYYY-MM-DD). " + _GR["dayBoundary"], format="date")),
         ("quotes", i(minimum=0)),
@@ -35,8 +35,8 @@ S["GoogleRoutesBudget"] = obj(OrderedDict([
     ]), ["day", "quotes", "roadLines"], addl=False)),
 ]), ["dailyLimit", "quotesPerDay", "roadLinesPerDay", "today"], _V171 + _GR["dailyBudget"], addl=False)
 S["GoogleRoutesBudgetCommand"] = obj(OrderedDict([
-    ("dailyLimit", i(minimum=100, maximum=2000)),
-    ("quotesPerDay", i("At most dailyLimit.", minimum=0, maximum=2000)),
+    ("dailyLimit", i(minimum=100, maximum=100000)),
+    ("quotesPerDay", i("At most dailyLimit.", minimum=0, maximum=100000)),
 ]), ["dailyLimit", "quotesPerDay"], _V171 + _GR["budgetSetting"], addl=False)
 op("get", "/admin/maps/google-budget", "adminGetGoogleRoutesBudget", "The daily Google Routes budget and today's use", ["admin"], "Admin · Config",
    ok=(200, "GoogleRoutesBudget"), permission="settings.read", desc=_V171 + _GR["budgetSetting"] + " " + _GR["budgetAlert"])

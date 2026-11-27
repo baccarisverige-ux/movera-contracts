@@ -21552,12 +21552,18 @@ paths:
       operationId: adminGetGoogleRoutesBudget
       summary: The daily Google Routes budget and today's use
       description: 'v0.18.171 (contract.json#googleRoadLines): GET /admin/maps/google-budget (settings.read) answers GoogleRoutesBudget
-        { dailyLimit, quotesPerDay, roadLinesPerDay, today { day, quotes, roadLines } }; PUT /admin/maps/google-budget (settings.publish,
-        an admin who covers every country) { dailyLimit, quotesPerDay } with dailyLimit 100..2000 (never above the owner''s
-        quota) and quotesPerDay 0..dailyLimit. Audited like a config publish. New admin alert system_health:google_routes_budget
-        (kind system_health, no country): warning when today''s road-line calls reach roadLinesPerDay, critical when all calls
-        reach dailyLimit. The existing system_health:live_traffic:<CC> alert is unchanged: it comes from the quotes (3 or
-        more quotes in 10 min, none from Google), so a road-line refusal alone does not raise it.'
+        { dailyLimit, quotesPerDay, roadLinesPerDay, today { day, quotes, roadLines } }; with nothing saved it answers the
+        defaults (dailyLimit 2000, quotesPerDay 1400, roadLinesPerDay 600) and today''s counts (0 when no call was made).
+        PUT /admin/maps/google-budget (settings.publish, an admin who covers every country) { dailyLimit, quotesPerDay } with
+        dailyLimit 100..100000 (owner: "we can add more limit later", so a higher Google quota is an admin change only, never
+        a new contract version) and quotesPerDay 0..dailyLimit. Errors: quotesPerDay above dailyLimit = 400 invalid_budget;
+        an admin who does not cover every country = 403 not_all_countries. Audited like a config publish. GET is open to any
+        settings.read admin on purpose: the numbers are global counts with no personal data. New admin alert system_health:google_routes_budget:<CC>,
+        raised in every country''s alert book (kind system_health; each country''s system_health on/level applies) with the
+        same condition for all countries, because the budget is global: warning when today''s road-line calls (all countries
+        together) reach roadLinesPerDay, critical when all calls reach dailyLimit. The existing system_health:live_traffic:<CC>
+        alert is unchanged: it comes from the quotes (3 or more quotes in 10 min, none from Google), so a road-line refusal
+        alone does not raise it.'
       tags:
       - Admin · Config
       x-actor:
@@ -21594,10 +21600,14 @@ paths:
       operationId: adminPutGoogleRoutesBudget
       summary: Change the daily Google Routes budget split
       description: 'v0.18.171 (contract.json#googleRoadLines): GET /admin/maps/google-budget (settings.read) answers GoogleRoutesBudget
-        { dailyLimit, quotesPerDay, roadLinesPerDay, today { day, quotes, roadLines } }; PUT /admin/maps/google-budget (settings.publish,
-        an admin who covers every country) { dailyLimit, quotesPerDay } with dailyLimit 100..2000 (never above the owner''s
-        quota) and quotesPerDay 0..dailyLimit. Audited like a config publish. One daily budget for all countries together
-        (Google''s quota is per project): dailyLimit (default 2000, the owner''s Google Cloud quota) split into quotesPerDay
+        { dailyLimit, quotesPerDay, roadLinesPerDay, today { day, quotes, roadLines } }; with nothing saved it answers the
+        defaults (dailyLimit 2000, quotesPerDay 1400, roadLinesPerDay 600) and today''s counts (0 when no call was made).
+        PUT /admin/maps/google-budget (settings.publish, an admin who covers every country) { dailyLimit, quotesPerDay } with
+        dailyLimit 100..100000 (owner: "we can add more limit later", so a higher Google quota is an admin change only, never
+        a new contract version) and quotesPerDay 0..dailyLimit. Errors: quotesPerDay above dailyLimit = 400 invalid_budget;
+        an admin who does not cover every country = 403 not_all_countries. Audited like a config publish. GET is open to any
+        settings.read admin on purpose: the numbers are global counts with no personal data. One daily budget for all countries
+        together (Google''s quota is per project): dailyLimit (default 2000, the owner''s Google Cloud quota) split into quotesPerDay
         (default 1400) for prices and the rest (default 600) for road lines. The limits are checked against the SUM over all
         countries; per-country counts are for reporting only. Quotes may use the whole limit. Road-line calls stop first:
         re-routes and ETA re-calls at 80% of the road-line share, the drive to the pickup at 100%. Over it: source stored
@@ -43865,18 +43875,18 @@ components:
         dailyLimit:
           type: integer
           minimum: 100
-          maximum: 2000
-          description: All Google Routes calls per day, all countries together.
+          maximum: 100000
+          description: All Google Routes calls per day, all countries together (default 2000).
         quotesPerDay:
           type: integer
           minimum: 0
-          maximum: 2000
-          description: The part kept for prices (quotes).
+          maximum: 100000
+          description: The part kept for prices (quotes), default 1400.
         roadLinesPerDay:
           type: integer
           minimum: 0
-          maximum: 2000
-          description: 'dailyLimit - quotesPerDay: the part for road lines.'
+          maximum: 100000
+          description: 'dailyLimit - quotesPerDay: the part for road lines, default 600.'
         today:
           type: object
           required:
@@ -43901,9 +43911,13 @@ components:
     GoogleRoutesBudgetCommand:
       type: object
       description: 'v0.18.171 (contract.json#googleRoadLines): GET /admin/maps/google-budget (settings.read) answers GoogleRoutesBudget
-        { dailyLimit, quotesPerDay, roadLinesPerDay, today { day, quotes, roadLines } }; PUT /admin/maps/google-budget (settings.publish,
-        an admin who covers every country) { dailyLimit, quotesPerDay } with dailyLimit 100..2000 (never above the owner''s
-        quota) and quotesPerDay 0..dailyLimit. Audited like a config publish.'
+        { dailyLimit, quotesPerDay, roadLinesPerDay, today { day, quotes, roadLines } }; with nothing saved it answers the
+        defaults (dailyLimit 2000, quotesPerDay 1400, roadLinesPerDay 600) and today''s counts (0 when no call was made).
+        PUT /admin/maps/google-budget (settings.publish, an admin who covers every country) { dailyLimit, quotesPerDay } with
+        dailyLimit 100..100000 (owner: "we can add more limit later", so a higher Google quota is an admin change only, never
+        a new contract version) and quotesPerDay 0..dailyLimit. Errors: quotesPerDay above dailyLimit = 400 invalid_budget;
+        an admin who does not cover every country = 403 not_all_countries. Audited like a config publish. GET is open to any
+        settings.read admin on purpose: the numbers are global counts with no personal data.'
       required:
       - dailyLimit
       - quotesPerDay
@@ -43911,10 +43925,10 @@ components:
         dailyLimit:
           type: integer
           minimum: 100
-          maximum: 2000
+          maximum: 100000
         quotesPerDay:
           type: integer
           minimum: 0
-          maximum: 2000
+          maximum: 100000
           description: At most dailyLimit.
       additionalProperties: false

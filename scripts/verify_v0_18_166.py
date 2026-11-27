@@ -35,7 +35,6 @@ md = open('CONTRACT.md', encoding='utf-8').read()
 ch = open('CHANGELOG.md', encoding='utf-8').read()
 assert md.startswith('# Movera shared contract v0.18.166') or tuple(map(int, c['version'].split('.'))) > (0, 18, 166), 'title'
 assert '\nv0.18.166 (sign-up pro v2 + document scan;' in md + ch and 'the v0.18.161 note moved in v0.18.166' in md
-ch = open('CHANGELOG.md', encoding='utf-8').read()
 assert 'v0.18.166 (sign-up pro v2; Rule 21 / Rule 25' in ch and '\nv0.18.161 (admin cars and fleets by zone and country;' in ch
 assert f['defaults']['SE']['address'] == f['defaults']['FR']['address'] == {'on': True, 'required': True}, 'address required SE + FR'
 assert sv['infoScreen']['order'].index('address') > sv['infoScreen']['order'].index('personalNumber')
