@@ -23352,17 +23352,17 @@ components:
           description: 'v0.18.170 (contract.json#riderLegRouteLine): TripProjection.legRoute {target, polyline}: the stored
             Google route of the trip''s current leg, the same one the live ETA follows and the driver''s GET /routes/driving/{coordinates}
             draws (trips.eta_route). target is pickup (driver position to the pickup, while the driver is coming: accepted,
-            driver_to_pickup, arrived) or dropoff (on trip: rider_onboard, in_trip, approaching_dropoff, after a re-route
-            from the driver''s position through the stops still ahead); polyline is the Google encoded polyline (precision
-            5). Sent only in the rider''s own trip reads, GET /trips/{tripId} (rider caller; also its deprecated alias GET
-            /rides/{rideId}) and GET /rider/trips/active, and only when its target is the trip''s current leg; never in command
-            answers; absent while no driver holds the trip, once the trip is in a terminal status (completed carries no line),
-            when the ETA has no stored Google route yet (live traffic off, Google did not answer, the first tick has not run),
-            to the driver and admin, in realtime events and from an older server. No extra Google call: it is the route the
-            live ETA''s own calls stored (about 2 per trip, contract.json#liveTraffic.calls). POST /routes is unchanged. Waiting
-            for driver draws legRoute (target pickup) as the driver-to-pickup line; the on-trip map draws legRoute (target
-            dropoff) when sent, else TripProjection.routePolyline, else the road-route request (POST /routes) as before. A
-            legRoute whose target is not the screen''s leg is not drawn. Movera colours only (#12201C, #2FBF5B).'
+            driver_to_pickup; none while he waits at the pickup (arrived)) or dropoff (on trip: rider_onboard, in_trip, approaching_dropoff,
+            after a re-route from the driver''s position through the stops still ahead); polyline is the Google encoded polyline
+            (precision 5). Sent only in the rider''s own trip reads, GET /trips/{tripId} (rider caller; also its deprecated
+            alias GET /rides/{rideId}) and GET /rider/trips/active, and only when its target is the trip''s current leg; never
+            in command answers; absent while no driver holds the trip, once the trip is in a terminal status (completed carries
+            no line), when the ETA has no stored Google route yet (live traffic off, Google did not answer, the first tick
+            has not run), to the driver and admin, in realtime events and from an older server. No extra Google call: it is
+            the route the live ETA''s own calls stored (about 2 per trip, contract.json#liveTraffic.calls). POST /routes is
+            unchanged. Waiting for driver draws legRoute (target pickup) as the driver-to-pickup line; the on-trip map draws
+            legRoute (target dropoff) when sent, else TripProjection.routePolyline, else the road-route request (POST /routes)
+            as before. A legRoute whose target is not the screen''s leg is not drawn. Movera colours only (#12201C, #2FBF5B).'
           required:
           - target
           - polyline
