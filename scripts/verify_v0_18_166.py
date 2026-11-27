@@ -30,14 +30,15 @@ for k in ('personalNumber', 'taxiLicenseNumber'):
     assert k in sc['Driver']['properties'], k
 assert {'signUpFields', 'twoSidedTypes'} <= set(sc['OnboardingSettings']['properties'])
 assert 'profile_photo_locked' in spec['paths']['/driver/documents']['post']['description']
+# v0.18.171 (Rule 25): the v0.18.166 note moved word for word to CHANGELOG.md; it is checked in both files.
 md = open('CONTRACT.md', encoding='utf-8').read()
-assert md.startswith('# Movera shared contract v0.18.166') or tuple(map(int, c['version'].split('.'))) > (0, 18, 166), 'title'
-assert '\nv0.18.166 (sign-up pro v2 + document scan;' in md and 'the v0.18.161 note moved in v0.18.166' in md
 ch = open('CHANGELOG.md', encoding='utf-8').read()
+assert md.startswith('# Movera shared contract v0.18.166') or tuple(map(int, c['version'].split('.'))) > (0, 18, 166), 'title'
+assert '\nv0.18.166 (sign-up pro v2 + document scan;' in md + ch and 'the v0.18.161 note moved in v0.18.166' in md
 assert 'v0.18.166 (sign-up pro v2; Rule 21 / Rule 25' in ch and '\nv0.18.161 (admin cars and fleets by zone and country;' in ch
 assert f['defaults']['SE']['address'] == f['defaults']['FR']['address'] == {'on': True, 'required': True}, 'address required SE + FR'
 assert sv['infoScreen']['order'].index('address') > sv['infoScreen']['order'].index('personalNumber')
 assert set(sc['DriverAddress']['required']) == {'street', 'postalCode', 'city'} and 'address' in sc['DriverOnboardingRequest']['properties'] and 'address' not in sc['DriverOnboardingRequest']['required']
 assert 'post' in spec['paths']['/admin/drivers/{driverId}/address'], 'admin address route'
-assert "Oui, ajouter l'adresse" in sv['address']['owner'] and 'driver.address' in md
+assert "Oui, ajouter l'adresse" in sv['address']['owner'] and 'driver.address' in md + ch
 print('v0.18.166 sign-up v2 ok')
