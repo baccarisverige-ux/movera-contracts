@@ -3,7 +3,7 @@
 "App rider blocked here", "Oui, corriger"): contract.json#riderTripRouteLine, openapi TripProjection.routePolyline (optional,
 rider only, until the trip ends, no extra Google call), the CONTRACT.md note and the v0.18.164 note moved word for word to
 CHANGELOG.md (Rule 21 / Rule 25). Run by scripts/verify.sh (Rule 25)."""
-import json, yaml
+import json, re, yaml
 c = json.load(open('contract.json'))
 assert tuple(map(int, c['version'].split('.'))) >= (0, 18, 169), 'version 0.18.169 or later'
 g = c['riderTripRouteLine']
@@ -27,4 +27,14 @@ assert "\nv0.18.169 (the rider's route line and the Finding screen after a reope
 assert md.count('\n') <= 1500, 'CONTRACT.md over 1,500 lines'
 assert 'v0.18.169 (rider trip route line; Rule 21 / Rule 25: moved from CONTRACT.md word for word' in ch, 'CHANGELOG move line'
 assert '\nv0.18.164 (France document lists;' in ch, 'v0.18.164 note in CHANGELOG.md'
+paths = spec['paths']
+named = set(re.findall(r'(?:GET|POST|PUT|PATCH|DELETE) (/[A-Za-z0-9_/{}-]+)', g['trip']))
+assert named, 'trip names its reads'
+for path in named:
+    assert path in paths, 'path not in openapi: ' + path
+    dep = any(isinstance(op, dict) and op.get('deprecated') for op in paths[path].values())
+    if dep:
+        assert ('deprecated alias GET ' + path) in g['trip'], 'deprecated path not named as the alias: ' + path
+assert 'never in command answers' in g['trip'] and 'completed carries no line' in g['trip'], 'no command answers'
+assert 'offered is still searching' in g['findingExit'] and 'tripStatus.driverAssigned' in g['findingExit'] and 'any other terminal status' in g['findingExit'], 'Finding exit wording'
 print('v0.18.169 ok')
