@@ -1,11 +1,11 @@
-# Movera API v0.18.174 — generated from contract.json (+ CONTRACT.md §7). PROPOSED; no backend exists.
+# Movera API v0.18.175 — generated from contract.json (+ CONTRACT.md §7). PROPOSED; no backend exists.
 openapi: 3.1.0
 info:
   title: Movera API
-  version: 0.18.174
+  version: 0.18.175
   description: '**Proposed contract — no backend exists yet.** One future backend serves the Rider (Flutter), Driver (Flutter)
     and Admin (React/TS) apps. Source of truth for names, enums, transitions, realtime and errors is `contract.json` + `CONTRACT.md`
-    v0.18.174 in this folder; this file must agree with them.
+    v0.18.175 in this folder; this file must agree with them.
 
 
     Wire rules: ids match `^[A-Za-z0-9_-]{1,64}$`; times are RFC 3339 UTC with `Z`; durations are integer seconds; money is
@@ -84,7 +84,7 @@ tags:
 - name: Admin · Finance
 x-contract:
   name: movera
-  version: 0.18.174
+  version: 0.18.175
   source: contract.json
 paths:
   /auth/otp/request:
@@ -23429,7 +23429,11 @@ components:
           $ref: '#/components/schemas/Cancellation'
         pinRequired:
           type: boolean
-          description: Driver must verify the rider PIN before `board`.
+          description: 'Driver must verify the rider PIN before `board`. v0.18.175 (contract.json#pinPerZone): At POST /trips
+            the trip stores pinRequired = zone pickupPin.required OR rider.safety.pinAlways, read at booking time in the booking
+            transaction; a later change of either never changes a booked trip. maxAttempts / lockMinutes are the zone''s (defaults
+            5 / 5 min when the zone switch is off). Everything after booking (the code, GET /trips/{tripId}/pin, 409 pin_required
+            on board / start, the admin unlock, a new PIN on a driver change) is unchanged: it keys on Trip.pinRequired.'
         searchStep:
           allOf:
           - $ref: '#/components/schemas/SearchStep'
@@ -23776,6 +23780,15 @@ components:
               minLength: 1
               description: Google encoded polyline (precision 5).
           additionalProperties: false
+        pinSource:
+          type: string
+          enum:
+          - zone
+          - rider
+          - both
+          description: 'v0.18.175 (contract.json#pinPerZone): TripProjection.pinSource: ''zone'' | ''rider'' | ''both'', only
+            when pinRequired (rider and admin views; taken out of the driver''s view and stream). Kept in booking_rules.pin.source;
+            a trip booked before v0.18.175 with pinRequired reads ''zone''.'
     DriverSilentAlert:
       type: object
       description: 'v0.7.0: documents the server''s alert of 2026-10-26: no position for 30 min with the rider on board; the
@@ -24181,6 +24194,8 @@ components:
             Money }] the owed fees she can pay in the app now (the fee''s trip zone country has riderFeeStripe on, currency
             SEK or EUR, amount = min(fee, debt) above 0), oldest first; absent when none. The publishable key comes only with
             a payment (StripeFeePayment.publishableKey).'
+        safety:
+          $ref: '#/components/schemas/RiderSafety'
     DocumentStatus:
       type: string
       enum:
@@ -29597,6 +29612,12 @@ components:
               type: boolean
             pin:
               type: boolean
+              description: 'v0.18.175 (contract.json#pinPerZone): GET /rider/config always serves features.pin = the zone''s
+                live DriverAppConfig.pickupPin.required (its own driver document, else its country Standard''s, else configDefaults.pickupPin.required
+                = false); with ?draft=1 for a preview admin the driver DRAFT when there is one. The same function as POST
+                /trips uses, so features.pin and a new trip''s zone PIN never differ. The rider document''s own features.pin
+                is ignored on read (kept as stored, Rule 21). A driver_app_config publish does not wake the rider config stream:
+                the rider app learns a new value at its next config read (a booked trip keeps its own pinRequired).'
             shareTrip:
               type: boolean
               description: 'v0.18.116 (contract.json#shareTrip): the same value as shareTrip.on (served by the server).'
@@ -33871,6 +33892,8 @@ components:
               type: boolean
             promotions:
               type: boolean
+        safety:
+          $ref: '#/components/schemas/RiderSafetyUpdate'
       description: 'v0.18.76 (G30): no email here. PATCH /rider/profile no longer takes email: a body with email → 400 invalid_request,
         reason email_needs_code; nothing saved, version unchanged. Change it with POST /account/email/change + verify.'
     DriverProfileUpdate:
@@ -44522,4 +44545,30 @@ components:
             minLength: 1
             maxLength: 120
           - type: 'null'
+      additionalProperties: false
+    RiderSafety:
+      type: object
+      description: 'v0.18.175 (contract.json#pinPerZone): RiderProfile (Rider) gains safety { pinAlways: boolean } (always
+        sent on GET / PATCH /rider/profile and the admin rider view; default false; not masked). PATCH /rider/profile accepts
+        safety { pinAlways } with expectedVersion as today (version + 1); a non-boolean is 400 invalid_body. The change is
+        audited (admin_audit rider.safety_changed, adminId null, detail { pinAlways: { from, to } }).'
+      required:
+      - pinAlways
+      properties:
+        pinAlways:
+          type: boolean
+          description: 'v0.18.175 (contract.json#pinPerZone): the rider asks for a PIN on all his own rides (default false).'
+      additionalProperties: false
+    RiderSafetyUpdate:
+      type: object
+      description: 'v0.18.175 (contract.json#pinPerZone): RiderProfile (Rider) gains safety { pinAlways: boolean } (always
+        sent on GET / PATCH /rider/profile and the admin rider view; default false; not masked). PATCH /rider/profile accepts
+        safety { pinAlways } with expectedVersion as today (version + 1); a non-boolean is 400 invalid_body. The change is
+        audited (admin_audit rider.safety_changed, adminId null, detail { pinAlways: { from, to } }).'
+      required:
+      - pinAlways
+      properties:
+        pinAlways:
+          type: boolean
+          description: 'v0.18.175 (contract.json#pinPerZone): turn the PIN on all my rides on or off.'
       additionalProperties: false
