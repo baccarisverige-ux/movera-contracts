@@ -2,6 +2,10 @@
 
 Moved from CONTRACT.md (Rule 25: file size); nothing removed. Newer notes stay at the top of CONTRACT.md.
 
+v0.18.174 (price change asks only on a rise; Rule 21 / Rule 25: moved from CONTRACT.md word for word, nothing removed): the v0.18.168 note (below).
+
+v0.18.168 (the driver's offer card draws the real Google route; owner 2026-11-26 "Route in driver !!" (an Exclusive offer drew a straight line), owner rule about 2 Google calls per trip, Rules plan/NUMBERS.md; Rule 0; X-Api-Version stays `0.5`; additive, optional; no migration; follows v0.18.167): **`Offer.routePolyline`** is the trip's stored Google polyline (`trips.route_polyline`, from its quote), sent only on an open offer and never in the push; the driver's Home offer preview (Exclusive, Radar, reservation offers) draws it with no route request; without it the old per-leg `GET /routes/driving`. No extra Google call; rider and admin not affected (`contract.json#offerRouteLine`).
+
 v0.18.172 (preferred areas; Rule 21 / Rule 25: moved from CONTRACT.md word for word, nothing removed): the v0.18.167 note (below).
 
 v0.18.167 (the rider map draws the real Google route; owner 2026-11-26 "Oui, corriger" (the rider map showed a straight line with "Approximate route"), owner rule about 2 Google calls per trip, Rules plan/NUMBERS.md; Rule 0; X-Api-Version stays `0.5`; additive, optional; no migration; follows v0.18.166): **`Quote.routePolyline`** is the Google encoded polyline the quote's one call already stored (`quotes.route_polyline`), sent only when `Quote.routeSource` is `google`; the rider app draws it on Select ride and the search screen and hides "Approximate route"; without it the straight line and the badge stay. No extra Google call; `POST /routes` unchanged; driver app and admin not affected (`contract.json#googleRouteLine`).
