@@ -1,6 +1,6 @@
 {
   "contract": "movera",
-  "version": "0.18.174",
+  "version": "0.18.179",
   "note": "Canonical cross-app contract for Rider, Driver and Admin. Frontend-only today; a future single backend implements it. Every app ships an identical copy under contracts/ and runs contract tests against it.",
   "wire": {
     "ids": {
@@ -12250,5 +12250,14 @@
     "rider": "Rider app: one shared popup PriceUpdatedDialog (owner FINAL design v8, black and white, white card): small recalculate icon + title 'Prix recalculé' / 'Priset har räknats om' / 'Price recalculated', one grey line, the price only in the black button 'Réserver {category} · {price}', ✕ closes (= the old 'Pas maintenant'). Shown only on a rise, never on a drop. After ✕ the list shows the new price and the next tap books it with no second popup (owner F1).",
     "driver": "Driver app: not affected; the offer and the cash sheet show the trip's fare_minor (the fresh server quote), as before.",
     "admin": "Admin: not affected; no setting, no new page; the Trips page shows the stored fare as before."
+  },
+  "reservationRouteLine": {
+    "since": "0.18.179",
+    "note": "v0.18.179 (the driver's booked rides draw the real road route; owner 2026-11-28 \"map must show the REAL route pickup->drop-off\", \"scheduled-route mockup OK\", 18:44 \"Build the scheduled-route fix NOW\" (the Bokade resor card drew a fake map and Bokningsdetaljer a straight line), Rules audits/impact/scheduled-route-map-2026-11-28.md, plan/NUMBERS.md; Rule 0; X-Api-Version stays `0.5`; additive, optional; no migration; follows v0.18.174).",
+    "reservation": "DriverReservation.routePolyline: the Google encoded polyline (precision 5) of the booked trip, pickup through every stop to the drop-off, as stored from its booking quote (trips.route_polyline). Sent on every item of GET /driver/reservations (scope open and scope accepted); absent when the trip has no stored Google route (estimate quote, a route change cleared it) and from an older server. Not in realtime events.",
+    "calls": "No extra Google call: it is the polyline the booking quote's one call stored. GET /routes/driving is unchanged.",
+    "driver": "The Bokade resor list card draws the decoded DriverReservation.routePolyline as a static preview (DriverRouteStyle.paintOn) and Bokningsdetaljer draws it on the map (DriverRouteStyle.polylines), the same colour as the app's other route lines; the app never asks GET /routes/driving for a booked ride. Without the field: the pickup and drop-off pins only, never a line (no straight line, no drawn curve). Pickup and drop-off marks are black and white, the same on the map and beside the addresses (pickup: white disc, ink ring, ink dot; drop-off: ink rounded square, white inner square).",
+    "rider": "Rider app: not affected (the rider never gets DriverReservation).",
+    "admin": "Admin: not affected (no setting; the admin reads booked rides from the admin trip read)."
   }
 }

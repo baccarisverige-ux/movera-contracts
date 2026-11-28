@@ -35,7 +35,7 @@ for case in f['cases']:
     assert case['fareMinor'] == (None if ask else n), case['name'] + ': the fare is always the fresh quote'
 md = open('CONTRACT.md', encoding='utf-8').read()
 ch = open('CHANGELOG.md', encoding='utf-8').read()
-assert md.startswith('# Movera shared contract v0.18.174'), 'title'
+assert md.startswith('# Movera shared contract v' + c['version']), 'title'  # v0.18.179: any later version keeps this check
 assert 'v0.18.174 (price change at booking asks only on a rise;' in md and '**Price change at booking** (v0.18.174' in md, 'notes'
 assert '\nv0.18.168 (' not in md and '\nv0.18.168 (' in ch, 'v0.18.168 note moved'
 assert md.count('\n') <= 1500, 'CONTRACT.md at most 1500 lines'
