@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """v0.18.172 (driver preferred areas; owner 2026-11-27/28): contract.json#preferredAreas, Area, Driver.preferredAreaIds /
-preferredAreas, DriverReservation.inPreferredArea, GET /driver/areas/search, GET /driver/areas/at, PUT /driver/preferred-areas,
+preferredAreas, DriverReservation.inPreferredArea, GET /driver/areas/search, POST /driver/areas/at, PUT /driver/preferred-areas,
 GET/PATCH /admin/areas, DriverAppConfig.reservations.preferredAreasMax (1..30, default 10), the CONTRACT.md note and the
 v0.18.167 note moved word for word to CHANGELOG.md (Rule 21 / Rule 25). Run by scripts/verify.sh (Rule 25)."""
 import json, yaml
@@ -36,8 +36,10 @@ assert m['minimum'] == 1 and m['maximum'] == 30 and m['default'] == 10
 assert sc['AreaAt']['required'] == ['area', 'containing']
 assert set(sc['PreferredAreasCommand']['properties']) == {'areaIds'} and sc['PreferredAreasCommand']['additionalProperties'] is False, 'ids only'
 paths = spec['paths']
-at = paths['/driver/areas/at']['get']
-assert [x['name'] for x in at['parameters'][:2]] == ['lat', 'lng'] and all(x['required'] for x in at['parameters'][:2])
+at = paths['/driver/areas/at']
+assert 'get' not in at and at['post']['requestBody']['content']['application/json']['schema'] == {'$ref': '#/components/schemas/AreaAtCommand'}, 'point in the body, not the URL (GM)'
+assert sc['AreaAtCommand']['required'] == ['lat', 'lng'] and sc['AreaAtCommand']['additionalProperties'] is False
+assert 'never in the URL' in p['at'] and '?lat=' not in json.dumps(c['preferredAreas'])
 assert 'put' in paths['/driver/preferred-areas'] and 'put' in paths['/driver/home-area'], 'home-area kept (Rule 21)'
 assert paths['/admin/areas']['get']['x-permission'] == 'zones.read' and paths['/admin/areas/{areaId}']['patch']['x-permission'] == 'zones.edit'
 assert 'v0.18.172' in paths['/driver/reservations']['get']['description']
