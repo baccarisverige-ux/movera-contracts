@@ -1,11 +1,11 @@
-# Movera API v0.18.174 — generated from contract.json (+ CONTRACT.md §7). PROPOSED; no backend exists.
+# Movera API v0.18.179 — generated from contract.json (+ CONTRACT.md §7). PROPOSED; no backend exists.
 openapi: 3.1.0
 info:
   title: Movera API
-  version: 0.18.174
+  version: 0.18.179
   description: '**Proposed contract — no backend exists yet.** One future backend serves the Rider (Flutter), Driver (Flutter)
     and Admin (React/TS) apps. Source of truth for names, enums, transitions, realtime and errors is `contract.json` + `CONTRACT.md`
-    v0.18.174 in this folder; this file must agree with them.
+    v0.18.179 in this folder; this file must agree with them.
 
 
     Wire rules: ids match `^[A-Za-z0-9_-]{1,64}$`; times are RFC 3339 UTC with `Z`; durations are integer seconds; money is
@@ -84,7 +84,7 @@ tags:
 - name: Admin · Finance
 x-contract:
   name: movera
-  version: 0.18.174
+  version: 0.18.179
   source: contract.json
 paths:
   /auth/otp/request:
@@ -40157,6 +40157,20 @@ components:
             (point in polygon, holes excluded). Every item carries DriverReservation.inPreferredArea true|false. The list
             is the same 200 rides as before (visibility unchanged), only reordered. scope=accepted is not reordered (his own
             rides by time) but its items carry inPreferredArea too.'
+        routePolyline:
+          type: string
+          minLength: 1
+          description: 'v0.18.179 (contract.json#reservationRouteLine): DriverReservation.routePolyline: the Google encoded
+            polyline (precision 5) of the booked trip, pickup through every stop to the drop-off, as stored from its booking
+            quote (trips.route_polyline). Sent on every item of GET /driver/reservations (scope open and scope accepted);
+            absent when the trip has no stored Google route (estimate quote, a route change cleared it) and from an older
+            server. Not in realtime events. No extra Google call: it is the polyline the booking quote''s one call stored.
+            GET /routes/driving is unchanged. The Bokade resor list card draws the decoded DriverReservation.routePolyline
+            as a static preview (DriverRouteStyle.paintOn) and Bokningsdetaljer draws it on the map (DriverRouteStyle.polylines),
+            the same colour as the app''s other route lines; the app never asks GET /routes/driving for a booked ride. Without
+            the field: the pickup and drop-off pins only, never a line (no straight line, no drawn curve). Pickup and drop-off
+            marks are black and white, the same on the map and beside the addresses (pickup: white disc, ink ring, ink dot;
+            drop-off: ink rounded square, white inner square).'
     DriverReservationPage:
       type: object
       description: v0.18.17.
